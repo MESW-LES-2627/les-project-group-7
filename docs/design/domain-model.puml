@@ -1,0 +1,184 @@
+@startuml domain-model
+title Domain model – place reviews and trip planning
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam ArrowColor #555555
+skinparam ClassBorderColor #666666
+hide empty members
+hide circle
+
+legend right
+  Colour = aggregate
+  |<#F5F5F5> User |
+  |<#FFF3C4> Place (+ City, PlaceSuggestion, Visit) |
+  |<#D6ECFA> Review |
+  |<#DDF3DD> Saved place |
+  |<#FFE3CC> Trip (Day, Itinerary, ItineraryStop) |
+  |<#EBDDF7> Published itinerary |
+endlegend
+
+class User <<root>> #F5F5F5 {
+  id
+  username
+  email
+  passwordHash
+  role : USER | MODERATOR | ADMIN
+  registeredAt
+}
+
+class City #FFF3C4 {
+  id
+  name
+  country
+  latitude
+  longitude
+}
+
+class Place <<root>> #FFF3C4 {
+  id
+  externalId
+  name
+  description
+  category : PlaceCategory
+  address
+  latitude
+  longitude
+  priceLevel
+  averageRating
+  reviewCount
+  source : IMPORTED | SUGGESTED
+  --
+  recalculateRating()
+  markVisited(user)
+}
+
+class PlaceSuggestion #FFF3C4 {
+  id
+  proposedName
+  proposedCategory : PlaceCategory
+  proposedAddress
+  status : PENDING | APPROVED | REJECTED
+  suggestedAt
+  decidedAt
+}
+
+class Review <<root>> #D6ECFA {
+  id
+  rating : 1..5
+  text
+  createdAt
+  updatedAt
+}
+
+class Visit #FFF3C4 {
+  visitedAt
+}
+note right of Visit
+  One per (User, Place).
+  Created by the policy
+  "review posted -> mark place visited".
+  Survives deleting the review.
+end note
+
+class SavedPlace <<root>> #DDF3DD {
+  id
+  type : WISHLIST | BOOKMARK
+  savedAt
+}
+
+class Trip <<root>> #FFE3CC {
+  id
+  name
+  createdAt
+  --
+  changeConstraints()
+  syncDays()
+}
+
+class TripConstraints <<value object>> #FFE3CC {
+  startDate
+  endDate
+  budget
+  allowedCategories : Set<PlaceCategory>
+}
+
+class Day #FFE3CC {
+  dayNumber
+  date
+}
+
+class Itinerary #FFE3CC {
+  id
+  mode : MANUAL | GENERATED
+  createdAt
+}
+
+class ItineraryStop #FFE3CC {
+  visitTime
+  position
+  reminderSent
+}
+
+class PublishedItinerary <<root>> #EBDDF7 {
+  id
+  title
+  shareToken
+  publishedAt
+}
+
+class PublishedStop #EBDDF7 {
+  dayNumber
+  visitTime
+  position
+}
+
+class ItineraryBookmark #EBDDF7 {
+  bookmarkedAt
+}
+
+interface ItineraryGenerator <<Strategy>> {
+  generate(trip, candidates) : Itinerary
+}
+class RankingItineraryGenerator {
+  uses place ratings, budget,
+  type filters, distance
+}
+
+' --- User / Place / Review ---
+User "1" -- "*" Review : writes >
+Place "1" -- "*" Review : has >
+User "1" -- "*" Visit
+Place "1" -- "*" Visit
+City "1" -- "*" Place : contains >
+PlaceSuggestion "*" -- "1" User : suggested by >
+PlaceSuggestion "*" -- "0..1" User : decided by >
+PlaceSuggestion "*" -- "1" City : proposed in >
+PlaceSuggestion "0..1" -- "0..1" Place : approved as >
+
+' --- Saved place ---
+User "1" -- "*" SavedPlace : saves >
+SavedPlace "*" -- "1" Place
+
+' --- Trip ---
+User "1" -- "*" Trip : plans >
+Trip "*" -- "1" City : goes to >
+Trip *-- "1" TripConstraints
+Trip *-- "*" Day
+Trip *-- "0..1" Itinerary
+Itinerary *-- "*" ItineraryStop
+ItineraryStop "*" -- "1" Day : on >
+ItineraryStop "*" -- "1" Place : visits >
+
+' --- Published itinerary ---
+User "1" -- "*" PublishedItinerary : publishes >
+PublishedItinerary *-- "*" PublishedStop
+PublishedStop "*" -- "1" Place
+User "1" -- "*" ItineraryBookmark
+ItineraryBookmark "*" -- "1" PublishedItinerary
+
+' --- Generator (Strategy) ---
+ItineraryGenerator <|.. RankingItineraryGenerator
+Trip ..> ItineraryGenerator : generate
+@enduml

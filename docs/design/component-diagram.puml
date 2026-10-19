@@ -1,0 +1,70 @@
+@startuml component-diagram
+title Component diagram – place reviews and trip planning
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam nodesep 40
+skinparam ranksep 50
+skinparam ArrowColor #555555
+skinparam component {
+  BackgroundColor #FFF8E1
+  BorderColor #666666
+}
+skinparam package {
+  BorderColor #888888
+}
+
+actor "User" as user
+actor "Moderator / Admin" as admin
+
+component "Web App\n(browser UI)" as web #D6ECFA
+
+package "Backend" as backend {
+  interface "REST API" as api
+
+  component "Identity\n(users, auth, roles)" as identity
+  component "Place Catalog\n(places, suggestions, moderation,\nimport, visited, rating, top-rated)" as catalog
+  component "Reviews\n(post, edit, delete)" as reviews
+  component "Saved Places\n(wishlist, bookmarks)" as saved
+  component "Trip Planner\n(trips, days,\nitinerary, visit times)" as planner
+  component "Itinerary Generator\n(Strategy)" as generator
+  component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing
+  component "Reminders\n(scheduler)" as reminders
+}
+
+database "Relational Database" as db #E8E8E8
+
+cloud "Places data source\n(OpenStreetMap / Places API)" as places #F8C9D8
+cloud "Notification service\n(e-mail / push)" as notif #F8C9D8
+
+user --> web
+admin --> web
+web --> api : HTTPS / JSON
+api - identity
+api - catalog
+api - reviews
+api - saved
+api - planner
+api - publishing
+
+reviews ..> catalog : mark place visited,\nrecalculate rating
+saved ..> catalog
+planner ..> catalog : find places
+planner ..> generator : generate
+generator ..> catalog : candidates\n(top-rated)
+generator ..> saved : wishlist
+publishing ..> planner : copy itinerary
+reminders ..> planner : upcoming visits
+
+catalog --> places : import places
+reminders --> notif : send reminder
+
+backend --> db : reads / writes
+
+note right of web
+  Every component authenticates
+  its calls through Identity.
+  Technology is not fixed yet;
+  one deployable backend with
+  these modules is the MVP.
+end note
+@enduml
