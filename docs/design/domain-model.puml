@@ -15,8 +15,10 @@ legend right
   |<#FFF3C4> Place (+ City, PlaceSuggestion, Visit) |
   |<#D6ECFA> Review |
   |<#DDF3DD> Saved place |
+  |<#CDEFEF> Saved list (+ ListEntry) |
   |<#FFE3CC> Trip (Day, Itinerary, ItineraryStop) |
   |<#EBDDF7> Published itinerary |
+  <<post-MVP>> = designed, not in the MVP
 endlegend
 
 class User <<root>> #F5F5F5 {
@@ -24,7 +26,7 @@ class User <<root>> #F5F5F5 {
   username
   email
   passwordHash
-  role : USER | MODERATOR | ADMIN
+  role : USER | ADMIN
   registeredAt
 }
 
@@ -38,14 +40,15 @@ class City #FFF3C4 {
 
 class Place <<root>> #FFF3C4 {
   id
-  externalId
+  osmId
   name
   description
   category : PlaceCategory
   address
   latitude
   longitude
-  priceLevel
+  openingHours
+  priceLevel : € | €€ | €€€
   averageRating
   reviewCount
   source : IMPORTED | SUGGESTED
@@ -54,7 +57,7 @@ class Place <<root>> #FFF3C4 {
   markVisited(user)
 }
 
-class PlaceSuggestion #FFF3C4 {
+class PlaceSuggestion <<post-MVP>> #FFF3C4 {
   id
   proposedName
   proposedCategory : PlaceCategory
@@ -67,6 +70,7 @@ class PlaceSuggestion #FFF3C4 {
 class Review <<root>> #D6ECFA {
   id
   rating : 1..5
+  priceLevel : € | €€ | €€€ (optional)
   text
   createdAt
   updatedAt
@@ -88,6 +92,19 @@ class SavedPlace <<root>> #DDF3DD {
   savedAt
 }
 
+class SavedList <<root>> #CDEFEF {
+  id
+  name
+  createdAt
+  --
+  addPlace(place)
+  removePlace(place)
+}
+
+class ListEntry #CDEFEF {
+  addedAt
+}
+
 class Trip <<root>> #FFE3CC {
   id
   name
@@ -100,7 +117,7 @@ class Trip <<root>> #FFE3CC {
 class TripConstraints <<value object>> #FFE3CC {
   startDate
   endDate
-  budget
+  budgetLevel : € | €€ | €€€
   allowedCategories : Set<PlaceCategory>
 }
 
@@ -119,22 +136,24 @@ class ItineraryStop #FFE3CC {
   visitTime
   position
   reminderSent
+  --
+  isOutsideOpeningHours()
 }
 
-class PublishedItinerary <<root>> #EBDDF7 {
+class PublishedItinerary <<root>> <<post-MVP>> #EBDDF7 {
   id
   title
   shareToken
   publishedAt
 }
 
-class PublishedStop #EBDDF7 {
+class PublishedStop <<post-MVP>> #EBDDF7 {
   dayNumber
   visitTime
   position
 }
 
-class ItineraryBookmark #EBDDF7 {
+class ItineraryBookmark <<post-MVP>> #EBDDF7 {
   bookmarkedAt
 }
 
@@ -142,8 +161,22 @@ interface ItineraryGenerator <<Strategy>> {
   generate(trip, candidates) : Itinerary
 }
 class RankingItineraryGenerator {
-  uses place ratings, budget,
-  type filters, distance
+  basic: top-rated places by type,
+  grouped by distance
+}
+class SmartItineraryGenerator <<post-MVP>> {
+  also uses opening hours,
+  travel times, budget, wishlist
+}
+
+interface TravelTimeEstimator <<Strategy>> {
+  estimate(from, to, mode) : minutes
+}
+class StraightLineEstimator {
+  distance x 1.3 / walking speed
+}
+class RoutingServiceEstimator <<post-MVP>> {
+  real routes, cached per pair
 }
 
 ' --- User / Place / Review ---
@@ -157,9 +190,12 @@ PlaceSuggestion "*" -- "0..1" User : decided by >
 PlaceSuggestion "*" -- "1" City : proposed in >
 PlaceSuggestion "0..1" -- "0..1" Place : approved as >
 
-' --- Saved place ---
+' --- Saved place and lists ---
 User "1" -- "*" SavedPlace : saves >
 SavedPlace "*" -- "1" Place
+User "1" -- "*" SavedList : owns >
+SavedList *-- "*" ListEntry
+ListEntry "*" -- "1" Place
 
 ' --- Trip ---
 User "1" -- "*" Trip : plans >
@@ -178,7 +214,11 @@ PublishedStop "*" -- "1" Place
 User "1" -- "*" ItineraryBookmark
 ItineraryBookmark "*" -- "1" PublishedItinerary
 
-' --- Generator (Strategy) ---
+' --- Strategies ---
 ItineraryGenerator <|.. RankingItineraryGenerator
+ItineraryGenerator <|.. SmartItineraryGenerator
 Trip ..> ItineraryGenerator : generate
+TravelTimeEstimator <|.. StraightLineEstimator
+TravelTimeEstimator <|.. RoutingServiceEstimator
+Itinerary ..> TravelTimeEstimator : leg times
 @enduml

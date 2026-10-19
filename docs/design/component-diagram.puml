@@ -13,32 +13,41 @@ skinparam package {
   BorderColor #888888
 }
 
-actor "User" as user
-actor "Moderator / Admin" as admin
+legend right
+  |<#FFF8E1> MVP component |
+  |<#EEEEEE> Stretch (designed, not in the MVP) |
+  |<#F8C9D8> External system |
+endlegend
 
-component "Web App\n(browser UI)" as web #D6ECFA
+actor "User" as user
+actor "Admin" as admin
+
+component "Web App\n(browser UI, map)" as web #D6ECFA
 
 package "Backend" as backend {
   interface "REST API" as api
 
   component "Identity\n(users, auth, roles)" as identity
-  component "Place Catalog\n(places, suggestions, moderation,\nimport, visited, rating, top-rated)" as catalog
-  component "Reviews\n(post, edit, delete)" as reviews
-  component "Saved Places\n(wishlist, bookmarks)" as saved
-  component "Trip Planner\n(trips, days,\nitinerary, visit times)" as planner
-  component "Itinerary Generator\n(Strategy)" as generator
-  component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing
-  component "Reminders\n(scheduler)" as reminders
+  component "Place Catalog\n(places, import, opening hours,\nvisited, rating, top-rated)" as catalog
+  component "Reviews\n(post, edit, delete,\nprice level)" as reviews
+  component "Saved Places\n(wishlist, bookmarks, lists)" as saved
+  component "Trip Planner\n(trips, days, itinerary,\nvisit times, travel time)" as planner
+  component "Itinerary Generator\n(basic, Strategy)" as generator
+  component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing #EEEEEE
+  component "Reminders\n(scheduler)" as reminders #EEEEEE
 }
 
 database "Relational Database" as db #E8E8E8
 
-cloud "Places data source\n(OpenStreetMap / Places API)" as places #F8C9D8
-cloud "Notification service\n(e-mail / push)" as notif #F8C9D8
+cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
+cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
+cloud "Routing service\n(OpenRouteService)\nStretch" as routing #F8C9D8
+cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
 
 user --> web
 admin --> web
 web --> api : HTTPS / JSON
+web --> tiles : map tiles
 api - identity
 api - catalog
 api - reviews
@@ -48,14 +57,14 @@ api - publishing
 
 reviews ..> catalog : mark place visited,\nrecalculate rating
 saved ..> catalog
-planner ..> catalog : find places
+planner ..> catalog : find places,\nopening hours
 planner ..> generator : generate
 generator ..> catalog : candidates\n(top-rated)
-generator ..> saved : wishlist
 publishing ..> planner : copy itinerary
 reminders ..> planner : upcoming visits
 
 catalog --> places : import places
+planner ..> routing : real travel times
 reminders --> notif : send reminder
 
 backend --> db : reads / writes
@@ -66,5 +75,8 @@ note right of web
   Technology is not fixed yet;
   one deployable backend with
   these modules is the MVP.
+  Without the routing service,
+  travel time is estimated from
+  straight-line distance.
 end note
 @enduml
