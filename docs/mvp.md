@@ -111,7 +111,7 @@ size.
 | Compatibility | Latest Chrome, Firefox, Edge and Safari; usable on a phone-width screen |
 | Map | Follows the OpenStreetMap tile usage policy (attribution, no bulk or offline use), or uses a provider that allows our usage |
 | Licensing | OpenStreetMap attribution shown |
-
+| Understandability | Every team member can explain the design and code, including anything written with AI help |
 
 ## 6. Demo scenario
 
@@ -129,7 +129,43 @@ release, with this scenario on the prod server:
 7. Change the trip dates and see the days update.
 8. Delete the trip.
 
-## 7. When is the MVP done?
+## 7. Plan by iteration
+
+Dates follow the semester calendar. `master` is updated from `dev` the day before
+each review.
+
+| Iteration | Dates | Review | Merge to master | Goal | Scope |
+|---|---|---|---|---|---|
+| 0 | until 23 Oct | 23 Oct | 22 Oct | Plan and design | Vision, MVP, Definition of Done, design (EventStorming, domain model, component diagram), vertical prototype |
+| 1 | 23 Oct to 6 Nov (**academic break on 30 Oct**) | 6 Nov | 5 Nov | Walking skeleton on dev and prod | Project setup, A1, B1, B2, B3 basic, B4, C1, P1 to P3 |
+| 2 | 6 to 20 Nov | 20 Nov | 19 Nov | Reviews, ranking and trip creation | B3 filters, B5, B6, C2, C3, D1, E1 |
+| 3 | 20 Nov to 4 Dec | 4 Dec | 3 Dec | Planning core | E2, E3, E4, E5, E6, E8 |
+| 4 | 4 to 18 Dec | 18 Dec | 17 Dec | Complete and release | D2, E7, generator tuning, bug fixing, documentation, final release, Stretch only if the rest is done |
+
+Iteration 1 has one working week less because of the break, so it only contains
+the foundations and the first end-to-end slice.
+
+## 8. Risks and assumptions
+
+| Risk | Mitigation |
+|---|---|
+| The tech stack is not decided and Iteration 1 starts on 23 Oct | Decide before Iteration 1 begins; the design documents are stack-agnostic |
+| OpenStreetMap has no ratings, prices or photos, and some places lack opening hours | Reviews and demo data supply ratings and price levels; show "unknown" for missing hours |
+| The generator is the biggest unknown | Basic version only in the MVP, built behind a Strategy interface; manual planning always works as the fallback |
+| Parsing OpenStreetMap opening-hours syntax is fiddly | Use an existing parsing library; support the common formats first |
+| OpenStreetMap's tile server can limit or block usage | Follow the policy; keep a free-tier tile provider as a fallback |
+| Iteration 1 is short | Keep its scope to the walking skeleton |
+| Heavy use of AI can leave code nobody understands | The Definition of Done requires that the author can explain every change |
+| Scope creep | The scope rule in section 3 |
+
+## 9. Open questions
+
+- Which cities for the MVP?
+- Which tech stack, and by when?
+- What exactly is the vertical prototype, and which MVP features does it cover?
+- Does the teacher require a specific structure for this document?
+
+## 10. When is the MVP done?
 
 When every feature in section 2 meets the [Definition of Done](definition-of-done.md)
 and the demo scenario in section 6 runs on the prod server.
