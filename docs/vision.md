@@ -108,11 +108,12 @@ in the [MVP](mvp.md). Each idea is tagged:
 | Create a trip with city, dates, budget level and preferred place types | MVP |
 | Days created automatically from the dates and kept in sync when they change | MVP |
 | Build an itinerary manually: assign places to days, set visit times | MVP |
-| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop | MVP |
+| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP |
 | Suggest the best-ranked places nearby (for example lunch after the Eiffel Tower) | MVP |
-| Warn when a planned visit time is outside the place's opening hours | MVP |
+| Warn when a planned visit time is outside the place's opening hours, and show the trip's average price level against the budget level | MVP |
 | Estimated travel time between stops ("≈ 12 min walk", from straight-line distance) | MVP |
-| **Smart generator**: also uses opening hours, travel times, budget and the wishlist | Stretch |
+| **Smart generator**: also uses opening hours and real travel times, and balances the budget more precisely | Stretch |
+| Optional budget in euros per day, from price levels mapped to rough amounts | Stretch |
 | Real walking and driving times from a routing service | Stretch |
 | Other conflict warnings (overlapping visits, too much walking) | Stretch |
 | Drag and drop reordering | Stretch |

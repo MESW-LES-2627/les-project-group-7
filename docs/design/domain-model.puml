@@ -30,6 +30,20 @@ class User <<root>> #F5F5F5 {
   registeredAt
 }
 
+enum PriceLevel <<value object>> #F5F5F5 {
+  FREE = 0
+  € = 1
+  €€ = 2
+  €€€ = 3
+}
+note right of PriceLevel
+  Cost points. A place or review without a
+  level is unknown and not counted.
+  budgetLevel (€ to €€€) is the target
+  average of the whole trip: the mean of
+  the points of its stops with a known price.
+end note
+
 class City #FFF3C4 {
   id
   name
@@ -48,7 +62,7 @@ class Place <<root>> #FFF3C4 {
   latitude
   longitude
   openingHours
-  priceLevel : € | €€ | €€€
+  priceLevel : PriceLevel [0..1]
   averageRating
   reviewCount
   source : IMPORTED | SUGGESTED
@@ -70,7 +84,7 @@ class PlaceSuggestion <<post-MVP>> #FFF3C4 {
 class Review <<root>> #D6ECFA {
   id
   rating : 1..5
-  priceLevel : € | €€ | €€€ (optional)
+  priceLevel : PriceLevel [0..1]
   text
   createdAt
   updatedAt
@@ -112,12 +126,14 @@ class Trip <<root>> #FFE3CC {
   --
   changeConstraints()
   syncDays()
+  averageCostPoints()
+  isOverBudget()
 }
 
 class TripConstraints <<value object>> #FFE3CC {
   startDate
   endDate
-  budgetLevel : € | €€ | €€€
+  budgetLevel : PriceLevel
   allowedCategories : Set<PlaceCategory>
 }
 
@@ -162,11 +178,15 @@ interface ItineraryGenerator <<Strategy>> {
 }
 class RankingItineraryGenerator {
   basic: top-rated places by type,
-  grouped by distance
+  grouped by distance,
+  keeps trip average price near
+  the budget level, always adds
+  wishlist places
 }
 class SmartItineraryGenerator <<post-MVP>> {
   also uses opening hours,
-  travel times, budget, wishlist
+  real travel times, finer
+  budget balancing
 }
 
 interface TravelTimeEstimator <<Strategy>> {
@@ -218,6 +238,7 @@ ItineraryBookmark "*" -- "1" PublishedItinerary
 ItineraryGenerator <|.. RankingItineraryGenerator
 ItineraryGenerator <|.. SmartItineraryGenerator
 Trip ..> ItineraryGenerator : generate
+RankingItineraryGenerator ..> SavedPlace : wishlist places
 TravelTimeEstimator <|.. StraightLineEstimator
 TravelTimeEstimator <|.. RoutingServiceEstimator
 Itinerary ..> TravelTimeEstimator : leg times

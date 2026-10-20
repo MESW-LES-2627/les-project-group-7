@@ -70,6 +70,10 @@ yellow (small) = actor, green = view / read model, yellow (tall) = aggregate.
   shows "unknown" and cannot warn.
 - Travel time between stops is estimated from straight-line distance in the MVP.
   Real routing is Stretch.
+- The budget level is a soft target for the average price of the whole trip. Places
+  have cost points (free 0, € 1, €€ 2, €€€ 3). The generator keeps the running average
+  near the budget level and always includes wishlist places; the planner shows the
+  average and warns when it is above. There is no euro amount. See [mvp.md](mvp.md#4-data-for-the-mvp).
 - A place can be in several lists, and a list can hold any place.
 
 What is in the MVP and what is not: see [mvp.md](mvp.md) and [vision.md](vision.md).
@@ -87,7 +91,7 @@ Colours in the diagram match the aggregates from the EventStorming. Classes mark
 | Class | Aggregate | Key attributes | Main associations |
 |---|---|---|---|
 | User | User | username, email, role (USER / ADMIN) | writes Reviews, saves Places, owns Lists, plans Trips |
-| Place | Place | osmId, name, category, address, lat/long, openingHours, priceLevel, averageRating, reviewCount, source; recalculateRating(), markVisited(user) | belongs to a City, has Reviews and Visits |
+| Place | Place | osmId, name, category, address, lat/long, openingHours, priceLevel (PriceLevel, may be unknown), averageRating, reviewCount, source; recalculateRating(), markVisited(user) | belongs to a City, has Reviews and Visits |
 | City | Place | name, country, lat/long | contains Places, destination of Trips |
 | PlaceSuggestion (post-MVP) | Place | proposed data, status (PENDING / APPROVED / REJECTED) | suggested by a User, decided by an admin, proposed in a City, approved as a Place |
 | Review | Review | rating (1..5), priceLevel (optional), text, createdAt, updatedAt | written by a User about a Place |
@@ -95,8 +99,9 @@ Colours in the diagram match the aggregates from the EventStorming. Classes mark
 | SavedPlace | Saved place | type (WISHLIST / BOOKMARK), savedAt | User saves a Place |
 | SavedList | Saved list | name, createdAt; addPlace(), removePlace() | owned by a User, holds ListEntries |
 | ListEntry | Saved list | addedAt | refers to a Place |
-| Trip | Trip | name, createdAt | owned by a User, goes to a City |
-| TripConstraints (value object) | Trip | startDate, endDate, budgetLevel, allowedCategories | part of Trip |
+| Trip | Trip | name, createdAt; averageCostPoints(), isOverBudget() | owned by a User, goes to a City |
+| PriceLevel (value object) | shared | FREE = 0, € = 1, €€ = 2, €€€ = 3 | used by Place, Review and TripConstraints; unknown is not counted |
+| TripConstraints (value object) | Trip | startDate, endDate, budgetLevel (target average price of the whole trip), allowedCategories | part of Trip |
 | Day | Trip | dayNumber, date | part of Trip, derived from the date range |
 | Itinerary | Trip | mode (MANUAL / GENERATED), createdAt | part of Trip (0..1), uses a TravelTimeEstimator |
 | ItineraryStop | Trip | visitTime, position, reminderSent; isOutsideOpeningHours() | on a Day, visits a Place |
@@ -141,8 +146,8 @@ Grey components are Stretch: designed, not in the MVP.
 | Place Catalog | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (suggestions and moderation are post-MVP) | Database, Places data source (external) |
 | Reviews | Post, edit and delete reviews, including the price level. Triggers *mark place visited* and *recalculate rating* in Place Catalog | Place Catalog |
 | Saved Places | Wishlist, bookmarks and custom lists | Place Catalog |
-| Trip Planner | Trips, days, itineraries, visit times, travel-time estimates and opening-hours warnings | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
-| Itinerary Generator | Builds a basic itinerary from top-rated places, type filters and distance (Strategy pattern) | Place Catalog |
+| Trip Planner | Trips, days, itineraries, visit times, travel-time estimates, opening-hours and budget warnings | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
+| Itinerary Generator | Builds a basic itinerary from top-rated places, type filters, distance, the budget average and the wishlist (Strategy pattern) | Place Catalog, Saved Places |
 | Publishing (Stretch) | Published itineraries, sharing, bookmarks | Trip Planner |
 | Reminders (Stretch) | Scheduler that sends visit reminders | Trip Planner, Notification service (external) |
 
