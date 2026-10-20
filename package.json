@@ -1,0 +1,14 @@
+{
+  "name": "les-project-group-7",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Place reviews and day-by-day trip planning platform - MESW LES Group 7",
+  "scripts": {
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "test": "npm run test --prefix backend",
+    "build:backend": "npm run build --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build": "npm run build:backend && npm run build:frontend"
+  }
+}
