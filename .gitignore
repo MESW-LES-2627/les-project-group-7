@@ -1,0 +1,28 @@
+# Node / Dependencies
+node_modules/
+.npm/
+
+# Builds & Outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Logs & Testing
+*.log
+coverage/
+.vitest/
+
+# OS
+.DS_Store
+Thumbs.db
