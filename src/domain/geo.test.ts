@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { haversineDistanceKm, estimateWalkingMinutes } from "./geo.js";
+import { haversineDistanceKm, estimateWalkingMinutes } from "./geo";
 
 describe("Geographical calculations", () => {
   // Approximate coordinates: Torre dos Clérigos (Porto) to Livraria Lello (Porto) ~ 250m

@@ -1,0 +1,145 @@
+[
+  {
+    "osmId": "node/268571891",
+    "name": "Torre dos Clérigos",
+    "description": "Torre sineira barroca com vistas panorâmicas de 360 graus sobre a cidade do Porto.",
+    "category": "MONUMENT",
+    "address": "Rua de São Filipe de Nery, 4050-546 Porto",
+    "latitude": 41.1458,
+    "longitude": -8.6146,
+    "openingHours": "Mo-Su 09:00-19:00",
+    "priceLevel": "€"
+  },
+  {
+    "osmId": "node/2534431948",
+    "name": "Livraria Lello",
+    "description": "Histórica livraria neogótica famosa pela sua escadaria de madeira e vitrais.",
+    "category": "OTHER",
+    "address": "Rua das Carmelitas 144, 4050-161 Porto",
+    "latitude": 41.1469,
+    "longitude": -8.6149,
+    "openingHours": "Mo-Su 09:00-19:00",
+    "priceLevel": "€"
+  },
+  {
+    "osmId": "node/271131102",
+    "name": "Palácio da Bolsa",
+    "description": "Palácio neoclássico do século XIX com o requintado Salão Árabe.",
+    "category": "MONUMENT",
+    "address": "Rua de Ferreira Borges, 4050-253 Porto",
+    "latitude": 41.1415,
+    "longitude": -8.6156,
+    "openingHours": "Mo-Su 09:00-18:30",
+    "priceLevel": "€€"
+  },
+  {
+    "osmId": "node/331405103",
+    "name": "Casa da Música",
+    "description": "Edifício de arquitetura contemporânea e principal sala de concertos do Porto.",
+    "category": "MONUMENT",
+    "address": "Avenida da Boavista 604-610, 4149-071 Porto",
+    "latitude": 41.1587,
+    "longitude": -8.6307,
+    "openingHours": "Mo-Sa 09:30-18:00, Su 09:30-17:00",
+    "priceLevel": "€€"
+  },
+  {
+    "osmId": "node/120938472",
+    "name": "Parque da Cidade",
+    "description": "Maior parque urbano do país, estendendo-se até à orla marítima do Atlântico.",
+    "category": "PARK",
+    "address": "Estrada da Circunvalação, 4100-139 Porto",
+    "latitude": 41.1683,
+    "longitude": -8.6795,
+    "openingHours": "Mo-Su 07:00-00:00",
+    "priceLevel": "FREE"
+  },
+  {
+    "osmId": "node/493821039",
+    "name": "Jardim do Morro",
+    "description": "Jardim panorâmico junto ao Douro, local de eleição para apreciar o pôr do sol.",
+    "category": "PARK",
+    "address": "Avenida da República, 4430-148 Vila Nova de Gaia",
+    "latitude": 41.1378,
+    "longitude": -8.6089,
+    "openingHours": "24/7",
+    "priceLevel": "FREE"
+  },
+  {
+    "osmId": "node/582910392",
+    "name": "Miradouro da Vitória",
+    "description": "Miradouro histórico no coração da antiga judiaria sobre a Ribeira e o rio Douro.",
+    "category": "MONUMENT",
+    "address": "Rua de São Bento da Vitória 11, 4050-543 Porto",
+    "latitude": 41.1436,
+    "longitude": -8.6170,
+    "openingHours": "24/7",
+    "priceLevel": "FREE"
+  },
+  {
+    "osmId": "node/392019482",
+    "name": "Museu de Serralves",
+    "description": "Museu de arte contemporânea projetado por Álvaro Siza Vieira e parque botânico.",
+    "category": "MUSEUM",
+    "address": "Rua Dom João de Castro 210, 4150-417 Porto",
+    "latitude": 41.1597,
+    "longitude": -8.6596,
+    "openingHours": "Mo-Fr 10:00-19:00, Sa-Su 10:00-20:00",
+    "priceLevel": "€€"
+  },
+  {
+    "osmId": "node/268571890",
+    "name": "Sé do Porto",
+    "description": "Catedral românica-gótica do século XII com vista sobre os telhados do centro histórico.",
+    "category": "MONUMENT",
+    "address": "Terreiro da Sé, 4050-573 Porto",
+    "latitude": 41.1428,
+    "longitude": -8.6111,
+    "openingHours": "Mo-Su 09:00-18:30",
+    "priceLevel": "FREE"
+  },
+  {
+    "osmId": "way/238194821",
+    "name": "Ponte Luís I",
+    "description": "Ponte metálica em arco de dois tabuleiros sobre o Douro, ex-líbris da cidade.",
+    "category": "MONUMENT",
+    "address": "Ponte Luís I, Porto",
+    "latitude": 41.1400,
+    "longitude": -8.6094,
+    "openingHours": "24/7",
+    "priceLevel": "FREE"
+  },
+  {
+    "osmId": "node/449201948",
+    "name": "Café Majestic",
+    "description": "Emblemático café da Belle Époque com espelhos flamengos e cadeiras de couro talhado.",
+    "category": "CAFE",
+    "address": "Rua Santa Catarina 112, 4000-442 Porto",
+    "latitude": 41.1472,
+    "longitude": -8.6067,
+    "openingHours": "Mo-Sa 09:00-23:00",
+    "priceLevel": "€€€"
+  },
+  {
+    "osmId": "node/920194821",
+    "name": "Cervejaria Brasão Aliados",
+    "description": "Restaurante e cervejaria artesanal conceituado pelas suas francesinhas no forno a lenha.",
+    "category": "RESTAURANT",
+    "address": "Rua de Ramalho Ortigão 28, 4000-407 Porto",
+    "latitude": 41.1492,
+    "longitude": -8.6118,
+    "openingHours": "Mo-Su 12:00-15:30, 19:00-23:30",
+    "priceLevel": "€€"
+  },
+  {
+    "osmId": "node/819201948",
+    "name": "Café Santiago",
+    "description": "Casa típica portuense conhecida pela sua premiada Francesinha Santiago.",
+    "category": "RESTAURANT",
+    "address": "Rua de Passos Manuel 226, 4000-382 Porto",
+    "latitude": 41.1464,
+    "longitude": -8.6050,
+    "openingHours": "Mo-Sa 12:00-22:30",
+    "priceLevel": "€"
+  }
+]

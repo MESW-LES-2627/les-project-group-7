@@ -13,9 +13,8 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 - **[Vision](docs/vision.md):** The long-term product vision and feature roadmap.
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.
 - **[Design & Architecture](docs/design.md):** Overview of EventStorming, Domain Model, and Component Diagram.
-- **[Domain Glossary (Ubiquitous Language)](GLOSSARY.md):** Canonical definitions of `Place`, `Review`, `Visit`, `Wishlist`, `Bookmark`, `Trip`, `Itinerary`, and budget calculations.
-- **[Architecture Decision Records (ADRs)](docs/adr/):**
-  - [ADR 0001: Core Domain Rules, Trip Cardinality, and Cascade Lifecycles](docs/adr/0001-core-domain-rules-and-aggregates.md)
+- **[Domain Glossary & Rules (Ubiquitous Language)](docs/GLOSSARY.md):** Canonical definitions of `Place`, `Review`, `Visit`, `Wishlist`, `Bookmark`, `Trip`, `Itinerary`, cost points, and budget calculations.
+- **[Task Distribution & Outcomes](docs/user-stories.md):** Tracer bullet task breakdown across the 4 dev roles.
 
 ---
 
@@ -23,11 +22,11 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| **Backend** | Node.js (v20+) + Express + TypeScript | Modular REST API and business logic |
-| **ORM & Database** | Prisma ORM with SQLite (dev) / PostgreSQL (prod) | Type-safe persistence and automatic schema migrations |
-| **Testing** | Vitest | High-speed unit testing for domain algorithms (`/tdd`) |
-| **Frontend** | React 19 + Vite + TypeScript | Responsive, modern Single Page Application |
-| **Mapping** | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with pins and clustering |
+| **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components |
+| **Styling** | Tailwind CSS + Lucide Icons | Responsive modern UI |
+| **ORM & Database** | Prisma ORM + PostgreSQL 16 (Docker) | Relational persistence, migrations, and type-safe queries |
+| **Testing** | Vitest | Fast unit testing for domain algorithms (`/tdd`) |
+| **Mapping** | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
 
 ---
 
@@ -35,23 +34,25 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 ```
 .
-├── GLOSSARY.md             # Ubiquitous Language definition
-├── README.md               # This documentation
-├── docs/                   # Vision, MVP, EventStorming, UML, ADRs
+├── docker-compose.yml      # Local PostgreSQL container definition
+├── docs/                   # Vision, MVP, EventStorming, UML diagrams, GLOSSARY.md
 │   ├── adr/                # Architecture Decision Records
-│   └── design/             # UML diagrams and EventStorming artifacts
-├── backend/                # Express & Prisma backend service
-│   ├── prisma/
-│   │   ├── schema.prisma   # Declarative database schema
-│   │   └── seed.ts         # Initial pilot data seed script
-│   └── src/
-│       ├── db.ts           # Prisma client singleton
-│       ├── domain/         # Pure domain logic (rating, geo, opening-hours)
-│       └── server.ts       # Express bootstrap & API endpoints
-└── frontend/               # React + Vite frontend application
-    └── src/
-        ├── App.tsx         # Main application shell
-        └── main.tsx        # React entrypoint
+│   ├── design/             # UML diagrams and EventStorming artifacts
+│   ├── GLOSSARY.md         # Ubiquitous Language definition
+│   └── user-stories.md     # Task breakdown for tracer bullet prototype
+├── prisma/
+│   ├── schema.prisma       # Relational PostgreSQL database schema
+│   ├── seed.ts             # Pilot data seed script (Porto OSM & demo users)
+│   └── migrations/         # Prisma migration history
+└── src/
+    ├── app/                # Next.js App Router (pages and API routes)
+    │   ├── api/places/     # GET /api/places
+    │   ├── api/reviews/    # GET & POST /api/reviews
+    │   ├── api/health/     # GET /api/health
+    │   └── page.tsx        # Main tracer bullet UI
+    ├── components/         # MapComponent, MapWrapper, PlaceExplorer
+    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary)
+    └── lib/                # Prisma client singleton
 ```
 
 ---
@@ -60,55 +61,47 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v20.x or higher)
-- [npm](https://www.npmjs.com/) (v10.x or higher)
+- [Docker & Docker Compose](https://www.docker.com/)
 
-### 1. Setup & Installation
-Clone the repository and install dependencies for both packages:
-
+### 1. Setup Database & Dependencies
 ```bash
-# Backend setup
-cd backend
+# Clone the repository and install dependencies
 npm install
+
+# Copy environment variables
 cp .env.example .env
 
-# Generate Prisma client and initialize database
-npx prisma migrate dev --name init
-npm run seed
+# Start local PostgreSQL container
+docker compose up -d
 
-# Frontend setup
-cd ../frontend
-npm install
+# Apply database migrations and seed data (Porto OSM spots + demo users)
+npm run prisma:generate
+npm run prisma:migrate
+npm run seed
 ```
 
 ### 2. Running Tests
 Run unit tests for domain services (pure functions):
 
 ```bash
-# From project root:
 npm test
-
-# Or directly in backend:
-cd backend && npm test
 ```
 
-### 3. Running Development Servers
-Start both backend and frontend concurrently:
+### 3. Running the Application
+Start the development server:
 
 ```bash
-# From project root:
-npm run dev:backend    # Runs Express API at http://localhost:3001
-npm run dev:frontend   # Runs React App at http://localhost:3000
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Iteration 0 Team Task Distribution
+## Key Features in Tracer Bullet
 
-| Module / Area | Focus & Responsibilities | Key Files |
-|---|---|---|
-| **Domain Services (`/tdd`)** | Pure calculation functions: rating averages, price level mode, geo-distance, walking time, opening-hours checks | `backend/src/domain/` |
-| **Catalog & Seed Data** | OSM place importer, seed script for Porto & Lisbon pilot data, demo reviews | `backend/prisma/` |
-| **API & Identity** | Authentication (`/api/auth`), Place search & filter (`/api/places`), Reviews (`/api/reviews`) | `backend/src/routes/` |
-| **Frontend & Map UI** | React navigation shell, Leaflet map with OSM pins, Place Detail view, Wishlist screen | `frontend/src/` |
+- **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
+- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL.
+- **Dynamic Rating Recalculation:** Real-time arithmetic mean rating updates and visit tracking in PostgreSQL.
+- **OpenStreetMap Local POIs:** Interactive Leaflet map with real Porto landmarks imported from OpenStreetMap and cached locally.
+- **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.

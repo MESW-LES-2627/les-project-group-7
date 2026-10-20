@@ -10,17 +10,17 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Place
 - **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) imported from OpenStreetMap or suggested by users (post-MVP).
-- **Key Attributes:** `id`, `osmId`, `name`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel`, `averageRating`, `reviewCount`, `source`.
+- **Key Attributes:** `id`, `osmId`, `name`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`), `costPoints` (0..3), `averageRating`, `reviewCount`, `source`.
 - **Invariants:** 
   - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated active `Review` records.
-  - `priceLevel` is derived from the statistical **mode** (most frequent rating) of the price levels submitted in reviews.
+  - `priceLevel` is an intrinsic property of a place imported from OpenStreetMap metadata: places with `fee=no` (parks, viewpoints, public landmarks) map to `FREE` (0 cost points), while commercial or ticketed attractions map to `€`, `€€`, or `€€€`.
 
 ### City
 - **Definition:** The geographical boundary containing places and serving as the destination for a trip.
 - **Key Attributes:** `id`, `name`, `country`, `latitude`, `longitude`.
 
 ### PlaceCategory
-- **Definition:** Fixed taxonomy of places used for filtering and generator constraints (e.g., `RESTAURANT`, `MUSEUM`, `MONUMENT`, `PARK`, `BAR`).
+- **Definition:** Fixed taxonomy of places used for filtering and generator constraints (`RESTAURANT`, `MUSEUM`, `MONUMENT`, `PARK`, `CAFE`, `BAR`, `OTHER`).
 
 ---
 
@@ -28,10 +28,10 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Review
 - **Definition:** User-authored evaluation of an experience at a specific `Place`.
-- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `priceLevel` (optional: `€`, `€€`, `€€€`), `text`, `createdAt`, `updatedAt`.
+- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `text`, `createdAt`, `updatedAt`.
 - **Lifecycle & Rules:**
-  - Posting a review triggers the policy: **Mark place as visited** and **Recalculate place rating & price level**.
-  - Editing or deleting a review triggers recalculation of `averageRating` and `priceLevel`.
+  - Posting a review triggers the policy: **Mark place as visited** and **Recalculate place averageRating**.
+  - Editing or deleting a review triggers recalculation of `averageRating`.
   - Deleting a review does **not** delete the corresponding `Visit`.
 
 ### Visit
@@ -99,10 +99,23 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ---
 
-## 5. Calculations & Budgets
+## 5. Calculations, Cost Points & Budgets
 
-### PriceLevel vs BudgetLevel
-- **Scale:** `€` (1 - Budget / Inexpensive), `€€` (2 - Moderate), `€€€` (3 - Expensive).
-- **Place Aggregation:** `Place.priceLevel` is computed as the statistical mode of review values. If no reviews provided a price level, it is `NULL` (unclassified).
-- **Generator Budget Filter:** For a given `TripConstraints.budgetLevel`, candidates are eligible if:
-  $$\text{Place.priceLevel} \le \text{TripConstraints.budgetLevel} \quad \lor \quad \text{Place.priceLevel IS NULL}$$
+### Cost Points Scale
+Places map to numeric **cost points** for algorithmic evaluation:
+- `FREE` = 0 points (parks, viewpoints, public monuments imported with `fee=no` from OpenStreetMap)
+- `€` = 1 point (budget / inexpensive)
+- `€€` = 2 points (moderate)
+- `€€€` = 3 points (expensive)
+- `UNKNOWN` = unreviewed place without fee tags (treated as neutral in averages; not penalized)
+
+### Target Average Budget Heuristic (Soft Filter)
+The trip's `budgetLevel` acts as a **target average cost point** for each planned day:
+- A `€` budget trip targets a daily average of **$\le 1.0$**.
+- A `€€` budget trip targets a daily average of **$\le 2.0$**.
+- A `€€€` budget trip targets a daily average of **$\le 3.0$**.
+
+### Generator Rules with Cost Points:
+1. **Wishlist Priority:** Wishlist places are inserted first, count toward the day's average, and remaining stops adapt around them.
+2. **Compensation:** Free places (0 cost points) pull the day's average down, allowing higher-rated `€€` or `€€€` stops (e.g. a nice dinner) while keeping the daily average within the budget tier.
+3. **Soft Degradation / Fallback:** If a day cannot meet the strict budget target because the city lacks cheaper options, the generator selects the closest fit rather than leaving an empty slot.

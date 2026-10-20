@@ -3,6 +3,8 @@ node_modules/
 .npm/
 
 # Builds & Outputs
+.next/
+out/
 dist/
 build/
 *.tsbuildinfo
@@ -23,6 +25,7 @@ build/
 coverage/
 .vitest/
 
-# OS
+# OS & Tooling
 .DS_Store
 Thumbs.db
+.gemini/
