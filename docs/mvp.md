@@ -121,6 +121,8 @@ If there is time left, the Stretch ideas we would take first, in this order:
 | Compatibility | Latest Chrome, Firefox, Edge and Safari; usable on a phone-width screen |
 | Map | Follows the OpenStreetMap tile usage policy (attribution, no bulk or offline use), or uses a provider that allows our usage |
 | Licensing | OpenStreetMap attribution shown |
+| Tech stack | One Next.js app (React UI and server side in the same project), PostgreSQL accessed through Prisma |
+| Development setup | Everything runs in Docker and is developed in VS Code inside a dev container: one container for the app and one for the database, started together |
 
 ## 6. Demo scenario
 

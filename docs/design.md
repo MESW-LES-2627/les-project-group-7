@@ -163,6 +163,9 @@ Catalog = Place, Reviews = Review, Saved Places = Saved place and Saved list, Tr
 Planner = Trip, Publishing = Published itinerary). The Itinerary Generator is the
 domain service and Reminders is the timer-driven policy.
 
-The technology stack is not decided yet. The MVP is one deployable backend with
-these modules and a relational database, so the diagram stays valid whichever
-stack the team picks.
+**Technology.** The app is one Next.js project: the React UI and the server side
+(route handlers) live in the same codebase, and each backend component above is a
+module of it. Data is stored in PostgreSQL through Prisma, with versioned Prisma
+migrations. Development happens in VS Code inside a dev container, with one
+container for the app and one for the database. The MVP is one deployable app plus
+one database.

@@ -37,7 +37,7 @@ package "Backend" as backend {
   component "Reminders\n(scheduler)" as reminders #EEEEEE
 }
 
-database "Relational Database" as db #E8E8E8
+database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 
 cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
@@ -73,9 +73,9 @@ backend --> db : reads / writes
 note right of web
   Every component authenticates
   its calls through Identity.
-  Technology is not fixed yet;
-  one deployable backend with
-  these modules is the MVP.
+  One Next.js app: React UI plus
+  server-side modules. PostgreSQL
+  through Prisma.
   Without the routing service,
   travel time is estimated from
   straight-line distance.
