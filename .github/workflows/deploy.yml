@@ -73,5 +73,13 @@ jobs:
           DATABASE_URL: ${{ env.MIGRATE_URL }}
         run: npx prisma migrate deploy
 
+      # The Hobby plan only deploys commits authored by the account owner and blocks the rest.
+      # The CLI reads the commit from .git, so deploy from a folder with only the build output:
+      # the upload carries no commit author and teammates' pushes are not blocked. The commit is
+      # still recorded through custom metadata (ciSha, ciRef).
       - name: Deploy
-        run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+        run: |
+          mkdir "$RUNNER_TEMP/deploy"
+          cp -r .vercel "$RUNNER_TEMP/deploy/"
+          cd "$RUNNER_TEMP/deploy"
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --meta ciSha=$GITHUB_SHA --meta ciRef=$GITHUB_REF_NAME
