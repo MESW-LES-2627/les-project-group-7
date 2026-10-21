@@ -73,5 +73,12 @@ jobs:
           DATABASE_URL: ${{ env.MIGRATE_URL }}
         run: npx prisma migrate deploy
 
+      # The Hobby plan only deploys commits authored by the account owner and blocks the rest.
+      # The CLI reads the commit from .git, so hide .git while it uploads (the trap puts it back,
+      # even on failure): the upload carries no commit author and teammates' pushes are not
+      # blocked. The commit is still recorded through custom metadata (ciSha, ciRef).
       - name: Deploy
-        run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+        run: |
+          mv .git "$RUNNER_TEMP/git-hidden"
+          trap 'mv "$RUNNER_TEMP/git-hidden" .git' EXIT
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --meta ciSha=$GITHUB_SHA --meta ciRef=$GITHUB_REF_NAME

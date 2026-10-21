@@ -22,7 +22,7 @@ Docker and the dev container are only for working locally. Deployment does not u
 
 ## One-time setup
 
-Status: the dev path was tested on 21 Oct 2026 with a hello-world app (both sites opened with no login). Not tested yet: the `main` path (prod) and the Prisma migration step.
+Status: the dev path was tested on 21 Oct 2026, first with a hello-world app (both sites opened with no login) and then with the real skeleton, including the Prisma migration step on the dev database. Not tested yet: the `main` path (prod).
 
 ### 1. Neon (two databases)
 
