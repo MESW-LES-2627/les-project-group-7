@@ -1,0 +1,228 @@
+// Prisma schema for Place Reviews & Trip Planning
+// Database configuration: PostgreSQL (local via Docker or hosted via Neon/Supabase)
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" = the machine that runs `prisma generate` (laptop, CI runner).
+  // "rhel-openssl-3.0.x" = the Amazon Linux runtime of Vercel Functions, which differs from the CI runner.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PlaceCategory {
+  RESTAURANT
+  MUSEUM
+  MONUMENT
+  PARK
+  CAFE
+  BAR
+  OTHER
+}
+
+enum SavedPlaceType {
+  WISHLIST
+  BOOKMARK
+}
+
+enum ItineraryMode {
+  MANUAL
+  GENERATED
+}
+
+// -------------------------------------------------------------
+// 1. Identity & Users
+// -------------------------------------------------------------
+model User {
+  id           String       @id @default(uuid())
+  username     String       @unique
+  email        String       @unique
+  passwordHash String
+  role         Role         @default(USER)
+  registeredAt DateTime     @default(now())
+
+  reviews      Review[]
+  visits       Visit[]
+  savedPlaces  SavedPlace[]
+  savedLists   SavedList[]
+  trips        Trip[]
+}
+
+// -------------------------------------------------------------
+// 2. Catalog: City & Place
+// -------------------------------------------------------------
+model City {
+  id        String   @id @default(uuid())
+  name      String
+  country   String
+  latitude  Float
+  longitude Float
+
+  places    Place[]
+  trips     Trip[]
+}
+
+model Place {
+  id            String        @id @default(uuid())
+  osmId         String?       @unique
+  name          String
+  description   String?
+  category      PlaceCategory
+  address       String
+  latitude      Float
+  longitude     Float
+  openingHours  String?       // OSM opening_hours string or "unknown"
+  priceLevel    String?       // "€" | "€€" | "€€€" (aggregated mode)
+  averageRating Float?        // 1.0 .. 5.0
+  reviewCount   Int           @default(0)
+  source        String        @default("IMPORTED") // "IMPORTED" | "SUGGESTED" | "LAZY_OSM"
+  wikidataId    String?
+  imageUrl      String?
+
+  cityId        String
+  city          City          @relation(fields: [cityId], references: [id])
+
+  reviews       Review[]
+  visits        Visit[]
+  savedPlaces   SavedPlace[]
+  listEntries   ListEntry[]
+  itineraryStops ItineraryStop[]
+}
+
+// -------------------------------------------------------------
+// 3. Reviews & Visits
+// -------------------------------------------------------------
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int      // 1 .. 5
+  priceLevel String?  // "€" | "€€" | "€€€"
+  text       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  placeId    String
+  place      Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+}
+
+model Visit {
+  userId    String
+  placeId   String
+  visitedAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, placeId])
+}
+
+// -------------------------------------------------------------
+// 4. Saved Places & Custom Lists
+// -------------------------------------------------------------
+model SavedPlace {
+  id      String         @id @default(uuid())
+  type    SavedPlaceType // WISHLIST | BOOKMARK
+  savedAt DateTime       @default(now())
+
+  userId  String
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  placeId String
+  place   Place          @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId, type])
+}
+
+model SavedList {
+  id        String      @id @default(uuid())
+  name      String
+  createdAt DateTime    @default(now())
+
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  entries   ListEntry[]
+}
+
+model ListEntry {
+  id        String    @id @default(uuid())
+  addedAt   DateTime  @default(now())
+
+  listId    String
+  list      SavedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  placeId   String
+  place     Place     @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, placeId])
+}
+
+// -------------------------------------------------------------
+// 5. Trips & Itineraries
+// -------------------------------------------------------------
+model Trip {
+  id                String    @id @default(uuid())
+  name              String
+  startDate         DateTime
+  endDate           DateTime
+  budgetLevel       String    // "€" | "€€" | "€€€"
+  allowedCategories String    // Stored as JSON or comma-separated PlaceCategories
+  createdAt         DateTime  @default(now())
+
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cityId            String
+  city              City      @relation(fields: [cityId], references: [id])
+
+  days              Day[]
+  itinerary         Itinerary?
+}
+
+model Day {
+  id        String   @id @default(uuid())
+  dayNumber Int      // 1, 2, ...
+  date      DateTime
+
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  stops     ItineraryStop[]
+}
+
+model Itinerary {
+  id        String        @id @default(uuid())
+  mode      ItineraryMode @default(MANUAL)
+  createdAt DateTime      @default(now())
+
+  tripId    String        @unique
+  trip      Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  stops     ItineraryStop[]
+}
+
+model ItineraryStop {
+  id           String    @id @default(uuid())
+  visitTime    String?   // "HH:mm"
+  position     Int       // 1, 2, 3 within the Day
+  reminderSent Boolean   @default(false)
+
+  itineraryId  String
+  itinerary    Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  dayId        String
+  day          Day       @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  placeId      String
+  place        Place     @relation(fields: [placeId], references: [id])
+}

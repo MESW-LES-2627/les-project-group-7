@@ -1,0 +1,83 @@
+@startuml component-diagram
+title Component diagram – place reviews and trip planning
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam nodesep 40
+skinparam ranksep 50
+skinparam ArrowColor #555555
+skinparam component {
+  BackgroundColor #FFF8E1
+  BorderColor #666666
+}
+skinparam package {
+  BorderColor #888888
+}
+
+legend right
+  |<#FFF8E1> MVP component |
+  |<#EEEEEE> Stretch (designed, not in the MVP) |
+  |<#F8C9D8> External system |
+endlegend
+
+actor "User" as user
+actor "Admin" as admin
+
+component "Web App\n(browser UI, map)" as web #D6ECFA
+
+package "Backend" as backend {
+  interface "REST API" as api
+
+  component "Identity\n(users, auth, roles)" as identity
+  component "Place Catalog\n(places, import, opening hours,\nvisited, rating, top-rated)" as catalog
+  component "Reviews\n(post, edit, delete,\nprice level)" as reviews
+  component "Saved Places\n(wishlist, bookmarks, lists)" as saved
+  component "Trip Planner\n(trips, days, itinerary,\nvisit times, travel time,\nhours and budget warnings)" as planner
+  component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist)" as generator
+  component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing #EEEEEE
+  component "Reminders\n(scheduler)" as reminders #EEEEEE
+}
+
+database "PostgreSQL\n(via Prisma)" as db #E8E8E8
+
+cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
+cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
+cloud "Routing service\n(OpenRouteService)\nStretch" as routing #F8C9D8
+cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
+
+user --> web
+admin --> web
+web --> api : HTTPS / JSON
+web --> tiles : map tiles
+api - identity
+api - catalog
+api - reviews
+api - saved
+api - planner
+api - publishing
+
+reviews ..> catalog : mark place visited,\nrecalculate rating
+saved ..> catalog
+planner ..> catalog : find places,\nopening hours
+planner ..> generator : generate
+generator ..> catalog : candidates\n(top-rated)
+generator ..> saved : wishlist places
+publishing ..> planner : copy itinerary
+reminders ..> planner : upcoming visits
+
+catalog --> places : import places
+planner ..> routing : real travel times
+reminders --> notif : send reminder
+
+backend --> db : reads / writes
+
+note right of web
+  Every component authenticates
+  its calls through Identity.
+  One Next.js app: React UI plus
+  server-side modules. PostgreSQL
+  through Prisma.
+  Without the routing service,
+  travel time is estimated from
+  straight-line distance.
+end note
+@enduml

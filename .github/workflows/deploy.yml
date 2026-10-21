@@ -1,0 +1,77 @@
+# Deploys the app to Vercel from GitHub Actions, so the private org repo never
+# has to be connected to Vercel.
+#   push to dev                -> Vercel project "les-group7-dev"  + Neon dev database
+#   push to main               -> Vercel project "les-group7"      + Neon prod database
+# Each Vercel project is always deployed to its own "production" environment, which
+# gives it a fixed public address (les-group7-dev.vercel.app, les-group7.vercel.app).
+#
+# See docs/deployment.md.
+name: Deploy
+
+on:
+  push:
+    branches: [dev, main]
+
+# Never run two deploys of the same branch at once.
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The checks of the Definition of Done. They are skipped while the scripts do not exist.
+      - name: Lint and test
+        run: |
+          npm run lint --if-present
+          npm test --if-present
+
+      - name: Pick the target (dev or prod)
+        env:
+          PROJECT_ID_DEV: ${{ secrets.VERCEL_PROJECT_ID_DEV }}
+          PROJECT_ID_PROD: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+          DEV_DIRECT_URL: ${{ secrets.DEV_DIRECT_URL }}
+          PROD_DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+        run: |
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "VERCEL_PROJECT_ID=$PROJECT_ID_PROD" >> "$GITHUB_ENV"
+            echo "MIGRATE_URL=$PROD_DIRECT_URL" >> "$GITHUB_ENV"
+          else
+            echo "VERCEL_PROJECT_ID=$PROJECT_ID_DEV" >> "$GITHUB_ENV"
+            echo "MIGRATE_URL=$DEV_DIRECT_URL" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel settings and variables
+        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+
+      - name: Build
+        run: vercel build --prod --token=$VERCEL_TOKEN
+
+      # Uses the DIRECT (non-pooled) connection string of the right database.
+      # On prod: take the Neon snapshot or a pg_dump BEFORE merging into main.
+      - name: Apply database migrations
+        if: hashFiles('prisma/schema.prisma') != ''
+        env:
+          DATABASE_URL: ${{ env.MIGRATE_URL }}
+        run: npx prisma migrate deploy
+
+      - name: Deploy
+        run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN

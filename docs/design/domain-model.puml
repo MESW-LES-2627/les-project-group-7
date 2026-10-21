@@ -1,0 +1,245 @@
+@startuml domain-model
+title Domain model – place reviews and trip planning
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam ArrowColor #555555
+skinparam ClassBorderColor #666666
+hide empty members
+hide circle
+
+legend right
+  Colour = aggregate
+  |<#F5F5F5> User |
+  |<#FFF3C4> Place (+ City, PlaceSuggestion, Visit) |
+  |<#D6ECFA> Review |
+  |<#DDF3DD> Saved place |
+  |<#CDEFEF> Saved list (+ ListEntry) |
+  |<#FFE3CC> Trip (Day, Itinerary, ItineraryStop) |
+  |<#EBDDF7> Published itinerary |
+  <<post-MVP>> = designed, not in the MVP
+endlegend
+
+class User <<root>> #F5F5F5 {
+  id
+  username
+  email
+  passwordHash
+  role : USER | ADMIN
+  registeredAt
+}
+
+enum PriceLevel <<value object>> #F5F5F5 {
+  FREE = 0
+  € = 1
+  €€ = 2
+  €€€ = 3
+}
+note right of PriceLevel
+  Cost points. A place or review without a
+  level is unknown and not counted.
+  budgetLevel (€ to €€€) is the target
+  average of the whole trip: the mean of
+  the points of its stops with a known price.
+end note
+
+class City #FFF3C4 {
+  id
+  name
+  country
+  latitude
+  longitude
+}
+
+class Place <<root>> #FFF3C4 {
+  id
+  osmId
+  name
+  description
+  category : PlaceCategory
+  address
+  latitude
+  longitude
+  openingHours
+  priceLevel : PriceLevel [0..1]
+  averageRating
+  reviewCount
+  source : IMPORTED | SUGGESTED
+  --
+  recalculateRating()
+  markVisited(user)
+}
+
+class PlaceSuggestion <<post-MVP>> #FFF3C4 {
+  id
+  proposedName
+  proposedCategory : PlaceCategory
+  proposedAddress
+  status : PENDING | APPROVED | REJECTED
+  suggestedAt
+  decidedAt
+}
+
+class Review <<root>> #D6ECFA {
+  id
+  rating : 1..5
+  priceLevel : PriceLevel [0..1]
+  text
+  createdAt
+  updatedAt
+}
+
+class Visit #FFF3C4 {
+  visitedAt
+}
+note right of Visit
+  One per (User, Place).
+  Created by the policy
+  "review posted -> mark place visited".
+  Survives deleting the review.
+end note
+
+class SavedPlace <<root>> #DDF3DD {
+  id
+  type : WISHLIST | BOOKMARK
+  savedAt
+}
+
+class SavedList <<root>> #CDEFEF {
+  id
+  name
+  createdAt
+  --
+  addPlace(place)
+  removePlace(place)
+}
+
+class ListEntry #CDEFEF {
+  addedAt
+}
+
+class Trip <<root>> #FFE3CC {
+  id
+  name
+  createdAt
+  --
+  changeConstraints()
+  syncDays()
+  averageCostPoints()
+  isOverBudget()
+}
+
+class TripConstraints <<value object>> #FFE3CC {
+  startDate
+  endDate
+  budgetLevel : PriceLevel
+  allowedCategories : Set<PlaceCategory>
+}
+
+class Day #FFE3CC {
+  dayNumber
+  date
+}
+
+class Itinerary #FFE3CC {
+  id
+  mode : MANUAL | GENERATED
+  createdAt
+}
+
+class ItineraryStop #FFE3CC {
+  visitTime
+  position
+  reminderSent
+  --
+  isOutsideOpeningHours()
+}
+
+class PublishedItinerary <<root>> <<post-MVP>> #EBDDF7 {
+  id
+  title
+  shareToken
+  publishedAt
+}
+
+class PublishedStop <<post-MVP>> #EBDDF7 {
+  dayNumber
+  visitTime
+  position
+}
+
+class ItineraryBookmark <<post-MVP>> #EBDDF7 {
+  bookmarkedAt
+}
+
+interface ItineraryGenerator <<Strategy>> {
+  generate(trip, candidates) : Itinerary
+}
+class RankingItineraryGenerator {
+  basic: top-rated places by type,
+  grouped by distance,
+  keeps trip average price near
+  the budget level, always adds
+  wishlist places
+}
+class SmartItineraryGenerator <<post-MVP>> {
+  also uses opening hours,
+  real travel times, finer
+  budget balancing
+}
+
+interface TravelTimeEstimator <<Strategy>> {
+  estimate(from, to, mode) : minutes
+}
+class StraightLineEstimator {
+  distance x 1.3 / walking speed
+}
+class RoutingServiceEstimator <<post-MVP>> {
+  real routes, cached per pair
+}
+
+' --- User / Place / Review ---
+User "1" -- "*" Review : writes >
+Place "1" -- "*" Review : has >
+User "1" -- "*" Visit
+Place "1" -- "*" Visit
+City "1" -- "*" Place : contains >
+PlaceSuggestion "*" -- "1" User : suggested by >
+PlaceSuggestion "*" -- "0..1" User : decided by >
+PlaceSuggestion "*" -- "1" City : proposed in >
+PlaceSuggestion "0..1" -- "0..1" Place : approved as >
+
+' --- Saved place and lists ---
+User "1" -- "*" SavedPlace : saves >
+SavedPlace "*" -- "1" Place
+User "1" -- "*" SavedList : owns >
+SavedList *-- "*" ListEntry
+ListEntry "*" -- "1" Place
+
+' --- Trip ---
+User "1" -- "*" Trip : plans >
+Trip "*" -- "1" City : goes to >
+Trip *-- "1" TripConstraints
+Trip *-- "*" Day
+Trip *-- "0..1" Itinerary
+Itinerary *-- "*" ItineraryStop
+ItineraryStop "*" -- "1" Day : on >
+ItineraryStop "*" -- "1" Place : visits >
+
+' --- Published itinerary ---
+User "1" -- "*" PublishedItinerary : publishes >
+PublishedItinerary *-- "*" PublishedStop
+PublishedStop "*" -- "1" Place
+User "1" -- "*" ItineraryBookmark
+ItineraryBookmark "*" -- "1" PublishedItinerary
+
+' --- Strategies ---
+ItineraryGenerator <|.. RankingItineraryGenerator
+ItineraryGenerator <|.. SmartItineraryGenerator
+Trip ..> ItineraryGenerator : generate
+RankingItineraryGenerator ..> SavedPlace : wishlist places
+TravelTimeEstimator <|.. StraightLineEstimator
+TravelTimeEstimator <|.. RoutingServiceEstimator
+Itinerary ..> TravelTimeEstimator : leg times
+@enduml
