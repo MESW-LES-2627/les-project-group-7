@@ -25,6 +25,9 @@ build/
 coverage/
 .vitest/
 
+# Vercel CLI (project link + pulled env vars, written by `vercel pull` in CI)
+.vercel
+
 # OS & Tooling
 .DS_Store
 Thumbs.db
