@@ -71,7 +71,9 @@ jobs:
         if: hashFiles('prisma/schema.prisma') != ''
         env:
           DATABASE_URL: ${{ env.MIGRATE_URL }}
-        run: npx prisma migrate deploy
+        run: |
+          npx prisma migrate resolve --rolled-back "20261021173115_init" || true
+          npx prisma migrate deploy
 
       - name: Deploy
         run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
