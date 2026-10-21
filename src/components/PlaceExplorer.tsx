@@ -1,8 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import { Star, MapPin, CheckCircle2, User, X, MessageSquare, Send, Search, Database } from "lucide-react";
+import { useState, useCallback, useRef, useMemo } from "react";
+import {
+  Star,
+  MapPin,
+  CheckCircle2,
+  User,
+  MessageSquare,
+  Send,
+  Search,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import MapWrapper from "./MapWrapper";
+import type { BoundingBox, MapPlace } from "./MapComponent";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 
 /** Spot item interface matching database places */
 export interface PlaceItem {
@@ -32,6 +65,8 @@ const AVAILABLE_USERS: DummyUser[] = [
   { id: "demo-user-2", username: "ana_exploradora", email: "ana@tripbook.pt" },
 ];
 
+// ── Categorias & Configurações de UI ──────────────────────────────────────────
+// Dica para devs: Para adicionar novas categorias de filtro, basta acrescentar entradas a este array.
 const CATEGORIES = [
   { label: "All", value: "ALL" },
   { label: "Monuments", value: "MONUMENT" },
@@ -41,14 +76,20 @@ const CATEGORIES = [
   { label: "Cafes", value: "CAFE" },
 ];
 
+/** Format a PriceLevel for display */
+function formatPrice(priceLevel: string | null | undefined): string {
+  return priceLevel === "FREE" ? "Free" : priceLevel || "€";
+}
+
 /**
  * Interactive place catalog and rating explorer.
- * 
+ *
  * Features:
- * - Real-time filtering and text search over cached OpenStreetMap POIs.
+ * - Dynamic POI loading from OpenStreetMap via Overpass API on map pan/zoom.
+ * - Real-time filtering and text search over combined DB + OSM places.
  * - Leaflet map synchronization with clickable markers.
- * - Switchable dummy accounts for review authorship.
- * - Star rating modal with visit marking and live score updates.
+ * - Switchable demo accounts for review authorship.
+ * - Star rating Dialog with visit marking and live score updates.
  */
 export default function PlaceExplorer({
   initialPlaces,
@@ -57,101 +98,153 @@ export default function PlaceExplorer({
   initialPlaces: PlaceItem[];
   initialUser?: DummyUser;
 }) {
-  // Main state holding the list of places (reactively updated on review submission)
+  // ── 1. Catálogo de Locais & Integração OSM ──
   const [places, setPlaces] = useState<PlaceItem[]>(initialPlaces);
+  const [osmPlaces, setOsmPlaces] = useState<PlaceItem[]>([]);
+  const [isFetchingOsm, setIsFetchingOsm] = useState<boolean>(false);
+  const osmDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Active dummy user used to sign submitted reviews
+  // ── 2. Navegação do Mapa & Sessão de Utilizador ──
+  const [selectedMapCenter, setSelectedMapCenter] = useState<[number, number] | null>(null);
   const [currentUser, setCurrentUser] = useState<DummyUser>(initialUser);
 
-  // Search query filter
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  // ── 3. Filtros de Pesquisa & Categorias ──
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
 
-  // Selected category filter
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-
-  // Spot currently open in review modal (null = closed)
+  // ── 4. Estado do Modal de Avaliação & Formulário ──
   const [activeReviewPlace, setActiveReviewPlace] = useState<PlaceItem | null>(null);
-
-  // Review form fields
-  const [rating, setRating] = useState<number>(5);
-  const [hoverRating, setHoverRating] = useState<number>(0);
-  const [comment, setComment] = useState<string>("");
-
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Review history for the spot currently open in modal
   const [reviewsList, setReviewsList] = useState<
-    Array<{
-      id: string;
-      rating: number;
-      text: string;
-      createdAt: string;
-      user: { username: string };
-    }>
+    Array<{ id: string; rating: number; text: string; createdAt: string; user: { username: string } }>
   >([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
-  const [isLoadingReviews, setIsLoadingReviews] = useState<boolean>(false);
+  // Single-pass merge of DB places and OSM places, deduplicating by id
+  const allPlaces = useMemo(() => {
+    const seenIds = new Set<string>();
+    const merged: PlaceItem[] = [];
 
-  // Filter places according to category and search query
-  const filteredPlaces = places.filter((p) => {
-    const matchesCategory =
-      selectedCategory === "ALL" || p.category === selectedCategory;
+    for (let i = 0; i < places.length; i++) {
+      const place = places[i];
+      seenIds.add(place.id);
+      merged.push(place);
+    }
 
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    for (let i = 0; i < osmPlaces.length; i++) {
+      const osmPlace = osmPlaces[i];
+      if (!seenIds.has(osmPlace.id)) {
+        seenIds.add(osmPlace.id);
+        merged.push(osmPlace);
+      }
+    }
 
-    return matchesCategory && matchesSearch;
-  });
+    return merged;
+  }, [places, osmPlaces]);
 
-  // Format places into MapPlace markers expected by the map component
-  const mapPlaces = filteredPlaces.map((p) => ({
-    id: p.id,
-    name: p.name,
-    category: p.category,
-    priceLevel: p.priceLevel || "€",
-    rating: p.averageRating ?? 0,
-    latitude: p.latitude,
-    longitude: p.longitude,
-  }));
+  // Memoized place filtering by category and search query
+  const filteredPlaces = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  /** Opens the review modal for a spot and loads its past review history */
-  const openReviewModal = async (place: PlaceItem) => {
-    setActiveReviewPlace(place);
-    setRating(5);
-    setHoverRating(0);
-    setComment("");
-    setSubmitSuccess(null);
-    setErrorMsg(null);
+    return allPlaces.filter((place) => {
+      const matchesCategory =
+        selectedCategory === "ALL" || place.category === selectedCategory;
 
+      if (!normalizedQuery) {
+        return matchesCategory;
+      }
+
+      return (
+        matchesCategory &&
+        (place.name.toLowerCase().includes(normalizedQuery) ||
+          place.address.toLowerCase().includes(normalizedQuery))
+      );
+    });
+  }, [allPlaces, selectedCategory, searchQuery]);
+
+  // Memoized MapPlace projection for Leaflet pins
+  const mapPlaces: MapPlace[] = useMemo(() => {
+    return filteredPlaces.map((place) => ({
+      id: place.id,
+      name: place.name,
+      category: place.category,
+      priceLevel: place.priceLevel || "€",
+      rating: place.averageRating,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    }));
+  }, [filteredPlaces]);
+
+  /** Fetches POIs from Overpass API for the visible bounding box */
+  const handleMapMove = useCallback((bounds: BoundingBox) => {
+    if (osmDebounceRef.current) {
+      clearTimeout(osmDebounceRef.current);
+    }
+
+    osmDebounceRef.current = setTimeout(async () => {
+      setIsFetchingOsm(true);
+
+      try {
+        const params = new URLSearchParams({
+          south: bounds.south.toString(),
+          west: bounds.west.toString(),
+          north: bounds.north.toString(),
+          east: bounds.east.toString(),
+        });
+
+        const res = await fetch(`/api/osm?${params}`);
+        if (!res.ok) return;
+
+        const data: unknown = await res.json();
+        if (Array.isArray(data)) {
+          setOsmPlaces(data);
+        }
+      } catch {
+        // Silently ignore — OSM data is supplementary
+      } finally {
+        setIsFetchingOsm(false);
+      }
+    }, 350);
+  }, []);
+
+  const fetchReviewsForPlace = async (placeId: string) => {
     setIsLoadingReviews(true);
 
     try {
-      const res = await fetch(`/api/reviews?placeId=${encodeURIComponent(place.id)}`);
+      const res = await fetch(`/api/reviews?placeId=${encodeURIComponent(placeId)}`);
 
       if (res.ok) {
-        const data = await res.json();
-        setReviewsList(data);
+        const data: unknown = await res.json();
+        setReviewsList(Array.isArray(data) ? data : []);
       }
     } catch {
-      // Non-fatal preview fetch error
+      setReviewsList([]);
     } finally {
       setIsLoadingReviews(false);
     }
   };
 
-  /** Closes the review modal and resets transient notifications */
+  const openReviewModal = (place: PlaceItem) => {
+    setActiveReviewPlace(place);
+    setRating(5);
+    setComment("");
+    setSubmitSuccess(null);
+    setErrorMsg(null);
+    fetchReviewsForPlace(place.id);
+  };
+
   const closeReviewModal = () => {
     setActiveReviewPlace(null);
     setSubmitSuccess(null);
     setErrorMsg(null);
   };
 
-  /** Submits a new review to POST /api/reviews */
+  /** Submits a new user review to POST /api/reviews */
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -172,6 +265,14 @@ export default function PlaceExplorer({
           rating,
           text: comment.trim(),
           userId: currentUser.id,
+          place: {
+            name: activeReviewPlace.name,
+            address: activeReviewPlace.address,
+            category: activeReviewPlace.category,
+            latitude: activeReviewPlace.latitude,
+            longitude: activeReviewPlace.longitude,
+            priceLevel: activeReviewPlace.priceLevel,
+          },
         }),
       });
 
@@ -184,32 +285,62 @@ export default function PlaceExplorer({
       const updatedPlace = data.place;
       const createdReview = data.review;
 
-      // Update places state locally with newly recalculated rating
-      setPlaces((prev) =>
-        prev.map((p) =>
-          p.id === activeReviewPlace.id
-            ? {
-                ...p,
-                averageRating: updatedPlace.averageRating,
-                reviewCount: updatedPlace.reviewCount,
-                isVisited: true,
-              }
-            : p
-        )
+      // Atualiza o catálogo local de locais com a nova média recalculada
+      setPlaces((previousPlaces) => {
+        const placeExistsLocally = previousPlaces.some(
+          (place) => place.id === activeReviewPlace.id
+        );
+
+        if (placeExistsLocally) {
+          return previousPlaces.map((place) => {
+            if (place.id !== activeReviewPlace.id) {
+              return place;
+            }
+
+            return {
+              ...place,
+              averageRating: updatedPlace.averageRating,
+              reviewCount: updatedPlace.reviewCount,
+              isVisited: true,
+            };
+          });
+        }
+
+        // Se era um spot descoberto no mapa e ainda não estava no catálogo da BD:
+        return [
+          {
+            ...activeReviewPlace,
+            averageRating: updatedPlace.averageRating,
+            reviewCount: updatedPlace.reviewCount,
+            isVisited: true,
+          },
+          ...previousPlaces,
+        ];
+      });
+
+      // Atualiza também os marcadores OSM ativos no mapa
+      setOsmPlaces((previousOsmPlaces) =>
+        previousOsmPlaces.map((osmPlace) => {
+          if (osmPlace.id !== activeReviewPlace.id) {
+            return osmPlace;
+          }
+
+          return {
+            ...osmPlace,
+            averageRating: updatedPlace.averageRating,
+            reviewCount: updatedPlace.reviewCount,
+          };
+        })
       );
 
-      // Prepend the new review into the modal's preview list
       if (createdReview) {
         setReviewsList((prev) => [
-          {
-            ...createdReview,
-            user: { username: currentUser.username },
-          },
+          { ...createdReview, user: { username: currentUser.username } },
           ...prev,
         ]);
       }
 
-      setSubmitSuccess("Review successfully submitted! Spot marked as visited.");
+      setSubmitSuccess("Review submitted! Place marked as visited.");
       setComment("");
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Unexpected error");
@@ -220,346 +351,312 @@ export default function PlaceExplorer({
 
   return (
     <div className="space-y-8">
-      {/* 1. Active Dummy User Session Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-indigo-600/80 flex items-center justify-center font-bold text-white ring-2 ring-indigo-400/40">
-            {currentUser.username[0].toUpperCase()}
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-indigo-300 font-semibold">
-                Active Dummy User
-              </span>
-
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Demo Session
-              </span>
+      {/* ── 1. User Session Bar ── */}
+      <Card className="bg-slate-900 text-white border-slate-800">
+        <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-sm">
+              {currentUser.username[0].toUpperCase()}
             </div>
-
-            <p className="font-semibold text-slate-100 flex items-center gap-2">
-              @{currentUser.username}
-              <span className="text-xs text-slate-400 font-mono font-normal">({currentUser.email})</span>
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">Signed in as</span>
+                <span className="font-semibold text-slate-100 text-sm">@{currentUser.username}</span>
+              </div>
+              <p className="text-xs text-slate-400 font-mono">{currentUser.email}</p>
+            </div>
           </div>
-        </div>
 
-        {/* Buttons to switch between available demo accounts */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span className="text-xs text-slate-400">Switch:</span>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-xs text-slate-400 mr-1">Switch user:</span>
+            {AVAILABLE_USERS.map((user) => (
+              <Button
+                key={user.id}
+                size="sm"
+                variant={currentUser.id === user.id ? "default" : "secondary"}
+                onClick={() => setCurrentUser(user)}
+                className="text-xs h-7"
+              >
+                @{user.username}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-          {AVAILABLE_USERS.map((u) => (
-            <button
-              key={u.id}
-              onClick={() => setCurrentUser(u)}
-              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
-                currentUser.id === u.id
-                  ? "bg-indigo-600 text-white shadow-sm ring-1 ring-white/20"
-                  : "bg-slate-800 hover:bg-slate-700 text-slate-300"
-              }`}
-            >
-              @{u.username}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 2. Interactive Map Explorer (Leaflet + OpenStreetMap) */}
-      <section className="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-slate-200">
-        <div className="flex flex-col gap-4 mb-4">
+      {/* ── 2. Map Explorer ── */}
+      <Card>
+        <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <CardTitle className="text-lg flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-rose-500" />
-                Porto Points of Interest (OpenStreetMap)
-              </h2>
-
-              <p className="text-xs sm:text-sm text-slate-500">
-                {places.length} POIs imported and cached in PostgreSQL. Click pins or list cards to rate.
+                Explore on Map
+              </CardTitle>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Click any pin to review. Pan and zoom to discover new places from OpenStreetMap.
               </p>
             </div>
-
-            <div className="flex items-center gap-2 text-xs font-mono bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200">
-              <Database className="w-3.5 h-3.5 text-blue-600" />
-              <span>OSM Local Cache</span>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              {isFetchingOsm && (
+                <Badge
+                  variant="secondary"
+                  className="gap-1.5 text-xs text-indigo-700 bg-indigo-50 border-indigo-200 animate-pulse font-normal"
+                >
+                  <Loader2 className="w-3 h-3 animate-spin text-indigo-600" />
+                  A carregar OSM...
+                </Badge>
+              )}
+              <Badge variant="outline">
+                {filteredPlaces.length} {filteredPlaces.length === 1 ? "spot" : "spots"} visible
+              </Badge>
             </div>
           </div>
 
-          {/* Search bar and category filters */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-4">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
+              <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search spots by name or address (e.g. Clérigos, Ribeira, Serralves)..."
-                className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-hidden transition-all text-slate-800"
+                placeholder="Search spots by name or address..."
+                className="pl-9 text-xs"
               />
             </div>
-
-            {/* Category filter pills */}
             <div className="flex flex-wrap gap-1.5">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => setSelectedCategory(cat.value)}
-                  className={`text-xs px-2.5 py-1 rounded-full transition-colors font-medium cursor-pointer ${
-                    selectedCategory === cat.value
-                      ? "bg-slate-900 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
+              {CATEGORIES.map((category) => (
+                <Button
+                  key={category.value}
+                  size="sm"
+                  variant={selectedCategory === category.value ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category.value)}
+                  className="text-xs h-7 rounded-full px-3"
                 >
-                  {cat.label}
-                </button>
+                  {category.label}
+                </Button>
               ))}
             </div>
           </div>
-        </div>
+        </CardHeader>
 
-        {/* Dynamic Leaflet Map Component (SSR safe) */}
-        <MapWrapper
-          places={mapPlaces}
-          center={[41.147, -8.615]}
-          zoom={14}
-          onSelectPlace={(id) => {
-            const place = places.find((p) => p.id === id);
-            if (place) openReviewModal(place);
-          }}
-        />
-      </section>
+        <CardContent>
+          <MapWrapper
+            places={mapPlaces}
+            center={[41.147, -8.615]}
+            zoom={14}
+            selectedCenter={selectedMapCenter}
+            onSelectPlace={(id) => {
+              const place = allPlaces.find((item) => item.id === id);
+              if (place) openReviewModal(place);
+            }}
+            onMapMove={handleMapMove}
+          />
+        </CardContent>
+      </Card>
 
-      {/* 3. Spots Grid & Rate Triggers */}
-      <section className="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-slate-200">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Star className="w-5 h-5 text-amber-500" />
-            Points of Interest Catalog
-          </h2>
+      {/* ── 3. Spots Grid ── */}
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-500" />
+              Places in Porto
+            </CardTitle>
+            <span className="text-xs text-slate-500">
+              {filteredPlaces.length} of {allPlaces.length} spots
+            </span>
+          </div>
+        </CardHeader>
 
-          <span className="text-xs text-slate-500">
-            Showing {filteredPlaces.length} of {places.length} spots
-          </span>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPlaces.map((place) => (
-            <div
-              key={place.id}
-              className="p-4 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-white hover:shadow-sm transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-slate-900 text-sm">{place.name}</h3>
-
-                  <span className="text-xs font-mono bg-slate-200/80 text-slate-800 px-1.5 py-0.5 rounded shrink-0">
-                    {place.priceLevel === "FREE" ? "Free" : place.priceLevel || "€"}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  {place.description || place.address}
-                </p>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <span className="font-bold text-amber-600">
-                      ★ {place.averageRating ? place.averageRating.toFixed(1) : "—"}
-                    </span>
-
-                    <span className="text-slate-400">
-                      ({place.reviewCount} {place.reviewCount === 1 ? "review" : "reviews"})
-                    </span>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredPlaces.map((place) => (
+              <Card key={place.id} className="bg-slate-50/70 hover:bg-white hover:shadow-sm transition-all border-slate-100">
+                <CardHeader className="p-4 pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-sm">{place.name}</CardTitle>
+                    <Badge variant="secondary" className="font-mono text-[11px] shrink-0">
+                      {formatPrice(place.priceLevel)}
+                    </Badge>
                   </div>
+                  <CardDescription className="text-xs text-slate-500 mt-1 line-clamp-2">
+                    {place.description || place.address}
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter className="p-4 pt-0 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-bold text-amber-600">
+                        ★ {place.averageRating ? place.averageRating.toFixed(1) : "—"}
+                      </span>
+                      <span className="text-slate-400">
+                        ({place.reviewCount} {place.reviewCount === 1 ? "review" : "reviews"})
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-400 block mt-0.5">{place.category}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedMapCenter([place.latitude, place.longitude]);
+                        window.scrollTo({ top: 180, behavior: "smooth" });
+                      }}
+                      className="gap-1 text-xs h-8 text-slate-700 hover:text-slate-900"
+                      title="Centrar no mapa"
+                    >
+                      <MapPin className="w-3 h-3 text-rose-500" />
+                      Mapa
+                    </Button>
 
-                  <span className="text-[11px] text-slate-400 block mt-0.5">{place.category}</span>
+                    <Button
+                      size="sm"
+                      onClick={() => openReviewModal(place)}
+                      className="gap-1.5 text-xs h-8"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-white" />
+                      Rate
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── 4. Review Dialog ── */}
+      <Dialog
+        open={Boolean(activeReviewPlace)}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeReviewModal();
+          }
+        }}
+      >
+        <DialogContent onClose={closeReviewModal}>
+          {activeReviewPlace && (
+            <>
+              <DialogHeader>
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  Rate Place
+                </span>
+                <DialogTitle>{activeReviewPlace.name}</DialogTitle>
+                <DialogDescription>{activeReviewPlace.address}</DialogDescription>
+                <div className="mt-2.5 flex items-center gap-2 text-xs">
+                  <Badge variant="outline">
+                    Admission: {formatPrice(activeReviewPlace.priceLevel)}
+                  </Badge>
+                  <Badge variant="secondary">{activeReviewPlace.category}</Badge>
                 </div>
+              </DialogHeader>
 
-                {/* Open review modal trigger */}
-                <button
-                  onClick={() => openReviewModal(place)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer"
-                >
-                  <Star className="w-3.5 h-3.5 fill-white" />
-                  Rate
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+              {/* Active user banner */}
+              <Card className="mt-4 border-slate-200/80 bg-slate-50">
+                <CardContent className="p-2.5 flex items-center gap-2 text-xs text-slate-700">
+                  <User className="w-4 h-4 text-indigo-600" />
+                  <span>Posting as: <strong className="text-slate-900">@{currentUser.username}</strong></span>
+                </CardContent>
+              </Card>
 
-      {/* 4. Review Modal with Star Rating and OSM Price Info */}
-      {activeReviewPlace && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-            {/* Modal close button */}
-            <button
-              onClick={closeReviewModal}
-              className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              {/* Alerts */}
+              {submitSuccess && (
+                <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{submitSuccess}</span>
+                </div>
+              )}
+              {errorMsg && (
+                <div className="mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
-            {/* Spot header */}
-            <div className="pr-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                Rate Spot
-              </span>
-
-              <h3 className="text-xl font-bold text-slate-900 mt-0.5">
-                {activeReviewPlace.name}
-              </h3>
-
-              <p className="text-xs text-slate-500 mt-1">{activeReviewPlace.address}</p>
-
-              {/* Informative OSM properties */}
-              <div className="mt-2 flex items-center gap-2 text-xs text-slate-600">
-                <span className="bg-slate-100 font-mono px-2 py-0.5 rounded text-slate-700">
-                  Admission: {activeReviewPlace.priceLevel === "FREE" ? "Free" : activeReviewPlace.priceLevel || "€"} (OSM)
-                </span>
-                <span>•</span>
-                <span className="text-slate-500">{activeReviewPlace.category}</span>
-              </div>
-            </div>
-
-            {/* Active user badge */}
-            <div className="mt-4 p-2.5 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-between text-xs text-slate-700">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-indigo-600" />
-                <span>
-                  Rating as: <strong className="text-slate-900">@{currentUser.username}</strong>
-                </span>
-              </div>
-
-              <span className="text-slate-400 text-[11px]">{currentUser.id}</span>
-            </div>
-
-            {/* Success toast */}
-            {submitSuccess && (
-              <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{submitSuccess}</span>
-              </div>
-            )}
-
-            {/* Error banner */}
-            {errorMsg && (
-              <div className="mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs">
-                {errorMsg}
-              </div>
-            )}
-
-            {/* Review Form */}
-            <form onSubmit={handleSubmitReview} className="mt-5 space-y-4">
-              {/* Star Rating Input (1 to 5) */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Overall Rating (1 to 5 stars)
-                </label>
-
-                <div className="flex items-center gap-1.5">
-                  {[1, 2, 3, 4, 5].map((starValue) => {
-                    const isFilled = starValue <= (hoverRating || rating);
-
-                    return (
-                      <button
+              {/* Review Form */}
+              <form onSubmit={handleSubmitReview} className="mt-5 space-y-4">
+                <div>
+                  <Label htmlFor="star-rating">Rating (1 to 5 stars)</Label>
+                  <div className="flex items-center gap-1.5" id="star-rating">
+                    {[1, 2, 3, 4, 5].map((starValue) => (
+                      <Button
                         type="button"
                         key={starValue}
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setRating(starValue)}
                         onMouseEnter={() => setHoverRating(starValue)}
                         onMouseLeave={() => setHoverRating(0)}
-                        className="p-1 text-slate-300 hover:text-amber-400 focus:outline-hidden transition-colors cursor-pointer"
+                        className="h-9 w-9 text-slate-300 hover:text-amber-400"
                         title={`${starValue} stars`}
                       >
                         <Star
                           className={`w-7 h-7 ${
-                            isFilled ? "text-amber-400 fill-amber-400" : "text-slate-300"
+                            starValue <= (hoverRating || rating)
+                              ? "text-amber-400 fill-amber-400"
+                              : "text-slate-300"
                           } transition-transform active:scale-90`}
                         />
-                      </button>
-                    );
-                  })}
-
-                  <span className="ml-2 text-sm font-bold text-slate-700">{rating} / 5</span>
+                      </Button>
+                    ))}
+                    <span className="ml-2 text-sm font-bold text-slate-700">{rating} / 5</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Comment Text Area */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Review Comment / Tips (optional)
-                </label>
-
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  rows={3}
-                  placeholder="Share your experience, recommendations, or best visiting hours..."
-                  className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-hidden transition-all text-slate-800"
-                />
-              </div>
-
-              {/* Form Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={closeReviewModal}
-                  className="text-xs px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-medium transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="text-xs px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    "Saving..."
-                  ) : (
-                    <>
-                      <Send className="w-3.5 h-3.5" />
-                      Submit Review
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-
-            {/* Historical Reviews List */}
-            <div className="mt-6 pt-5 border-t border-slate-100">
-              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-3">
-                <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
-                Review History ({reviewsList.length})
-              </h4>
-
-              {isLoadingReviews ? (
-                <p className="text-xs text-slate-400">Loading reviews...</p>
-              ) : reviewsList.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No reviews yet for this spot. Be the first!</p>
-              ) : (
-                <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
-                  {reviewsList.map((rev) => (
-                    <div key={rev.id} className="p-2.5 rounded-lg bg-slate-50 text-xs border border-slate-100">
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-                        <span className="font-semibold text-slate-800">@{rev.user?.username || "anonymous"}</span>
-
-                        <span className="font-bold text-amber-600">★ {rev.rating}</span>
-                      </div>
-
-                      {rev.text && <p className="text-slate-600 mt-1">{rev.text}</p>}
-                    </div>
-                  ))}
+                <div>
+                  <Label htmlFor="review-comment">Comment (optional)</Label>
+                  <Textarea
+                    id="review-comment"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={3}
+                    placeholder="Share tips, favorite highlights, or best visiting hours..."
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+
+                <DialogFooter>
+                  <Button type="button" variant="ghost" onClick={closeReviewModal} className="text-xs">Cancel</Button>
+                  <Button type="submit" disabled={isSubmitting} className="gap-1.5 text-xs">
+                    {isSubmitting ? "Saving..." : <><Send className="w-3.5 h-3.5" />Submit Review</>}
+                  </Button>
+                </DialogFooter>
+              </form>
+
+              {/* Historical Reviews */}
+              <Separator className="mt-6" />
+              <div className="mt-5">
+                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-3">
+                  <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
+                  Recent Reviews ({reviewsList.length})
+                </h4>
+                {isLoadingReviews ? (
+                  <p className="text-xs text-slate-400">Loading reviews...</p>
+                ) : reviewsList.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No reviews yet. Be the first!</p>
+                ) : (
+                  <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                    {reviewsList.map((review) => (
+                      <Card key={review.id} className="bg-slate-50 border-slate-100">
+                        <CardContent className="p-2.5 text-xs">
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                            <span className="font-semibold text-slate-800">
+                              @{review.user?.username || "anonymous"}
+                            </span>
+                            <span className="font-bold text-amber-600">★ {review.rating}</span>
+                          </div>
+                          {review.text && <p className="text-slate-600 mt-1">{review.text}</p>}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

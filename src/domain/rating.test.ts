@@ -3,6 +3,8 @@ import {
   calculateAverageRating,
   calculatePriceLevelMode,
   calculateAverageCostPoints,
+  isPriceLevel,
+  PRICE_LEVELS,
 } from "./rating";
 
 describe("Rating calculations", () => {
@@ -63,5 +65,25 @@ describe("Cost points and Soft Daily Budget calculation", () => {
   it("returns null if no stops have known pricing", () => {
     expect(calculateAverageCostPoints([{ priceLevel: null }])).toBeNull();
     expect(calculateAverageCostPoints([])).toBeNull();
+  });
+});
+
+describe("PriceLevel domain constants and type guard", () => {
+  it("exports canonical price levels tuple", () => {
+    expect(PRICE_LEVELS).toEqual(["FREE", "€", "€€", "€€€"]);
+  });
+
+  it("correctly identifies valid PriceLevel strings", () => {
+    expect(isPriceLevel("FREE")).toBe(true);
+    expect(isPriceLevel("€")).toBe(true);
+    expect(isPriceLevel("€€")).toBe(true);
+    expect(isPriceLevel("€€€")).toBe(true);
+  });
+
+  it("rejects invalid price levels", () => {
+    expect(isPriceLevel("$$$")).toBe(false);
+    expect(isPriceLevel(null)).toBe(false);
+    expect(isPriceLevel(undefined)).toBe(false);
+    expect(isPriceLevel(123)).toBe(false);
   });
 });

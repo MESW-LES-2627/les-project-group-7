@@ -1,4 +1,4 @@
-import { Database, Compass } from "lucide-react";
+import { Compass } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import PlaceExplorer from "@/components/PlaceExplorer";
 
@@ -29,44 +29,37 @@ export default async function Home() {
   });
 
   // 2. Map to the clean interface expected by the UI component
-  const places = dbPlaces.map((p) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    category: p.category,
-    address: p.address,
-    latitude: p.latitude,
-    longitude: p.longitude,
-    priceLevel: p.priceLevel,
-    averageRating: p.averageRating,
-    reviewCount: p.reviewCount,
-    city: p.city,
+  const places = dbPlaces.map((place) => ({
+    id: place.id,
+    name: place.name,
+    description: place.description,
+    category: place.category,
+    address: place.address,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    priceLevel: place.priceLevel,
+    averageRating: place.averageRating,
+    reviewCount: place.reviewCount,
+    city: place.city,
   }));
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      {/* Application header with stack and infrastructure status */}
-      <header className="mb-8 text-center">
-        <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm tracking-wide uppercase mb-2">
-          <Compass className="w-5 h-5" />
-          Tripbook · Iteration 0
+      <header className="mb-10 text-center">
+        <div className="inline-flex items-center gap-2 text-indigo-600 font-semibold text-xs tracking-wider uppercase mb-2">
+          <Compass className="w-4 h-4" />
+          Tripbook
         </div>
 
         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Explore & Rate Spots
+          Explore & Rate Places
         </h1>
 
-        <p className="mt-2 text-base text-slate-600 max-w-2xl mx-auto">
-          Place reviews with dummy users, dynamic average rating calculation, and interactive OSM map connected to PostgreSQL.
+        <p className="mt-3 text-base text-slate-600 max-w-xl mx-auto">
+          Discover top attractions across Porto, explore community ratings, and share your reviews.
         </p>
-
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          PostgreSQL Docker (5432) + Prisma ORM Connected
-        </div>
       </header>
 
-      {/* Interactive Explorer (Map + Spots Grid + Review Modal) */}
       <main>
         <PlaceExplorer initialPlaces={places} />
       </main>

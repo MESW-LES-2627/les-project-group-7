@@ -11,9 +11,11 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### Place
 - **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) imported from OpenStreetMap or suggested by users (post-MVP).
 - **Key Attributes:** `id`, `osmId`, `name`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`), `costPoints` (0..3), `averageRating`, `reviewCount`, `source`.
-- **Invariants:** 
+- **Invariants & Policies:** 
   - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated active `Review` records.
   - `priceLevel` is an intrinsic property of a place imported from OpenStreetMap metadata: places with `fee=no` (parks, viewpoints, public landmarks) map to `FREE` (0 cost points), while commercial or ticketed attractions map to `€`, `€€`, or `€€€`.
+  - **On-the-Fly Place Ingestion:** When a user reviews a live OpenStreetMap point of interest that is not yet saved in PostgreSQL, the place is automatically ingested and persisted into the `Place` table before linking the `Review`.
+  - **Quantized Bounding Box Cache:** Live Overpass map queries round bounding-box coordinates to ~100m grid precision (3 decimal places) with an in-memory LRU cache to prevent redundant external API hits.
 
 ### City
 - **Definition:** The geographical boundary containing places and serving as the destination for a trip.

@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import { PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateAverageRating } from "@/domain/rating";
+
+/**
+ * User-Defined Type Guard verifying if an unknown value is a valid Prisma PlaceCategory.
+ */
+function isPlaceCategory(val: unknown): val is PlaceCategory {
+  return typeof val === "string" && val in PlaceCategory;
+}
 
 // Known dummy users for automatic fallback provisioning if DB is empty
 const DUMMY_USERS: Record<string, { username: string; email: string }> = {
@@ -50,14 +58,21 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/reviews
+ *
+ * Reviews & Rating Domain Policy API Handler.
  * Creates a review, updates place average rating, and marks place visited.
+ * Automatically enforces Domain Policy:
+ * 1. Upserts place dynamically from OpenStreetMap if discovered on-the-fly.
+ * 2. Persists the user review with star rating and optional comments.
+ * 3. Triggers Visit Policy: Automatically marks the place as visited by the author.
+ * 4. Recalculates arithmetic average rating and review counts.
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { placeId, rating, text, userId } = body;
 
-    // Validate review input
+    // Passo 1: Validação dos dados de entrada da avaliação
     if (!placeId || typeof rating !== "number" || rating < 1 || rating > 5) {
       return NextResponse.json(
         { error: "Invalid review input. Rating must be an integer between 1 and 5." },
@@ -65,10 +80,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Default to primary demo user if none supplied
+    // Passo 2: Seleção e aprovisionamento de utilizador demo para testes
     const targetUserId = userId || "demo-user-1";
 
-    // Ensure dummy user exists in DB to prevent foreign key errors during isolated tests
     if (DUMMY_USERS[targetUserId]) {
       await prisma.user.upsert({
         where: { id: targetUserId },
@@ -83,7 +97,49 @@ export async function POST(request: Request) {
       });
     }
 
-    // 1. Create the Review record
+    // Passo 3: Ingestão On-the-Fly de local do OpenStreetMap (se ainda não existir na BD)
+    const existingPlace = await prisma.place.findUnique({
+      where: { id: placeId },
+    });
+
+    if (!existingPlace && body.place) {
+      let city = await prisma.city.findFirst({
+        where: { name: { contains: "Porto", mode: "insensitive" } },
+      });
+
+      if (!city) {
+        city = await prisma.city.create({
+          data: {
+            name: "Porto",
+            country: "Portugal",
+            latitude: 41.1496,
+            longitude: -8.6109,
+          },
+        });
+      }
+
+      const rawCategory = body.place.category;
+      const category: PlaceCategory = isPlaceCategory(rawCategory)
+        ? rawCategory
+        : PlaceCategory.OTHER;
+
+      await prisma.place.create({
+        data: {
+          id: placeId,
+          osmId: placeId.startsWith("osm-") ? placeId.replace("osm-", "") : undefined,
+          name: typeof body.place.name === "string" ? body.place.name : "Discovered Place",
+          address: typeof body.place.address === "string" ? body.place.address : "Porto",
+          category,
+          latitude: typeof body.place.latitude === "number" ? body.place.latitude : 41.1496,
+          longitude: typeof body.place.longitude === "number" ? body.place.longitude : -8.6109,
+          priceLevel: typeof body.place.priceLevel === "string" ? body.place.priceLevel : "€",
+          cityId: city.id,
+          source: "OSM",
+        },
+      });
+    }
+
+    // Passo 4: Criação do registo da Review
     const newReview = await prisma.review.create({
       data: {
         userId: targetUserId,
@@ -101,7 +157,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 2. Trigger Domain Policy: Mark place visited for this user
+    // Passo 5: Política de Domínio — Marcar local como visitado para o autor
     await prisma.visit.upsert({
       where: {
         userId_placeId: {
@@ -118,7 +174,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Recalculate average rating for the place
+    // Passo 6: Política de Domínio — Recálculo da média aritmética das avaliações
     const allReviews = await prisma.review.findMany({
       where: { placeId },
       select: { rating: true },
@@ -127,7 +183,7 @@ export async function POST(request: Request) {
     const ratingsList = allReviews.map((r) => r.rating);
     const newAvg = calculateAverageRating(ratingsList);
 
-    // 4. Update the Place record with the new average rating and review count
+    // Passo 7: Atualização do Place com a nova média e contagem
     const updatedPlace = await prisma.place.update({
       where: { id: placeId },
       data: {

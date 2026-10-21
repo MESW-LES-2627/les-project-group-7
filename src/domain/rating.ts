@@ -33,10 +33,10 @@ export function calculateAverageRating(
   let count = 0;
 
   for (let i = 0; i < ratings.length; i++) {
-    const r = ratings[i];
+    const ratingValue = ratings[i];
 
-    if (r >= 1 && r <= 5) {
-      sum += r;
+    if (ratingValue >= 1 && ratingValue <= 5) {
+      sum += ratingValue;
       count++;
     }
   }

@@ -23,7 +23,7 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 | Layer | Technology | Purpose |
 |---|---|---|
 | **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components |
-| **Styling** | Tailwind CSS + Lucide Icons | Responsive modern UI |
+| **Styling & UI** | Tailwind CSS + Shadcn UI + Lucide Icons | Accessible, responsive component design system |
 | **ORM & Database** | Prisma ORM + PostgreSQL 16 (Docker) | Relational persistence, migrations, and type-safe queries |
 | **Testing** | Vitest | Fast unit testing for domain algorithms (`/tdd`) |
 | **Mapping** | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
@@ -50,9 +50,9 @@ All Iteration 0 design deliverables and domain specifications are stored in this
     │   ├── api/reviews/    # GET & POST /api/reviews
     │   ├── api/health/     # GET /api/health
     │   └── page.tsx        # Main tracer bullet UI
-    ├── components/         # MapComponent, MapWrapper, PlaceExplorer
+    ├── components/         # MapComponent, MapWrapper, PlaceExplorer, ui/ (Shadcn)
     ├── domain/             # Pure domain logic & tests (rating, geo, itinerary)
-    └── lib/                # Prisma client singleton
+    └── lib/                # Prisma client singleton & cn utility (clsx + twMerge)
 ```
 
 ---
