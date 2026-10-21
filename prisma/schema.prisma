@@ -2,7 +2,10 @@
 // Database configuration: PostgreSQL (local via Docker or hosted via Neon/Supabase)
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" = the machine that runs `prisma generate` (laptop, CI runner).
+  // "rhel-openssl-3.0.x" = the Amazon Linux runtime of Vercel Functions, which differs from the CI runner.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
