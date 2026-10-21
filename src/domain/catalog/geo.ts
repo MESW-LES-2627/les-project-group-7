@@ -1,4 +1,32 @@
 /**
+ * Pure domain module providing geographical calculations, geodesic distances,
+ * walking travel estimates and bounding box spatial containment tests.
+ */
+
+export interface GeoBoundingBox {
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+}
+
+/**
+ * Determines whether a geographical coordinate point falls within a bounding box.
+ */
+export function isPointInsideBounds(
+  lat: number,
+  lon: number,
+  bounds: GeoBoundingBox
+): boolean {
+  return (
+    lat >= bounds.south &&
+    lat <= bounds.north &&
+    lon >= bounds.west &&
+    lon <= bounds.east
+  );
+}
+
+/**
  * Computes great-circle distance between two pairs of coordinates using the Haversine formula.
  * Returns distance in kilometers rounded to 3 decimal places (meter precision).
  */

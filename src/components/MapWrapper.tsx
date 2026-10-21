@@ -15,7 +15,7 @@ export interface MapWrapperProps {
 const DynamicMap = dynamic(() => import("./MapComponent"), {
   ssr: false,
   loading: () => (
-    <div className="h-[440px] w-full rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 animate-pulse">
+    <div className="flex h-[440px] w-full animate-pulse items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
       Initializing map with OpenStreetMap...
     </div>
   ),

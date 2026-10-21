@@ -20,13 +20,13 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 ## Technology Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components |
-| **Styling & UI** | Tailwind CSS + Shadcn UI + Lucide Icons | Accessible, responsive component design system |
-| **ORM & Database** | Prisma ORM + PostgreSQL 16 (Docker) | Relational persistence, migrations, and type-safe queries |
-| **Testing** | Vitest | Fast unit testing for domain algorithms (`/tdd`) |
-| **Mapping** | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
+| Layer               | Technology                                      | Purpose                                                       |
+| ------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components              |
+| **Styling & UI**    | Tailwind CSS + Shadcn UI + Lucide Icons         | Accessible, responsive component design system                |
+| **ORM & Database**  | Prisma ORM + PostgreSQL 16 (Docker)             | Relational persistence, migrations, and type-safe queries     |
+| **Testing**         | Vitest                                          | Fast unit testing for domain algorithms (`/tdd`)              |
+| **Mapping**         | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
 
 ---
 
@@ -60,10 +60,12 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 ## Quickstart Guide
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) (v20.x or higher)
 - [Docker & Docker Compose](https://www.docker.com/)
 
 ### 1. Setup Database & Dependencies
+
 ```bash
 # Clone the repository and install dependencies
 npm install
@@ -81,6 +83,7 @@ npm run seed
 ```
 
 ### 2. Running Tests
+
 Run unit tests for domain services (pure functions):
 
 ```bash
@@ -88,6 +91,7 @@ npm test
 ```
 
 ### 3. Running the Application
+
 Start the development server:
 
 ```bash

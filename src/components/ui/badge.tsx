@@ -14,10 +14,8 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-rose-500 text-white shadow-xs hover:bg-rose-600",
         outline: "text-slate-700 border border-slate-200",
-        success:
-          "border-emerald-200 bg-emerald-50 text-emerald-700",
-        warning:
-          "border-amber-200 bg-amber-50 text-amber-700",
+        success: "border-emerald-200 bg-emerald-50 text-emerald-700",
+        warning: "border-amber-200 bg-amber-50 text-amber-700",
       },
     },
     defaultVariants: {
@@ -27,7 +25,8 @@ const badgeVariants = cva(
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
 /**

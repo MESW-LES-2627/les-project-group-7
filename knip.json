@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/app/**/page.tsx",
+    "src/app/**/layout.tsx",
+    "src/app/**/route.ts",
+    "scripts/**/*.ts",
+    "prisma/**/*.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts", "prisma/**/*.ts"],
+  "ignoreDependencies": ["postcss-load-config"],
+  "ignoreExportsUsedInFile": true
+}

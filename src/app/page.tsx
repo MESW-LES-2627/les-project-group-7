@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * Main Page Server Component (Tracer Bullet / Iteration 0).
- * 
- * Queries places directly from PostgreSQL via Prisma ORM and renders
+ *
+ * Queries places and cities directly from PostgreSQL via Prisma ORM and renders
  * the interactive client explorer with OpenStreetMap points of interest.
  */
 export default async function Home() {
@@ -17,20 +17,29 @@ export default async function Home() {
     include: {
       city: {
         select: {
+          id: true,
           name: true,
           country: true,
         },
       },
     },
-    orderBy: [
-      { averageRating: "desc" },
-      { name: "asc" },
-    ],
+    orderBy: [{ averageRating: "desc" }, { name: "asc" }],
   });
 
-  // 2. Map to the clean interface expected by the UI component
+  // 2. Fetch European cities with spot counts for dynamic navigation
+  const dbCities = await prisma.city.findMany({
+    include: {
+      _count: {
+        select: { places: true },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  // 3. Map to the clean interface expected by the UI component
   const places = dbPlaces.map((place) => ({
     id: place.id,
+    cityId: place.cityId,
     name: place.name,
     description: place.description,
     category: place.category,
@@ -41,27 +50,29 @@ export default async function Home() {
     averageRating: place.averageRating,
     reviewCount: place.reviewCount,
     city: place.city,
+    wikidataId: place.wikidataId,
+  }));
+
+  const cities = dbCities.map((city) => ({
+    id: city.id,
+    name: city.name,
+    country: city.country,
+    latitude: city.latitude,
+    longitude: city.longitude,
+    count: city._count.places,
   }));
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="mx-auto max-w-5xl px-4 py-10">
       <header className="mb-10 text-center">
-        <div className="inline-flex items-center gap-2 text-indigo-600 font-semibold text-xs tracking-wider uppercase mb-2">
-          <Compass className="w-4 h-4" />
+        <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+          <Compass className="h-4 w-4" />
           Tripbook
         </div>
-
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Explore & Rate Places
-        </h1>
-
-        <p className="mt-3 text-base text-slate-600 max-w-xl mx-auto">
-          Discover top attractions across Porto, explore community ratings, and share your reviews.
-        </p>
       </header>
 
       <main>
-        <PlaceExplorer initialPlaces={places} />
+        <PlaceExplorer initialPlaces={places} initialCities={cities} />
       </main>
     </div>
   );

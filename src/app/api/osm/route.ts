@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { type PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { type PriceLevel } from "@/domain/rating";
+import { type PriceLevel } from "@/domain/reviews/rating";
 import {
   mapOsmCategory,
   mapOsmPriceLevel,
   formatOsmAddress,
   getQuantizedKey,
   type OsmTags,
-} from "@/domain/osm";
+} from "@/domain/osm/osm";
 
 export interface OsmElement {
   type: string;
@@ -28,6 +28,7 @@ export interface CachedPoi {
   latitude: number;
   longitude: number;
   priceLevel: PriceLevel;
+  wikidataId?: string | null;
 }
 
 // ── In-Memory LRU Cache with TTL ─────────────────────────────────────────────
@@ -47,6 +48,15 @@ const OVERPASS_MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
 ] as const;
 
+function isOverpassResponse(val: unknown): val is { elements: OsmElement[] } {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    "elements" in val &&
+    Array.isArray((val as { elements: unknown }).elements)
+  );
+}
+
 /**
  * Executes an Overpass QL query across mirrors sequentially with timeout.
  * Tries the next mirror if a mirror times out or returns HTTP 429/50x.
@@ -55,11 +65,14 @@ async function fetchOverpassElements(query: string): Promise<OsmElement[]> {
   for (const mirrorUrl of OVERPASS_MIRRORS) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4500);
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
 
       const res = await fetch(mirrorUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "Tripbook/1.0 (les-project-group-7)",
+        },
         body: `data=${encodeURIComponent(query)}`,
         signal: controller.signal,
       });
@@ -67,8 +80,8 @@ async function fetchOverpassElements(query: string): Promise<OsmElement[]> {
       clearTimeout(timeoutId);
 
       if (res.ok) {
-        const json = await res.json();
-        if (Array.isArray(json.elements)) {
+        const json: unknown = await res.json();
+        if (isOverpassResponse(json)) {
           return json.elements;
         }
       }
@@ -103,7 +116,10 @@ export async function GET(request: Request) {
 
     if (isNaN(south) || isNaN(west) || isNaN(north) || isNaN(east)) {
       return NextResponse.json(
-        { error: "Invalid bounding box coordinates (south, west, north, east required)" },
+        {
+          error:
+            "Invalid bounding box coordinates (south, west, north, east required)",
+        },
         { status: 400 }
       );
     }
@@ -141,25 +157,33 @@ export async function GET(request: Request) {
       const elements = await fetchOverpassElements(overpassQuery);
 
       if (elements.length > 0) {
-        rawPlaces = elements
-          .filter((element) => Boolean(element.tags?.name))
-          .map((element) => {
-            const tags = element.tags ?? {};
-            const name = tags.name ?? "Discovered Spot";
-            const address = formatOsmAddress(tags, "Porto");
+        const places: CachedPoi[] = [];
 
-            return {
-              id: `osm-${element.id}`,
-              osmId: element.id.toString(),
-              name,
-              description: tags.description ?? null,
-              category: mapOsmCategory(tags),
-              address,
-              latitude: element.lat,
-              longitude: element.lon,
-              priceLevel: mapOsmPriceLevel(tags),
-            };
+        for (let i = 0; i < elements.length; i++) {
+          const element = elements[i];
+          const tags = element.tags;
+          if (!tags || !tags.name) {
+            continue;
+          }
+
+          const name = tags.name;
+          const address = formatOsmAddress(tags, "Porto");
+
+          places.push({
+            id: `osm-${element.id}`,
+            osmId: element.id.toString(),
+            name,
+            description: tags.description ?? null,
+            category: mapOsmCategory(tags),
+            address,
+            latitude: element.lat,
+            longitude: element.lon,
+            priceLevel: mapOsmPriceLevel(tags),
+            wikidataId: tags.wikidata ?? null,
           });
+        }
+
+        rawPlaces = places;
 
         // LRU Eviction: Remove oldest entry when cache limit reached
         if (osmCache.size >= MAX_CACHE_ENTRIES) {
@@ -194,6 +218,8 @@ export async function GET(request: Request) {
           priceLevel: place.priceLevel,
           averageRating: place.averageRating,
           reviewCount: place.reviewCount,
+          wikidataId: place.wikidataId,
+          isDiscovered: false,
         }))
       );
     }
@@ -240,6 +266,8 @@ export async function GET(request: Request) {
         priceLevel: poi.priceLevel,
         averageRating: dbMatch ? dbMatch.averageRating : null,
         reviewCount: dbMatch ? dbMatch.reviewCount : 0,
+        wikidataId: poi.wikidataId ?? null,
+        isDiscovered: !dbMatch,
       };
     });
 

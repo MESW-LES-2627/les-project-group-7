@@ -26,7 +26,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs"
+        className="backdrop-blur-xs fixed inset-0 bg-slate-950/50"
         onClick={() => onOpenChange?.(false)}
         aria-hidden="true"
       />
@@ -42,7 +42,7 @@ const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative z-50 bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 max-h-[90vh] overflow-y-auto",
+      "relative z-50 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl",
       className
     )}
     role="dialog"
@@ -52,10 +52,10 @@ const DialogContent = React.forwardRef<
     {onClose && (
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 rounded-lg p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer"
+        className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         aria-label="Close"
       >
-        <X className="w-4 h-4" />
+        <X className="h-4 w-4" />
       </button>
     )}
     {children}
@@ -91,11 +91,7 @@ const DialogDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-xs text-slate-500", className)}
-    {...props}
-  />
+  <p ref={ref} className={cn("text-xs text-slate-500", className)} {...props} />
 ));
 DialogDescription.displayName = "DialogDescription";
 

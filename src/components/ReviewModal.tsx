@@ -1,0 +1,255 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  Star,
+  User,
+  CheckCircle2,
+  AlertCircle,
+  Send,
+  MessageSquare,
+  Landmark,
+  Utensils,
+  Building2,
+  Trees,
+  Coffee,
+  Wine,
+  MapPin,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import type { PlaceItem } from "./PlaceExplorer";
+import { getCategoryConfig } from "@/domain/catalog/categories";
+import type { SessionUser } from "./UserSessionBar";
+
+export interface ReviewItem {
+  id: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+  user: {
+    username: string;
+  };
+}
+
+interface ReviewModalProps {
+  place: PlaceItem | null;
+  currentUser: SessionUser;
+  reviews: ReviewItem[];
+  isLoadingReviews: boolean;
+  isSubmitting: boolean;
+  submitSuccess: string | null;
+  errorMessage: string | null;
+  onClose: () => void;
+  onSubmit: (rating: number, comment: string) => void;
+}
+
+export function formatPrice(priceLevel: string | null | undefined): string {
+  if (!priceLevel || priceLevel === "FREE") return "Free";
+  return priceLevel;
+}
+
+export default function ReviewModal({
+  place,
+  currentUser,
+  reviews,
+  isLoadingReviews,
+  isSubmitting,
+  submitSuccess,
+  errorMessage,
+  onClose,
+  onSubmit,
+}: ReviewModalProps) {
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    if (place) {
+      setRating(5);
+      setHoverRating(0);
+      setComment("");
+    }
+  }, [place]);
+
+  if (!place) {
+    return null;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(rating, comment.trim());
+  };
+
+  const categoryConfig = getCategoryConfig(place.category);
+
+  return (
+    <Dialog open={Boolean(place)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent onClose={onClose}>
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${categoryConfig.bgColor} ${categoryConfig.textColor}`}
+            >
+              {categoryConfig.label}
+            </span>
+            <Badge variant="outline" className="text-[11px]">
+              {formatPrice(place.priceLevel)}
+            </Badge>
+          </div>
+          <DialogTitle className="mt-1 text-base">{place.name}</DialogTitle>
+          <DialogDescription className="text-xs text-slate-500">
+            {place.address}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Active user session */}
+        <Card className="mt-4 border-slate-200/80 bg-slate-50">
+          <CardContent className="flex items-center gap-2 p-2.5 text-xs text-slate-700">
+            <User className="h-4 w-4 text-indigo-600" />
+            <span>
+              Posting as:{" "}
+              <strong className="text-slate-900">
+                @{currentUser.username}
+              </strong>
+            </span>
+          </CardContent>
+        </Card>
+
+        {/* Feedback Alerts */}
+        {submitSuccess && (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            <span>{submitSuccess}</span>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-500" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Review Form */}
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <div>
+            <Label htmlFor="star-rating">Rating (1 to 5 stars)</Label>
+            <div className="flex items-center gap-1.5" id="star-rating">
+              {[1, 2, 3, 4, 5].map((starValue) => (
+                <Button
+                  type="button"
+                  key={starValue}
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setRating(starValue)}
+                  onMouseEnter={() => setHoverRating(starValue)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="h-9 w-9 text-slate-300 hover:text-amber-400"
+                  title={`${starValue} stars`}
+                >
+                  <Star
+                    className={`h-7 w-7 ${
+                      starValue <= (hoverRating || rating)
+                        ? "fill-amber-400 text-amber-400"
+                        : "text-slate-300"
+                    } transition-transform active:scale-90`}
+                  />
+                </Button>
+              ))}
+              <span className="ml-2 text-sm font-bold text-slate-700">
+                {rating} / 5
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="review-comment">Comment (optional)</Label>
+            <Textarea
+              id="review-comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              placeholder="Share tips, favorite highlights, or best visiting hours..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="gap-1.5 text-xs"
+            >
+              {isSubmitting ? (
+                "Saving..."
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5" />
+                  Submit Review
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+
+        {/* Historical Reviews */}
+        <Separator className="mt-6" />
+        <div className="mt-5">
+          <h4 className="mb-3 flex items-center gap-1.5 text-xs font-bold text-slate-800">
+            <MessageSquare className="h-3.5 w-3.5 text-slate-500" />
+            Recent Reviews ({reviews.length})
+          </h4>
+
+          {isLoadingReviews ? (
+            <p className="text-xs text-slate-400">Loading reviews...</p>
+          ) : reviews.length === 0 ? (
+            <p className="text-xs italic text-slate-400">
+              No reviews yet. Be the first!
+            </p>
+          ) : (
+            <div className="max-h-48 space-y-2.5 overflow-y-auto pr-1">
+              {reviews.map((review) => (
+                <Card key={review.id} className="border-slate-100 bg-slate-50">
+                  <CardContent className="p-2.5 text-xs">
+                    <div className="mb-1 flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="font-semibold text-slate-800">
+                        @{review.user?.username || "anonymous"}
+                      </span>
+                      <span className="inline-flex items-center gap-0.5 font-bold text-amber-600">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        {review.rating}
+                      </span>
+                    </div>
+                    {review.text && (
+                      <p className="mt-1 text-slate-600">{review.text}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

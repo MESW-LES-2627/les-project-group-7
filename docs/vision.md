@@ -31,11 +31,11 @@ in the [MVP](mvp.md). Each idea is tagged:
 
 ## 3. Who it is for
 
-| User | What they want |
-|---|---|
+| User                    | What they want                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------- |
 | **Planner** (main user) | Tell the app a city, a number of days and a budget, and get a good plan they can adjust |
-| **Explorer / reviewer** | Keep a diary of places visited, rate them, save places for later |
-| **Curator** (admin) | Keep the place catalog accurate and the content trustworthy |
+| **Explorer / reviewer** | Keep a diary of places visited, rate them, save places for later                        |
+| **Curator** (admin)     | Keep the place catalog accurate and the content trustworthy                             |
 
 ## 4. Principles
 
@@ -64,109 +64,109 @@ in the [MVP](mvp.md). Each idea is tagged:
 
 ### 6.1 Discover and rank places
 
-| Idea | Tier |
-|---|---|
-| Search a city and browse its places | MVP |
-| Filter by type (restaurant, museum, monument, garden), price level and rating | MVP |
-| Top-rated places per city and per type | MVP |
-| Place detail page with description, address, rating and reviews | MVP |
-| **Map view with pins and clustering** | MVP |
-| **Opening hours shown on the place page** (when known) | MVP |
-| Photos for places (landmarks from Wikimedia Commons, icon otherwise) | Stretch |
-| Ticket prices where OpenStreetMap has them | Stretch |
-| Ratings split by aspect (food, service, value, atmosphere) | Dream |
-| Multi-language place descriptions | Dream |
-| "Hidden gems": good ratings but few visitors | Dream |
+| Idea                                                                          | Tier    |
+| ----------------------------------------------------------------------------- | ------- |
+| Search a city and browse its places                                           | MVP     |
+| Filter by type (restaurant, museum, monument, garden), price level and rating | MVP     |
+| Top-rated places per city and per type                                        | MVP     |
+| Place detail page with description, address, rating and reviews               | MVP     |
+| **Map view with pins and clustering**                                         | MVP     |
+| **Opening hours shown on the place page** (when known)                        | MVP     |
+| Photos for places (landmarks from Wikimedia Commons, icon otherwise)          | Stretch |
+| Ticket prices where OpenStreetMap has them                                    | Stretch |
+| Ratings split by aspect (food, service, value, atmosphere)                    | Dream   |
+| Multi-language place descriptions                                             | Dream   |
+| "Hidden gems": good ratings but few visitors                                  | Dream   |
 
 ### 6.2 Reviews and reputation
 
-| Idea | Tier |
-|---|---|
-| Write, edit and delete a review with a 1 to 5 rating | MVP |
-| Reviewer says how expensive the place was (€ / €€ / €€€), which gives the place its price level | MVP |
-| Place rating and top-rated list recalculated from reviews | MVP |
-| Posting a review marks the place as visited | MVP |
-| "Helpful" votes and sorting by most helpful | Stretch |
-| Review photos | Dream |
-| Reviewer badges and levels | Dream |
-| Spam and fake-review detection | Dream |
-| Owner replies to reviews | Dream |
+| Idea                                                                                            | Tier    |
+| ----------------------------------------------------------------------------------------------- | ------- |
+| Write, edit and delete a review with a 1 to 5 rating                                            | MVP     |
+| Reviewer says how expensive the place was (€ / €€ / €€€), which gives the place its price level | MVP     |
+| Place rating and top-rated list recalculated from reviews                                       | MVP     |
+| Posting a review marks the place as visited                                                     | MVP     |
+| "Helpful" votes and sorting by most helpful                                                     | Stretch |
+| Review photos                                                                                   | Dream   |
+| Reviewer badges and levels                                                                      | Dream   |
+| Spam and fake-review detection                                                                  | Dream   |
+| Owner replies to reviews                                                                        | Dream   |
 
 ### 6.3 My places
 
-| Idea | Tier |
-|---|---|
-| Wishlist ("I want to go there") and bookmarks ("remember this") | MVP |
-| Visited places diary | MVP |
-| Custom lists inside bookmarks: user-made named collections such as "Best cafés in Lisbon" | MVP |
-| Personal stats (places per city and type) and a map of everywhere I have been | Stretch |
+| Idea                                                                                      | Tier    |
+| ----------------------------------------------------------------------------------------- | ------- |
+| Wishlist ("I want to go there") and bookmarks ("remember this")                           | MVP     |
+| Visited places diary                                                                      | MVP     |
+| Custom lists inside bookmarks: user-made named collections such as "Best cafés in Lisbon" | MVP     |
+| Personal stats (places per city and type) and a map of everywhere I have been             | Stretch |
 
 ### 6.4 Trip planning
 
-| Idea | Tier |
-|---|---|
-| Create a trip with city, dates, budget level and preferred place types | MVP |
-| Days created automatically from the dates and kept in sync when they change | MVP |
-| Build an itinerary manually: assign places to days, set visit times | MVP |
-| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP |
-| Suggest the best-ranked places nearby (for example lunch after the Eiffel Tower) | MVP |
-| Warn when a planned visit time is outside the place's opening hours, and show the trip's average price level against the budget level | MVP |
-| Estimated travel time between stops ("≈ 12 min walk", from straight-line distance) | MVP |
-| **Smart generator**: also uses opening hours and real travel times, and balances the budget more precisely | Stretch |
-| Optional budget in euros per day, from price levels mapped to rough amounts | Stretch |
-| Real walking and driving times from a routing service | Stretch |
-| Other conflict warnings (overlapping visits, too much walking) | Stretch |
-| Drag and drop reordering | Stretch |
-| Alternatives per stop ("swap this restaurant") | Stretch |
-| Multi-city trips | Stretch |
-| Public transit travel times | Dream |
-| Weather-aware plans (indoor places on rainy days) | Dream |
-| Real-time re-planning during the trip | Dream |
-| Budget tracking with real expenses | Dream |
+| Idea                                                                                                                                                                                                                                                | Tier    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Create a trip with city, dates, budget level and preferred place types                                                                                                                                                                              | MVP     |
+| Days created automatically from the dates and kept in sync when they change                                                                                                                                                                         | MVP     |
+| Build an itinerary manually: assign places to days, set visit times                                                                                                                                                                                 | MVP     |
+| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP     |
+| Suggest the best-ranked places nearby (for example lunch after the Eiffel Tower)                                                                                                                                                                    | MVP     |
+| Warn when a planned visit time is outside the place's opening hours, and show the trip's average price level against the budget level                                                                                                               | MVP     |
+| Estimated travel time between stops ("≈ 12 min walk", from straight-line distance)                                                                                                                                                                  | MVP     |
+| **Smart generator**: also uses opening hours and real travel times, and balances the budget more precisely                                                                                                                                          | Stretch |
+| Optional budget in euros per day, from price levels mapped to rough amounts                                                                                                                                                                         | Stretch |
+| Real walking and driving times from a routing service                                                                                                                                                                                               | Stretch |
+| Other conflict warnings (overlapping visits, too much walking)                                                                                                                                                                                      | Stretch |
+| Drag and drop reordering                                                                                                                                                                                                                            | Stretch |
+| Alternatives per stop ("swap this restaurant")                                                                                                                                                                                                      | Stretch |
+| Multi-city trips                                                                                                                                                                                                                                    | Stretch |
+| Public transit travel times                                                                                                                                                                                                                         | Dream   |
+| Weather-aware plans (indoor places on rainy days)                                                                                                                                                                                                   | Dream   |
+| Real-time re-planning during the trip                                                                                                                                                                                                               | Dream   |
+| Budget tracking with real expenses                                                                                                                                                                                                                  | Dream   |
 
 ### 6.5 Sharing and community
 
-| Idea | Tier |
-|---|---|
-| Publish an itinerary and share it with a link | Stretch |
-| Bookmark other users' published itineraries | Stretch |
-| Copy a published itinerary into my own trip | Stretch |
-| Follow users and see their reviews | Dream |
-| Collaborative trips with friends, with voting on places | Dream |
-| Comments on itineraries | Dream |
+| Idea                                                    | Tier    |
+| ------------------------------------------------------- | ------- |
+| Publish an itinerary and share it with a link           | Stretch |
+| Bookmark other users' published itineraries             | Stretch |
+| Copy a published itinerary into my own trip             | Stretch |
+| Follow users and see their reviews                      | Dream   |
+| Collaborative trips with friends, with voting on places | Dream   |
+| Comments on itineraries                                 | Dream   |
 
 ### 6.6 Catalog and moderation
 
-| Idea | Tier |
-|---|---|
-| Import places from OpenStreetMap | MVP |
-| Demo users and sample reviews so rankings work from day one | MVP |
-| Users suggest places, moderators approve or reject | Dream |
-| Duplicate detection and merging | Dream |
-| Business owners claim and edit their place | Dream |
-| Community editing of place details | Dream |
+| Idea                                                        | Tier  |
+| ----------------------------------------------------------- | ----- |
+| Import places from OpenStreetMap                            | MVP   |
+| Demo users and sample reviews so rankings work from day one | MVP   |
+| Users suggest places, moderators approve or reject          | Dream |
+| Duplicate detection and merging                             | Dream |
+| Business owners claim and edit their place                  | Dream |
+| Community editing of place details                          | Dream |
 
 ### 6.7 Notifications
 
-| Idea | Tier |
-|---|---|
+| Idea                                   | Tier    |
+| -------------------------------------- | ------- |
 | Visit reminders before a planned visit | Stretch |
-| Trip summary e-mail | Stretch |
-| Push notifications on mobile | Stretch |
+| Trip summary e-mail                    | Stretch |
+| Push notifications on mobile           | Stretch |
 
 ### 6.8 Platform
 
-| Idea | Tier |
-|---|---|
-| Web app, responsive, no installation | MVP |
-| Separate dev and prod environments | MVP |
-| Export an itinerary to PDF or calendar | Stretch |
-| Installable web app (PWA) with offline itinerary | Stretch |
-| Native mobile apps | Dream |
-| Public API | Dream |
-| Booking and ticket integrations | Dream |
-| AI assistant: "plan me a romantic weekend in Porto under 300 euros" | Dream |
-| Multi-language interface | Dream |
+| Idea                                                                | Tier    |
+| ------------------------------------------------------------------- | ------- |
+| Web app, responsive, no installation                                | MVP     |
+| Separate dev and prod environments                                  | MVP     |
+| Export an itinerary to PDF or calendar                              | Stretch |
+| Installable web app (PWA) with offline itinerary                    | Stretch |
+| Native mobile apps                                                  | Dream   |
+| Public API                                                          | Dream   |
+| Booking and ticket integrations                                     | Dream   |
+| AI assistant: "plan me a romantic weekend in Porto under 300 euros" | Dream   |
+| Multi-language interface                                            | Dream   |
 
 ---
 
@@ -174,7 +174,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 
 Even in the dream version, the app is **not** a booking engine, a payment
 platform or a general social network. Those would pull the product away from its
-core: *trustworthy rankings that build good plans*.
+core: _trustworthy rankings that build good plans_.
 
 ## 8. What success looks like
 

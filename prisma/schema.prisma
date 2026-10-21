@@ -83,7 +83,9 @@ model Place {
   priceLevel    String?       // "€" | "€€" | "€€€" (aggregated mode)
   averageRating Float?        // 1.0 .. 5.0
   reviewCount   Int           @default(0)
-  source        String        @default("IMPORTED") // "IMPORTED" | "SUGGESTED"
+  source        String        @default("IMPORTED") // "IMPORTED" | "SUGGESTED" | "LAZY_OSM"
+  wikidataId    String?
+  imageUrl      String?
 
   cityId        String
   city          City          @relation(fields: [cityId], references: [id])

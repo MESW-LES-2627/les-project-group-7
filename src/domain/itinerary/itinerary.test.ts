@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { generateItinerary, type PlaceCandidate, type TripConstraints } from "./itinerary";
+import {
+  generateItinerary,
+  type PlaceCandidate,
+  type TripConstraints,
+} from "./itinerary";
 
 describe("Itinerary Generator — Time Packing & Days (TDD)", () => {
   const p1: PlaceCandidate = {
@@ -81,8 +85,8 @@ describe("Itinerary Generator — Budget Constraint (TDD)", () => {
   const pExpensive: PlaceCandidate = {
     id: "exp-1",
     name: "Restaurante Michelin",
-    latitude: 41.1500,
-    longitude: -8.6100,
+    latitude: 41.15,
+    longitude: -8.61,
     priceLevel: "€€€",
     visitDurationMinutes: 90,
   };

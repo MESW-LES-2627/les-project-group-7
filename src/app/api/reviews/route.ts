@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { calculateAverageRating } from "@/domain/rating";
+import { calculateAverageRating } from "@/domain/reviews/rating";
 
 /**
  * User-Defined Type Guard verifying if an unknown value is a valid Prisma PlaceCategory.
@@ -75,7 +75,10 @@ export async function POST(request: Request) {
     // Passo 1: Validação dos dados de entrada da avaliação
     if (!placeId || typeof rating !== "number" || rating < 1 || rating > 5) {
       return NextResponse.json(
-        { error: "Invalid review input. Rating must be an integer between 1 and 5." },
+        {
+          error:
+            "Invalid review input. Rating must be an integer between 1 and 5.",
+        },
         { status: 400 }
       );
     }
@@ -126,15 +129,36 @@ export async function POST(request: Request) {
       await prisma.place.create({
         data: {
           id: placeId,
-          osmId: placeId.startsWith("osm-") ? placeId.replace("osm-", "") : undefined,
-          name: typeof body.place.name === "string" ? body.place.name : "Discovered Place",
-          address: typeof body.place.address === "string" ? body.place.address : "Porto",
+          osmId: placeId.startsWith("osm-")
+            ? placeId.replace("osm-", "")
+            : body.place.osmId || undefined,
+          name:
+            typeof body.place.name === "string"
+              ? body.place.name
+              : "Discovered Place",
+          address:
+            typeof body.place.address === "string"
+              ? body.place.address
+              : "Porto",
           category,
-          latitude: typeof body.place.latitude === "number" ? body.place.latitude : 41.1496,
-          longitude: typeof body.place.longitude === "number" ? body.place.longitude : -8.6109,
-          priceLevel: typeof body.place.priceLevel === "string" ? body.place.priceLevel : "€",
+          latitude:
+            typeof body.place.latitude === "number"
+              ? body.place.latitude
+              : 41.1496,
+          longitude:
+            typeof body.place.longitude === "number"
+              ? body.place.longitude
+              : -8.6109,
+          priceLevel:
+            typeof body.place.priceLevel === "string"
+              ? body.place.priceLevel
+              : "€",
           cityId: city.id,
-          source: "OSM",
+          source: "LAZY_OSM",
+          wikidataId:
+            typeof body.place.wikidataId === "string"
+              ? body.place.wikidataId
+              : null,
         },
       });
     }
@@ -180,7 +204,10 @@ export async function POST(request: Request) {
       select: { rating: true },
     });
 
-    const ratingsList = allReviews.map((r) => r.rating);
+    const ratingsList: number[] = [];
+    for (let i = 0; i < allReviews.length; i++) {
+      ratingsList.push(allReviews[i].rating);
+    }
     const newAvg = calculateAverageRating(ratingsList);
 
     // Passo 7: Atualização do Place com a nova média e contagem

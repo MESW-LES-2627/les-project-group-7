@@ -1,9 +1,21 @@
-import { haversineDistanceKm, estimateWalkingMinutes } from "./geo";
+/**
+ * Architecture Summary:
+ * Pure domain module powering the automated itinerary planner.
+ * Uses a greedy nearest-neighbor spatial heuristic combined with time-budget packing
+ * and soft cost-point constraints to generate optimized day-by-day sightseeing schedules.
+ *
+ * Domain Policies:
+ * - Time Packing: Visit duration + walking travel time <= maxHoursPerDay (default: 8h).
+ * - Soft Budget: Average cost points per day target constraints.dailyBudgetLevel (0..3).
+ * - Nearest Neighbor: Minimizes pedestrian transit between consecutive stops.
+ */
+
+import { haversineDistanceKm, estimateWalkingMinutes } from "../catalog/geo";
 import {
   type PriceLevel,
   calculateAverageCostPoints,
   COST_POINTS,
-} from "./rating";
+} from "../reviews/rating";
 
 /**
  * Represents a place candidate to be scheduled in an itinerary.
@@ -56,13 +68,13 @@ export interface ItineraryPlan {
 
 /**
  * Generates a day-by-day itinerary from candidate places using a deterministic nearest-neighbor heuristic.
- * 
+ *
  * Rules enforced:
  * 1. Time packing: Stops are packed into each day without exceeding `maxHoursPerDay` (visit duration + walking time).
  * 2. Budget constraint: If `dailyBudgetLevel` is defined, the day's average cost points must not exceed the target level.
  * 3. Nearest-neighbor selection: Subsequent stops on a day are chosen greedily by minimizing geographic distance.
  * 4. Overflow exclusion: Candidates that do not fit into any available day are collected in `excludedPlaces`.
- * 
+ *
  * @param constraints Constraints bounding the trip (number of days, daily hours, budget).
  * @param candidates List of places available to schedule.
  * @returns Fully scheduled itinerary days and any excluded candidate places.
@@ -110,9 +122,13 @@ export function generateItinerary(
         // Daily budget constraint check
         if (targetBudgetPoints !== null) {
           const hypotheticalStops = [...day.stops.map((s) => s.place), place];
-          const projectedAvgCost = calculateAverageCostPoints(hypotheticalStops);
+          const projectedAvgCost =
+            calculateAverageCostPoints(hypotheticalStops);
 
-          if (projectedAvgCost !== null && projectedAvgCost > targetBudgetPoints) {
+          if (
+            projectedAvgCost !== null &&
+            projectedAvgCost > targetBudgetPoints
+          ) {
             continue;
           }
         }

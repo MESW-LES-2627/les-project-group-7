@@ -14,7 +14,9 @@ describe("OSM Domain Mapping", () => {
     });
 
     it("maps amenity=restaurant to RESTAURANT", () => {
-      expect(mapOsmCategory({ amenity: "restaurant" })).toBe(PlaceCategory.RESTAURANT);
+      expect(mapOsmCategory({ amenity: "restaurant" })).toBe(
+        PlaceCategory.RESTAURANT
+      );
     });
 
     it("maps amenity=cafe to CAFE", () => {
@@ -32,10 +34,18 @@ describe("OSM Domain Mapping", () => {
     });
 
     it("maps historic monuments and tourist viewpoints to MONUMENT", () => {
-      expect(mapOsmCategory({ historic: "monument" })).toBe(PlaceCategory.MONUMENT);
-      expect(mapOsmCategory({ historic: "memorial" })).toBe(PlaceCategory.MONUMENT);
-      expect(mapOsmCategory({ tourism: "attraction" })).toBe(PlaceCategory.MONUMENT);
-      expect(mapOsmCategory({ tourism: "viewpoint" })).toBe(PlaceCategory.MONUMENT);
+      expect(mapOsmCategory({ historic: "monument" })).toBe(
+        PlaceCategory.MONUMENT
+      );
+      expect(mapOsmCategory({ historic: "memorial" })).toBe(
+        PlaceCategory.MONUMENT
+      );
+      expect(mapOsmCategory({ tourism: "attraction" })).toBe(
+        PlaceCategory.MONUMENT
+      );
+      expect(mapOsmCategory({ tourism: "viewpoint" })).toBe(
+        PlaceCategory.MONUMENT
+      );
     });
 
     it("falls back defensively to OTHER for null, undefined, or unrecognized tags", () => {

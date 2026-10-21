@@ -41,10 +41,7 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: [
-        { averageRating: "desc" },
-        { name: "asc" },
-      ],
+      orderBy: [{ averageRating: "desc" }, { name: "asc" }],
     });
 
     return NextResponse.json(places);
