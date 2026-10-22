@@ -50,8 +50,9 @@ in the [MVP](mvp.md). Each idea is tagged:
 
 ## 5. Where the data comes from
 
-- **Places** are imported from OpenStreetMap: name, type, coordinates and, where
-  mapped, opening hours. We show "© OpenStreetMap contributors".
+- **Places** come from OpenStreetMap: name, type, coordinates and, where
+  mapped, opening hours. They are loaded by scripts, or discovered live on the map and
+  saved when first reviewed (see ADR-002 in [design.md](design.md)). We show "© OpenStreetMap contributors".
 - **Ratings, reviews and price levels** are ours. OpenStreetMap has no ratings,
   and almost no price information, so the community fills that gap. Until real
   reviews arrive, demo users and sample reviews keep the rankings meaningful.
@@ -67,13 +68,13 @@ in the [MVP](mvp.md). Each idea is tagged:
 | Idea | Tier |
 |---|---|
 | Search a city and browse its places | MVP |
-| Filter by type (restaurant, museum, monument, garden), price level and rating | MVP |
+| Filter by type (restaurant, museum, monument, park), price level and rating | MVP |
 | Top-rated places per city and per type | MVP |
 | Place detail page with description, address, rating and reviews | MVP |
 | **Map view with pins and clustering** | MVP |
 | **Opening hours shown on the place page** (when known) | MVP |
 | Photos for places (landmarks from Wikimedia Commons, icon otherwise) | Stretch |
-| Search for places outside the catalog (Nominatim, on submit only, see ADR-004) | Stretch |
+| Search for places outside the catalog (Nominatim, on submit only, see ADR-004) | Stretch (already built in the tracer bullet) |
 | Ticket prices where OpenStreetMap has them | Stretch |
 | Ratings split by aspect (food, service, value, atmosphere) | Dream |
 | Multi-language place descriptions | Dream |
@@ -141,6 +142,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 | Idea | Tier |
 |---|---|
 | Import places from OpenStreetMap | MVP |
+| Discover places live on the map and save them when first reviewed | MVP |
 | Demo users and sample reviews so rankings work from day one | MVP |
 | Users suggest places, moderators approve or reject | Dream |
 | Duplicate detection and merging | Dream |

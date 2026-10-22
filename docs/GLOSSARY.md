@@ -10,17 +10,18 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Place
 
-- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) imported from OpenStreetMap, or suggested by users (post-MVP, Dream).
-- **Key Attributes:** `id`, `osmId`, `name`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`, may be unknown), `averageRating`, `reviewCount`, `source` (`IMPORTED` | `SUGGESTED`). Its cost points (0..3) are derived from `priceLevel`.
+- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) loaded from OpenStreetMap by the import and seed scripts, discovered live on the map and saved when first reviewed, or suggested by users (post-MVP, Dream).
+- **Key Attributes:** `id`, `osmId`, `name`, `description`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`, may be unknown), `averageRating`, `reviewCount`, `source` (`IMPORTED` | `LAZY_OSM` | `SUGGESTED`). Its cost points (0..3) are derived from `priceLevel`.
 - **Invariants & Policies:**
   - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated `Review` records.
   - `priceLevel`: places tagged `fee=no` in OpenStreetMap (parks, viewpoints, public landmarks) are `FREE` (0 cost points). OpenStreetMap has no other price data, so for every other place the `priceLevel` is the most common (mode) price level given in its reviews. A place with neither is **unknown**.
-  - **Places only enter the catalog through the _Import places_ command** (an admin script, see ADR-002). There is no on-the-fly ingestion: a place that was not imported cannot be reviewed or planned. Approved suggestions (post-MVP) are the other way in.
-  - The app never calls OpenStreetMap live for place data.
+  - **A place enters the catalog in one of three ways** (see ADR-002): the _Import places_ command and the seed script (`source = IMPORTED`), on-the-fly saving when a user posts the first review for a place discovered live on the map (`source = LAZY_OSM`), or an approved suggestion (post-MVP, `source = SUGGESTED`).
+  - The place saved on the fly is created inside _Post review_. In the tracer bullet it is always assigned to the city Porto, which is a known limitation.
+  - The map and the search call OpenStreetMap live to _discover_ places (see _Live Discovery_ in section 7). A discovered place is not in the catalog, and cannot be rated or planned, until it is saved.
 
 ### Import places
 
-- **Definition:** The admin command that loads places for the MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin, London) from OpenStreetMap into PostgreSQL. Its event is _Places imported_.
+- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts` (today only for Porto). The seed script `prisma/seed.ts` creates the seven MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin and London, stored with their Portuguese names), their places, the demo users and the sample reviews. Its event is _Places imported_.
 
 ### City
 
@@ -72,7 +73,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Key Attributes:** `id`, `userId`, `name`, `createdAt`.
 - **ListEntry:**
   - Join entity linking `SavedList` to a bookmarked `SavedPlace` with `addedAt`.
-  - **Consistency Rule:** a list only holds bookmarked places. When a bookmark is removed, a policy removes that place from all the user's lists. One place can be in several lists.
+  - **Consistency Rule:** a list only holds bookmarked places. When a bookmark is removed, a policy removes that place from all the user's lists. One place can be in several lists. The application enforces this rule, not the database: in the schema `ListEntry` references `Place`.
 - **Commands:** _Create list_, _Change list_ (rename or delete), _Add or remove place_.
 
 ---
@@ -113,7 +114,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### ItineraryStop
 
 - **Definition:** A planned visit to a `Place` assigned to a specific `Day` in an `Itinerary`.
-- **Key Attributes:** `id`, `itineraryId`, `dayId`, `placeId`, `visitTime` (HH:mm, optional), `position` (integer order within the day).
+- **Key Attributes:** `id`, `itineraryId`, `dayId`, `placeId`, `visitTime` (HH:mm, optional), `position` (integer order within the day). The schema also has a `reminderSent` flag, kept as a placeholder until the _Reminder_ aggregate (Stretch) exists.
 - **Rules:**
   - A stop calculates `isOutsideOpeningHours()` against `Place.openingHours` when `visitTime` is specified, and the plan raises a _Plan warning_ when it is outside (only where hours are known).
   - Straight-line travel time is computed between consecutive stops on the same `Day`.
@@ -172,13 +173,18 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 
 - **Definition:** Searching a city, browsing its places, filtering by type, price level and rating, and sorting by rating. It runs on our own PostgreSQL data only.
 
-### Search Outside the Catalog (Stretch)
+### Live Discovery (MVP, tracer bullet)
 
-- **Definition:** Geocoding search that queries OpenStreetMap's Nominatim service for places not in our catalog (see ADR-004). Not in the MVP.
+- **Definition:** Showing OpenStreetMap places that are not in the catalog yet. When the map moves, the app asks the Overpass service for the places inside the visible area (small areas only, at most 40 places, cached for 15 minutes, with three mirrors as failover). If OpenStreetMap does not answer, the map shows the places already in PostgreSQL. Discovered places show the community rating when the place is already in the catalog.
+- **Behavior:** a discovered place is saved to the catalog (`source = LAZY_OSM`) when a user posts the first review for it (see ADR-002).
+
+### Search Outside the Catalog (built in the tracer bullet, outside the committed MVP)
+
+- **Definition:** Geocoding search that queries OpenStreetMap's Nominatim service for places not in our catalog (see ADR-004).
 - **Behavior:**
   - Runs only when the user submits the search, never while typing, because the Nominatim usage policy forbids autocomplete. At most 1 request per second for the whole app, cached, with an identifying `User-Agent`.
   - Shows results in two groups: the local catalog and what was found on OpenStreetMap.
-  - A place found this way can only be reviewed or planned after it is added to the catalog.
+  - A place found this way is saved to the catalog when it is first reviewed, like any discovered place.
 
 ### Honest Symbolic Category Representation & Ranking DataTable
 
@@ -208,7 +214,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 
 ### Reminder (Stretch)
 
-- **Definition:** A visit reminder sent for an `ItineraryStop`. Its own aggregate, _Reminder_, created by the policy "when a visit time is near, send a reminder". It replaces a `reminderSent` flag on the stop.
+- **Definition:** A visit reminder sent for an `ItineraryStop`. Its own aggregate, _Reminder_, created by the policy "when a visit time is near, send a reminder". It will replace the `reminderSent` flag on the stop, which stays in the schema until then.
 
 ---
 

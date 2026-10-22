@@ -29,12 +29,13 @@ Planned iterations are targets and are re-planned at each sprint planning.
 
 | ID | Feature | The user can… | EventStorming | Iteration |
 |---|---|---|---|---|
-| B1 | Place import | (Admin) import places for the MVP cities from OpenStreetMap | Import places | 1 |
-| B2 | Demo data | (Team) load demo users and sample reviews so rankings work from day one | none (seed script) | 1, extended in 2 |
+| B1 | Place import | (Admin) import places from OpenStreetMap with the import script (Porto so far; the seed script adds the other MVP cities) | Import places | 1 |
+| B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one | none (seed script) | 1, extended in 2 |
 | B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating | none (query) | 1 basic, 2 filters |
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews | none (query) | 1 |
 | B5 | Map view | See a city's places as pins on a map, with clustering | none (UI) | 2 |
 | B6 | Top-rated places | See the top-rated places per city and type | none (query: top-rated places is a read model, not an event) | 2 |
+| B7 | Discover places on the map | See OpenStreetMap places that are not in the catalog yet; a discovered place is saved to the catalog when the user posts the first review for it | none (saved inside Post review, see ADR-002) | 1 (tracer bullet) |
 
 ### Reviews
 
@@ -92,12 +93,15 @@ If there is time left, the Stretch ideas we would take first, in this order:
 - **Cities:** seven cities: Porto, Lisbon, Madrid, Paris, Rome, Berlin and London
   (decided in ADR-002 in [design.md](design.md)). Every city needs enough places and
   demo reviews to rank well.
-- **Places:** imported from OpenStreetMap once, by a script, and stored in our own
-  database. The app never calls OpenStreetMap live for place data.
+- **Places:** loaded from OpenStreetMap by the import script (Porto) and the seed script
+  (all seven cities) into our own database. The map also discovers places live from
+  OpenStreetMap, and saves one to the database when a user reviews it (see ADR-002).
+  If OpenStreetMap does not answer, the app shows the places already in the database.
 - **Opening hours:** taken from OpenStreetMap where mapped. Where they are missing
   the app says "unknown" and cannot warn.
 - **Ratings and price levels:** OpenStreetMap has none, so they come from reviews.
-  A seed script creates demo users and sample reviews, marked as demo data.
+  The seed script creates demo users and sample reviews (the schema does not mark
+  them as demo data).
   A place's price level is the most common (mode) price level given in its reviews.
 - **Budget level:** it is a soft target for the **whole trip**, not a limit per place
   or per day, and not an amount in euros (we have no real prices, and a trip total
@@ -124,7 +128,7 @@ If there is time left, the Stretch ideas we would take first, in this order:
 | Map | Follows the OpenStreetMap tile usage policy (attribution, no bulk or offline use), or uses a provider that allows our usage |
 | Licensing | OpenStreetMap attribution shown |
 | Tech stack | One Next.js app (React UI and server side in the same project), PostgreSQL accessed through Prisma |
-| Development setup | Everything runs in Docker and is developed in VS Code inside a dev container: one container for the app and one for the database, started together |
+| Development setup | Target: developed in VS Code inside a dev container, with one container for the app and one for the database, started together (planned for Iteration 1). Today: Docker Compose runs the database and the app runs on the developer's machine |
 | Understandability | Every team member can explain the design and code, including anything written with AI help |
 
 ## 6. Demo scenario

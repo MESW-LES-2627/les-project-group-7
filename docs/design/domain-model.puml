@@ -104,7 +104,7 @@ class Review #D6ECFA {
   rating : 1..5
   priceLevel : PriceLevel [0..1]
   text
-  postedAt
+  createdAt
 }
 
 class Visit #FFF3C4 {
@@ -147,7 +147,7 @@ end note
 class TripConstraints <<value object>> #FFE3CC {
   startDate
   endDate
-  budgetLevel : PriceLevel
+  budgetLevel : € | €€ | €€€
   allowedCategories : PlaceCategory [*]
 }
 

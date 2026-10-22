@@ -12,6 +12,7 @@ deliverable below is stored in this repository and linked from here.
 | UML component diagram                | Done   | [Component diagram](#3-component-diagram)                                    |
 | Architecture Decision Records (ADRs) | Done   | [ADRs](#4-architecture-decision-records-adrs)                                |
 | Domain glossary (ubiquitous language) | Done  | [GLOSSARY.md](GLOSSARY.md)                                                   |
+| Deployment (Vercel and Neon)          | Done   | [ADR-007](#adr-007-deployment-on-vercel-and-neon) and [deployment.md](deployment.md) |
 
 ---
 
@@ -84,9 +85,11 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 - The board is conceptual. A trip owns its days and its itinerary, so Day and
   Itinerary are not separate aggregates. The rules about days, assigned places,
   opening hours and budget live inside Trip, so they are not policies.
-- Places come from OpenStreetMap imports for the MVP, for seven cities (see ADR-002).
-  There is no lazy ingestion. User suggestions with moderation (Place suggestion)
-  are designed but not in the MVP.
+- Places come from OpenStreetMap through the import and seed scripts for seven cities,
+  and from live discovery on the map: a discovered place is saved to the catalog when
+  it is first reviewed (see ADR-002). The board does not show this yet: treat the
+  saving as part of _Post review_ until the board is updated. User suggestions with
+  moderation (Place suggestion) are designed but not in the MVP.
 - Posting a review is the only way a place is marked as visited. Deleting the
   review does not unmark it.
 - Days follow the trip date range: _Days added_ and _Days removed_ are events of
@@ -101,7 +104,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
   generator (it reads it, no event). Lists are made of bookmarked places, so
   removing a bookmark removes the place from the lists.
 - OpenStreetMap has no ratings or price levels, so reviewers provide the price level
-  and a seed script creates demo users and reviews, so that rankings work from day one.
+  and the seed script creates demo users and reviews, so that rankings work from day one.
   A place's price level is the most common (mode) price level of its reviews, or free
   when OpenStreetMap tags `fee=no`.
 - Opening hours come from OpenStreetMap when mapped. Where they are missing the app
@@ -148,11 +151,11 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | Place                          | Place               | name, description, category, address, latitude, longitude, openingHours (optional), /priceLevel, /averageRating, /reviewCount | belongs to a City, has Reviews and Visits                       |
 | Visit                          | Place               | visitedAt                                                                                    | links a User to a Place (at most one per pair); created when the user posts a review      |
 | PlaceSuggestion (post-MVP)     | Place suggestion    | proposedName, proposedCategory, proposedAddress, status, suggestedAt, decidedAt (optional)   | suggested by a User, decided by a moderator (ADMIN), proposed in a City, approved as a Place |
-| Review                         | Review              | rating (1..5), priceLevel (optional), text, postedAt                                         | written by a User about a Place                                                           |
+| Review                         | Review              | rating (1..5), priceLevel (optional), text, createdAt                                        | written by a User about a Place                                                           |
 | SavedPlace                     | Saved places        | type (WISHLIST / BOOKMARK)                                                                   | a User saves a Place                                                                      |
 | SavedList                      | List                | name                                                                                         | owned by a User, contains bookmarked SavedPlaces                                          |
 | Trip                           | Trip                | name, /averageCostPoints                                                                     | owned by a User, goes to a City, has TripConstraints, Days and an Itinerary               |
-| TripConstraints (value object) | Trip                | startDate, endDate, budgetLevel (target average price of the whole trip), allowedCategories  | part of a Trip                                                                            |
+| TripConstraints (value object) | Trip                | startDate, endDate, budgetLevel (€, €€ or €€€: target average price of the whole trip), allowedCategories | part of a Trip                                                  |
 | Day                            | Trip                | dayNumber, date                                                                              | part of a Trip, one per date between the start and end date                               |
 | Itinerary                      | Trip                | mode (MANUAL / GENERATED)                                                                    | part of a Trip (0..1), schedules ItineraryStops                                           |
 | ItineraryStop                  | Trip                | visitTime (optional), position, /outsideOpeningHours, /travelTimeFromPreviousStop            | on a Day, visits a Place                                                                  |
@@ -239,9 +242,10 @@ Saved Places to itself (lists), Trip Planner to Reminders.
 **Technology.** The app is one Next.js project: the React UI and the server side
 (route handlers) live in the same codebase, and each backend component above is a
 module of it. Data is stored in PostgreSQL through Prisma, with versioned Prisma
-migrations. Development happens in VS Code inside a dev container, with one
-container for the app and one for the database. The MVP is one deployable app plus
-one database.
+migrations. The target setup is development in VS Code inside a dev container, with
+one container for the app and one for the database (planned for Iteration 1; today
+Docker Compose runs only the database and the app runs on the developer's machine).
+The MVP is one deployable app plus one database.
 
 ---
 
@@ -254,12 +258,12 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR     | Decision                                                  | Status                |
 | ------- | --------------------------------------------------------- | --------------------- |
 | ADR-001 | Full-stack architecture with Next.js 15 App Router       | Accepted              |
-| ADR-002 | Places come from an import script (OpenStreetMap)         | Accepted              |
+| ADR-002 | Places come from import and seed scripts and live discovery (OpenStreetMap) | Accepted |
 | ADR-003 | Soft budget metric based on cost points                   | Accepted              |
-| ADR-004 | Search outside the catalog with Nominatim                 | Proposed (Stretch)    |
+| ADR-004 | Search outside the catalog with Nominatim                 | Accepted (built, outside the committed MVP) |
 | ADR-005 | Honest symbolic places and a Ranking DataTable            | Accepted              |
 | ADR-006 | Data and development environment                          | Accepted              |
-| ADR-007 | Deployment on Vercel and Neon                             | Accepted (partly tested) |
+| ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -273,18 +277,18 @@ truth. Domain policies are on the EventStorming board and in section 1.
   - _Positive:_ one process and one port (`3000`). Prisma types and pure domain modules (`src/domain/`) are shared directly between frontend and backend.
   - _Trade-offs:_ the HTTP routes are coupled to the Next.js runtime. Components that depend on the browser DOM (`window`) need dynamic wrappers (`ssr: false`).
 
-### ADR-002: Places come from an import script (OpenStreetMap)
+### ADR-002: Places come from import and seed scripts and live discovery (OpenStreetMap)
 
-- **Status:** Accepted
-- **Context:** Reviews (`Review`), visits (`Visit`) and itinerary stops (`ItineraryStop`) need referential integrity with `Place.id` in the relational database. The public Overpass API servers have strict rate limits (HTTP 429), unpredictable latency (3 s to 60 s) and frequent failures (HTTP 502), so the app must not depend on them at run time.
-- **Decision:** All places are loaded into PostgreSQL by an admin import script, which is the _Import places_ command on the EventStorming board. The app never calls OpenStreetMap live for place data.
-  - _Cities:_ Porto, Lisbon, Madrid, Paris, Rome, Berlin and London.
-  - _Scripts:_ `scripts/import-osm.ts` loads the places. `prisma/seed.ts` creates demo users and sample reviews, marked as demo data.
-  - `Place.source` is `IMPORTED`, or `SUGGESTED` once place suggestions exist (Dream).
-- **Alternatives considered:** _lazy ingestion_, where the backend saves a place from OpenStreetMap the first time a user reviews it or adds it to a trip. It was left out of the MVP because it adds a runtime dependency on Overpass and a second way to create places.
+- **Status:** Accepted. This replaces the first version of the ADR, which said all places come from an import script and the app never calls OpenStreetMap live. The tracer bullet was built with live discovery, so the ADR now describes what the code does.
+- **Context:** Reviews (`Review`), visits (`Visit`) and itinerary stops (`ItineraryStop`) need referential integrity with `Place.id` in the relational database. The public Overpass API servers have strict rate limits (HTTP 429), unpredictable latency (3 s to 60 s) and frequent failures (HTTP 502), so the app must keep working when they do not answer.
+- **Decision:** The catalog is the `Place` table in PostgreSQL. Places enter it in three ways:
+  - _Scripts (`source = IMPORTED`):_ `scripts/import-osm.ts` is the _Import places_ command and loads places from OpenStreetMap (today only Porto). `prisma/seed.ts` creates the seven MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin and London, stored with their Portuguese names), their places, the demo users and the sample reviews. The demo data is not marked in the schema.
+  - _Live discovery (`source = LAZY_OSM`):_ when the map moves, `GET /api/osm` asks Overpass for the places in the visible area (small areas only, at most 40 places, three mirrors tried in turn with a 2 s timeout, 15 minute in-memory cache). If Overpass does not answer, the map shows the places already in PostgreSQL. A discovered place is saved to PostgreSQL by `POST /api/reviews` when a user posts the first review for it.
+  - _Suggestions (`source = SUGGESTED`):_ approved place suggestions, once they exist (Dream).
+- **Alternatives considered:** only the import script, with no live calls. It was the first version of this decision: the demos then need no external network, but a place that was not imported cannot be reviewed.
 - **Consequences:**
-  - _Positive:_ demos work 100% without an external network, the map loads instantly (< 5 ms), and relational integrity is kept for all reviews and trips.
-  - _Trade-offs:_ a place that OpenStreetMap does not have, or that was not imported, cannot be reviewed. It is added by running the import again or, later, through place suggestions (Dream).
+  - _Positive:_ any place on the map can be reviewed, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
+  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. In the tracer bullet a place saved on the fly is always assigned to the city Porto, so this must be fixed before other cities are used with live discovery. The EventStorming board does not show the on-the-fly saving yet.
 
 ### ADR-003: Soft budget metric based on cost points
 
@@ -300,15 +304,15 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-004: Search outside the catalog with Nominatim
 
-- **Status:** Proposed. Stretch, not in the MVP.
+- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). The search box must run on submit only: until the code is changed it still searches while the user types, which the Nominatim policy forbids.
 - **Context:** Text search over the PostgreSQL catalog cannot find a place that is not in our database. The MVP search (city, filters, sort) runs on the catalog only. The public Nominatim service has a strict usage policy: it forbids autocomplete (search as you type), allows at most 1 request per second for the whole application, asks for caching and requires a User-Agent that identifies the application.
-- **Decision:** For the Stretch version, use the OpenStreetMap geocoding service (**Nominatim API**) through a dedicated backend endpoint (`/api/osm/search`), within the policy:
+- **Decision:** Use the OpenStreetMap geocoding service (**Nominatim API**) through a dedicated backend endpoint (`/api/osm/search`), within the policy:
   - Search runs only when the user submits (Enter), never while typing.
   - At most 1 request per second in total, results cached on our side (15 min TTL), a defensive timeout of 3 seconds and an identifying `User-Agent`.
   - Results are shown in two groups: _Local catalog_ and _Found on OpenStreetMap_.
 - **Consequences:**
   - _Positive:_ any public place in the world can be found and shown on the map.
-  - _Trade-offs:_ it adds a Geocoding service to the external systems and depends on the network outside the catalog. A place found this way can only be reviewed after it is added to the catalog, so this feature needs a way to add places (a new import run, or place suggestions in the Dream tier).
+  - _Trade-offs:_ it adds a Geocoding service to the external systems and depends on the network outside the catalog. A place found this way is saved to the catalog when it is first reviewed (see ADR-002).
 
 ### ADR-005: Honest symbolic places and a Ranking DataTable
 
@@ -328,21 +332,22 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Status:** Accepted
 - **Context:** Four people must work on the same stack with the same results, and teachers must not need to install anything to see the product.
 - **Decision:**
-  - _Database:_ PostgreSQL, accessed through Prisma. The schema changes only through versioned Prisma migrations stored in the repository.
-  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database.
+  - _Database:_ PostgreSQL, accessed through Prisma. The schema changes only through versioned Prisma migrations stored in the repository. A migration that was already applied is never edited or squashed: a change is always a new, incremental migration.
+  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database. This is planned for Iteration 1. Today `docker-compose.yml` runs only the database (PostgreSQL 16) and the app runs on the developer's machine with `npm run dev`.
   - Docker is used only for local work. Deployment does not use it (see ADR-007).
 - **Consequences:**
-  - _Positive:_ every member has the same environment (setting it up is the first task of Iteration 1), reproducible migrations and the same database engine locally and in the cloud.
-  - _Trade-offs:_ every member needs Docker installed. Local data and the cloud data are separate, so the seed script must be run in each environment.
+  - _Positive:_ every member has the same environment (setting it up is the first task of Iteration 1), reproducible migrations and the same database engine (PostgreSQL) locally and in the cloud.
+  - _Trade-offs:_ every member needs Docker installed. Local data and the cloud data are separate, so the seed script must be run in each environment. The major version differs today: Docker runs PostgreSQL 16 and Neon runs 18.
 
 ### ADR-007: Deployment on Vercel and Neon
 
-- **Status:** Accepted. The dev path was tested on 21 Oct 2026, first with a hello-world app and then with the real skeleton, including the Prisma migration step on the dev database. The `main` (prod) path is not tested yet.
+- **Status:** Accepted. The dev path was tested on 21 Oct 2026, first with a hello-world app and then with the real skeleton, including the Prisma migration step on the dev database. The `main` (prod) path ran on 22 Oct 2026: the migrations were applied, the deploy succeeded and the site answers. Not yet proven: a deploy of a commit pushed by a teammate (see the Hobby plan note below).
 - **Context:** The project needs two separate environments (dev and prod) that teachers can open, at no cost. The repository is private in the course organisation, and Vercel's free plan cannot connect to private organisation repositories.
 - **Decision:**
   - _App hosting:_ Vercel Hobby (non-commercial use), with two projects: `les-group7-dev` (branch `dev`, address `les-group7-dev.vercel.app`) and `les-group7` (branch `main`, address `les-group7.vercel.app`). Both are deployed to their own production environment, which gives each a fixed public address.
   - _Database:_ Neon Free, with two projects: `les-g7-dev` and `les-g7-prod`. The app uses the pooled connection string (`DATABASE_URL`) and migrations use the direct one.
   - _Pipeline:_ a GitHub Action (`.github/workflows/deploy.yml`) runs on every push to `dev` or `main`: install, lint and tests, build, `prisma migrate deploy` and upload with the Vercel command line tool. Vercel never connects to the repository.
+  - _Prisma on Vercel:_ `prisma/schema.prisma` generates the query engine for two targets, `native` (the CI runner) and `rhel-openssl-3.0.x` (the system Vercel Functions run on). With only the first one the pages fail with "could not locate the Query Engine".
   - _Secrets:_ stored only in GitHub secrets and Vercel environment settings, never in the repository or in chat.
   - _Releases:_ `dev` is merged into `main` the day before each review, after backing up the prod database.
   - Full steps: [deployment.md](deployment.md).
@@ -350,3 +355,5 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ free, two fixed public addresses, a deployment that is repeatable and visible in GitHub.
   - _Trade-offs:_ Neon suspends the database after 5 minutes without use, so the first request is slower. Free limits apply (Neon: 1 GB and 100 compute-hours per month per project). Both Vercel projects belong to one person's account.
+  - _Hobby plan:_ it only deploys commits authored by the account owner and blocks the rest (the deployment stays in the state `BLOCKED` and the upload waits). The workflow hides `.git` while it uploads so that the upload carries no commit author. This worked for the owner's commits on dev and prod, and has not been tested with a teammate's commit. If it fails, only the account owner can deploy until the plan changes. Which commit was deployed is visible in the GitHub Action run, not in Vercel.
+  - _Data history:_ Neon Free keeps only 6 hours of history, so a prod backup must be taken before each release (see [deployment.md](deployment.md)).
