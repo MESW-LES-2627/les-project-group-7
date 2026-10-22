@@ -151,7 +151,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | Place                          | Place               | name, description, category, address, latitude, longitude, openingHours (optional), /priceLevel, /averageRating, /reviewCount | belongs to a City, has Reviews and Visits                       |
 | Visit                          | Place               | visitedAt                                                                                    | links a User to a Place (at most one per pair); created when the user posts a review      |
 | PlaceSuggestion (post-MVP)     | Place suggestion    | proposedName, proposedCategory, proposedAddress, status, suggestedAt, decidedAt (optional)   | suggested by a User, decided by a moderator (ADMIN), proposed in a City, approved as a Place |
-| Review                         | Review              | rating (1..5), priceLevel (optional), text, createdAt                                        | written by a User about a Place                                                           |
+| Review                         | Review              | rating (1..5), priceLevel (optional: €, €€ or €€€), text, createdAt                                        | written by a User about a Place                                                           |
 | SavedPlace                     | Saved places        | type (WISHLIST / BOOKMARK)                                                                   | a User saves a Place                                                                      |
 | SavedList                      | List                | name                                                                                         | owned by a User, contains bookmarked SavedPlaces                                          |
 | Trip                           | Trip                | name, /averageCostPoints                                                                     | owned by a User, goes to a City, has TripConstraints, Days and an Itinerary               |
@@ -162,7 +162,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | Reminder (post-MVP)            | Reminder            | sentAt                                                                                       | reminds of an ItineraryStop; created when the visit time is near                          |
 | PublishedItinerary (post-MVP)  | Published itinerary | title, publishedAt                                                                           | published by a User, bookmarked by Users, has PublishedStops (a copy of an itinerary)     |
 | PublishedStop (post-MVP)       | Published itinerary | dayNumber, visitTime (optional), position                                                    | visits a Place                                                                            |
-| PriceLevel (enumeration)       | shared              | FREE = 0, € = 1, €€ = 2, €€€ = 3 (cost points)                                               | used by Place, Review and TripConstraints; unknown is not counted                         |
+| PriceLevel (enumeration)       | shared              | FREE = 0, € = 1, €€ = 2, €€€ = 3 (cost points)                                               | used by Place (all four values) and Review (€ to €€€ only); the trip budget level also uses € to €€€; unknown is not counted                         |
 | PlaceCategory (enumeration)    | shared              | RESTAURANT, MUSEUM, MONUMENT, PARK, CAFE, BAR, OTHER                                         | used by Place, PlaceSuggestion and TripConstraints                                        |
 
 Design notes:
@@ -304,7 +304,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-004: Search outside the catalog with Nominatim
 
-- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). The search box must run on submit only: until the code is changed it still searches while the user types, which the Nominatim policy forbids.
+- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). Two points of the decision are not fully in the code yet: the search box must run on submit only (fixed in the branch `fix/search-submit-and-schema-cleanup`, not merged yet), and the limit of 1 request per second for the whole app is not enforced (there is no throttle in `/api/osm/search`). Both must be done before real users, because the Nominatim policy forbids autocomplete and can block an application that exceeds the rate limit.
 - **Context:** Text search over the PostgreSQL catalog cannot find a place that is not in our database. The MVP search (city, filters, sort) runs on the catalog only. The public Nominatim service has a strict usage policy: it forbids autocomplete (search as you type), allows at most 1 request per second for the whole application, asks for caching and requires a User-Agent that identifies the application.
 - **Decision:** Use the OpenStreetMap geocoding service (**Nominatim API**) through a dedicated backend endpoint (`/api/osm/search`), within the policy:
   - Search runs only when the user submits (Enter), never while typing.

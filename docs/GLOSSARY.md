@@ -72,7 +72,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Definition:** A user-defined named collection of **bookmarked** places (e.g., "Best Bakeries in Porto", "Architecture Tour"). MVP, planned for Iteration 4.
 - **Key Attributes:** `id`, `userId`, `name`, `createdAt`.
 - **ListEntry:**
-  - Join entity linking `SavedList` to a bookmarked `SavedPlace` with `addedAt`.
+  - Join entity linking `SavedList` to a `Place` with `addedAt` (in the schema it references `Place`, not `SavedPlace`).
   - **Consistency Rule:** a list only holds bookmarked places. When a bookmark is removed, a policy removes that place from all the user's lists. One place can be in several lists. The application enforces this rule, not the database: in the schema `ListEntry` references `Place`.
 - **Commands:** _Create list_, _Change list_ (rename or delete), _Add or remove place_.
 

@@ -17,7 +17,7 @@ legend right
   |<#FFF8E1> MVP component |
   |<#EEEEEE> Stretch (designed, not in the MVP) |
   |<#F8C9D8> External system |
-  --
+  **How to read this diagram**
   Dashed arrow = depends on (calls) the component it points to.
   Solid arrow = connects to a person, the database or an external system.
   Lollipop (REST API) = interface that the backend offers to the Web App.
@@ -34,7 +34,7 @@ package "Backend" as backend {
   interface "REST API" as api
 
   component "Identity\n(users, auth, roles)" as identity
-  component "Place Catalog\n(places, import, opening hours,\nvisited, rating, top-rated)" as catalog
+  component "Place Catalog\n(places, import, live discovery,\nopening hours, visited, rating,\ntop-rated)" as catalog
   component "Reviews\n(post, edit, delete,\nprice level)" as reviews
   component "Saved Places\n(wishlist, bookmarks, lists)" as saved
   component "Trip Planner\n(trips, days, itinerary,\nvisit times, travel time,\nhours and budget warnings)" as planner

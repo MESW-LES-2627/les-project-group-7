@@ -36,7 +36,7 @@ Status: the dev path was tested on 21 Oct 2026, first with a hello-world app (bo
 
 1. Create an account at vercel.com (sign in with GitHub, Hobby plan).
 2. Create two projects without connecting a Git repository, by running `vercel link`
-   twice in the app folder (in a throwaway `node:20` container, so nothing is installed):
+   twice in the app folder (in a throwaway `node:22` container, so nothing is installed):
    `les-group7` for prod and `les-group7-dev` for dev. Both are deployed to their own
    *production* environment, which gives each a fixed public address. (The first design
    used one project and a preview address, but `vercel alias set` failed with
@@ -64,11 +64,8 @@ Never paste these values in chat or commit them.
 ## Every iteration
 
 1. Before merging `dev` into `main`, back up the prod database. Neon Free keeps only
-   6 hours of history (the project setting is at its maximum), and no snapshot exists
-   today, so a backup you made yourself is the only way back after more than 6 hours.
-   Do both:
-   - Take a snapshot in the Neon Console. The number of manual snapshots the Free plan
-     allows has not been verified.
+   6 hours of history (the project setting is at its maximum), so a backup you made
+   yourself is the only way back after more than 6 hours.
    - Save a dump outside the repository. The `pg_dump` version must be at least the
      server version (18), so use the Postgres 18 image, with the direct connection string
      in an environment variable (never typed into a command that is saved or shared):

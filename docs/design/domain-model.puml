@@ -51,7 +51,8 @@ enum PriceLevel <<enumeration>> #FFFFFF {
 note right of PriceLevel
   The numbers are cost points. A place or review
   without a level is unknown and not counted.
-  The trip budget level (€ to €€€) is the target
+  Only a place can be FREE. A review and the trip
+  budget level only use € to €€€. The budget level is the target
   average of the whole trip: the mean of the cost
   points of its stops with a known price.
 end note
@@ -102,7 +103,7 @@ class PlaceSuggestion <<post-MVP>> #F3E0A8 {
 
 class Review #D6ECFA {
   rating : 1..5
-  priceLevel : PriceLevel [0..1]
+  priceLevel : € | €€ | €€€ [0..1]
   text
   createdAt
 }
