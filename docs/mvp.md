@@ -15,63 +15,62 @@ release by 18 Dec 2026**. Everything else in the [vision](vision.md) is Stretch
 
 ## 2. In the MVP
 
-Each feature lists what the user can do, where it appears in the
-[EventStorming](design/eventstorming.png), and when we plan to build it.
-Planned iterations are targets and are re-planned at each sprint planning.
+Each feature lists what the user can do. The features are not tied to a specific
+iteration: the order is decided at each sprint planning.
 
 ### Accounts
 
-| ID | Feature | The user can… | EventStorming | Iteration |
-|---|---|---|---|---|
-| A1 | Register and log in | Create an account, log in and log out | Register user | 1 |
+| ID | Feature | The user can… |
+|---|---|---|
+| A1 | Register and log in | Create an account, log in and log out |
 
 ### Places and discovery
 
-| ID | Feature | The user can… | EventStorming | Iteration |
-|---|---|---|---|---|
-| B1 | Place import | (Admin) import places from OpenStreetMap with the import script (Porto so far; the seed script adds the other MVP cities) | Import places | 1 |
-| B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one | none (seed script) | 1, extended in 2 |
-| B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating | none (query) | 1 basic, 2 filters |
-| B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews | none (query) | 1 |
-| B5 | Map view | See a city's places as pins on a map, with clustering | none (UI) | 2 |
-| B6 | Top-rated places | See the top-rated places per city and type | none (query: top-rated places is a read model, not an event) | 2 |
-| B7 | Discover places on the map | See OpenStreetMap places that are not in the catalog yet; a discovered place is saved to the catalog when the user posts the first review for it | none (saved inside Post review, see ADR-002) | 1 (tracer bullet) |
+| ID | Feature | The user can… |
+|---|---|---|
+| B1 | Place import | (Admin) import places from OpenStreetMap with the import script (Porto so far; the seed script adds the other MVP cities) |
+| B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one |
+| B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating |
+| B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
+| B5 | Map view | See a city's places as pins on a map, with clustering |
+| B6 | Top-rated places | See the top-rated places per city and type |
+| B7 | Discover places on the map | See OpenStreetMap places that are not in the catalog yet; a discovered place is saved to the catalog when the user posts the first review for it |
 
 ### Reviews
 
-| ID | Feature | The user can… | EventStorming | Iteration |
-|---|---|---|---|---|
-| C1 | Post a review | Rate 1 to 5, write text, say how expensive it was (€ / €€ / €€€). The place is marked as visited and its rating updates | Post review. Policies: Mark place visited, Recalculate rating and price level | 1 |
-| C2 | Edit and delete a review | Change or remove own review; rating and top-rated update | Edit review, Delete review. Policy: Recalculate rating and price level | 2 |
-| C3 | Visited places | See a list of the places they have visited | none (query over Place visited) | 2 |
+| ID | Feature | The user can… |
+|---|---|---|
+| C1 | Post a review | Rate 1 to 5, write text, say how expensive it was (€ / €€ / €€€). The place is marked as visited and its rating updates |
+| C2 | Edit and delete a review | Change or remove own review; rating and top-rated update |
+| C3 | Visited places | See a list of the places they have visited |
 
 ### Saved places and lists
 
-| ID | Feature | The user can… | EventStorming | Iteration |
-|---|---|---|---|---|
-| D1 | Wishlist and bookmarks | Add and remove places on the wishlist ("I want to go") or bookmarks ("remember this") | Wishlist place, Bookmark place, Remove saved place | 2 |
-| D2 | Custom lists | Create, rename and delete lists in the bookmarks section; add and remove bookmarked places. A place can be in several lists, and removing a bookmark removes the place from the lists | Create list, Change list (rename or delete), Add or remove place. Policy: remove a place from the lists when its bookmark is removed | 4 |
+| ID | Feature | The user can… |
+|---|---|---|
+| D1 | Wishlist and bookmarks | Add and remove places on the wishlist ("I want to go") or bookmarks ("remember this") |
+| D2 | Custom lists | Create, rename and delete lists in the bookmarks section; add and remove bookmarked places. A place can be in several lists, and removing a bookmark removes the place from the lists |
 
 ### Trips and itineraries
 
-| ID | Feature | The user can… | EventStorming | Iteration |
-|---|---|---|---|---|
-| E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip) and preferred types; days are created from the dates | Create trip (Days added follows) | 2 |
-| E2 | Change a trip | Edit the constraints; days are added or removed to match | Change trip constraints (Days added or Days removed follow) | 3 |
-| E3 | Delete a trip | Delete a trip with its days, itinerary and stops | Delete trip | 3 |
-| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times | Edit itinerary | 3 |
-| E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) | none (query) | 3 |
-| E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above | Plan warning raised | 3 |
-| E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance | none (rule) | 4 |
-| E8 | Basic generator | Press "Generate itinerary": per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one | Generate itinerary | 3, tuned in 4 |
+| ID | Feature | The user can… |
+|---|---|---|
+| E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip) and preferred types; days are created from the dates |
+| E2 | Change a trip | Edit the constraints; days are added or removed to match |
+| E3 | Delete a trip | Delete a trip with its days, itinerary and stops |
+| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times |
+| E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) |
+| E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above |
+| E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance |
+| E8 | Basic generator | Press "Generate itinerary": per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one |
 
 ### Platform
 
-| ID | Feature | Detail | Iteration |
-|---|---|---|---|
-| P1 | Web app, no installation | Works in current desktop and mobile browsers, layout usable down to phone width | 1 onward |
-| P2 | Dev and prod environments | Separate servers; changes go to dev first and reach prod at each sprint review | 1 |
-| P3 | Attribution | "© OpenStreetMap contributors" visible on the map and wherever place data is shown | 1, 2 |
+| ID | Feature | Detail |
+|---|---|---|
+| P1 | Web app, no installation | Works in current desktop and mobile browsers, layout usable down to phone width |
+| P2 | Dev and prod environments | Separate servers; changes go to dev first and reach prod at each sprint review |
+| P3 | Attribution | "© OpenStreetMap contributors" visible on the map and wherever place data is shown |
 
 ## 3. Not in the MVP
 
@@ -128,7 +127,7 @@ If there is time left, the Stretch ideas we would take first, in this order:
 | Map | Follows the OpenStreetMap tile usage policy (attribution, no bulk or offline use), or uses a provider that allows our usage |
 | Licensing | OpenStreetMap attribution shown |
 | Tech stack | One Next.js app (React UI and server side in the same project), PostgreSQL accessed through Prisma |
-| Development setup | Target: developed in VS Code inside a dev container, with one container for the app and one for the database, started together (planned for Iteration 1). Today: Docker Compose runs the database and the app runs on the developer's machine |
+| Development setup | Target: developed in VS Code inside a dev container, with one container for the app and one for the database, started together (planned, not built yet). Today: Docker Compose runs the database and the app runs on the developer's machine |
 | Understandability | Every team member can explain the design and code, including anything written with AI help |
 
 ## 6. Demo scenario
