@@ -35,7 +35,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 | ------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
 | **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components              |
 | **Styling & UI**    | Tailwind CSS + Shadcn UI + Lucide Icons         | Accessible, responsive component design system                |
-| **ORM & Database**  | Prisma ORM + PostgreSQL (16 in Docker, Neon in the cloud) | Relational persistence, migrations, and type-safe queries |
+| **ORM & Database**  | Prisma ORM + PostgreSQL 18 (Docker locally, Neon in the cloud) | Relational persistence, migrations, and type-safe queries |
 | **Testing**         | Vitest                                          | Fast unit testing for domain algorithms (`/tdd`)              |
 | **Mapping**         | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
 

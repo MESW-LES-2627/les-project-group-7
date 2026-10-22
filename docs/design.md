@@ -333,11 +333,11 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Context:** Four people must work on the same stack with the same results, and teachers must not need to install anything to see the product.
 - **Decision:**
   - _Database:_ PostgreSQL, accessed through Prisma. The schema changes only through versioned Prisma migrations stored in the repository. A migration that was already applied is never edited or squashed: a change is always a new, incremental migration.
-  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database. This is planned for Iteration 1. Today `docker-compose.yml` runs only the database (PostgreSQL 16) and the app runs on the developer's machine with `npm run dev`.
+  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database. This is planned for Iteration 1. Today `docker-compose.yml` runs only the database (PostgreSQL 18, the same major version as Neon) and the app runs on the developer's machine with `npm run dev`.
   - Docker is used only for local work. Deployment does not use it (see ADR-007).
 - **Consequences:**
   - _Positive:_ every member has the same environment (setting it up is the first task of Iteration 1), reproducible migrations and the same database engine (PostgreSQL) locally and in the cloud.
-  - _Trade-offs:_ every member needs Docker installed. Local data and the cloud data are separate, so the seed script must be run in each environment. The major version differs today: Docker runs PostgreSQL 16 and Neon runs 18.
+  - _Trade-offs:_ every member needs Docker installed. Local data and the cloud data are separate, so the seed script must be run in each environment. Docker and Neon both run PostgreSQL 18, so a migration that works locally behaves the same in the cloud.
 
 ### ADR-007: Deployment on Vercel and Neon
 
