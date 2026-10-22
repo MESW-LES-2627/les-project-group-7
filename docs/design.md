@@ -78,7 +78,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 - **Notification service** delivers visit reminders (Stretch). The trigger is a timer.
 - **Routing service** (OpenRouteService) provides real travel times (Stretch).
 - **Moderator** (a user with the ADMIN role) approves or rejects place suggestions (Dream).
-- **Geocoding service** (Nominatim) finds places outside the catalog (Stretch, see ADR-004).
+- **Geocoding service** (Nominatim) finds places outside the catalog (built, outside the committed MVP, see ADR-004).
 
 ### Key decisions
 
@@ -216,7 +216,7 @@ designed, not in the MVP.
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Web App              | Browser UI for users and admins, including the map                                                                                                                           | Backend REST API, Map tiles (external)                                  |
 | Identity             | Users, authentication, roles                                                                                                                                                 | Database                                                                |
-| Place Catalog        | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (suggestions, moderation and search outside the catalog are post-MVP) | Database, Places data source (external), Geocoding service (external, Stretch) |
+| Place Catalog        | The whole Place aggregate: places, city search, import, live discovery of places, opening hours, visited marker, rating recalculation and the top-rated list (search outside the catalog is built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
 | Reviews              | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
 | Trip Planner         | Trips, days, itineraries, visit times, travel-time estimates, opening-hours and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
@@ -226,10 +226,10 @@ designed, not in the MVP.
 
 External systems:
 
-- **Places data source** (OpenStreetMap), used by Place Catalog to import places.
+- **Places data source** (OpenStreetMap), used by Place Catalog to import places and to discover places live on the map (see ADR-002).
 - **Map tiles** (OpenStreetMap), used by the Web App to draw the map.
 - **Routing service** (OpenRouteService, Stretch), used by Trip Planner for real travel times.
-- **Geocoding service** (Nominatim, Stretch), used by Place Catalog to search outside the catalog (see ADR-004).
+- **Geocoding service** (Nominatim, built but outside the committed MVP), used by Place Catalog to search outside the catalog (see ADR-004).
 - **Notification service** (e-mail or push, Stretch), used by Reminders.
 
 Each component matches aggregates from the EventStorming (Identity = User, Place

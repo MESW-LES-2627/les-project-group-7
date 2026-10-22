@@ -48,7 +48,7 @@ database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
 cloud "Routing service\n(OpenRouteService)\nStretch" as routing #F8C9D8
-cloud "Geocoding service\n(Nominatim)\nStretch" as geocoding #F8C9D8
+cloud "Geocoding service\n(Nominatim)\nbuilt, not in the\ncommitted MVP" as geocoding #F8C9D8
 cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
 
 user --> web
@@ -71,8 +71,8 @@ generator ..> saved : wishlist places
 publishing ..> planner : copy itinerary
 reminders ..> planner : upcoming visits
 
-catalog --> places : import places
-catalog ..> geocoding : search outside\nthe catalog (Stretch)
+catalog --> places : import places and\ndiscover places live
+catalog ..> geocoding : search outside\nthe catalog
 planner ..> routing : real travel times
 reminders --> notif : send reminder
 
