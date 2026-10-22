@@ -34,7 +34,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   try {
     const endpoint = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
       queryCombined
-    )}&format=json&addressdetails=1&extratags=1&limit=${limit}`;
+    )}&format=json&addressdetails=1&limit=${limit}`;
 
     const res = await fetch(endpoint, {
       headers: {

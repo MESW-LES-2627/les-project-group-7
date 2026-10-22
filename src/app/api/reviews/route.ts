@@ -155,10 +155,6 @@ export async function POST(request: Request) {
               : "€",
           cityId: city.id,
           source: "LAZY_OSM",
-          wikidataId:
-            typeof body.place.wikidataId === "string"
-              ? body.place.wikidataId
-              : null,
         },
       });
     }

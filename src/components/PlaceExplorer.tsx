@@ -146,7 +146,6 @@ export default function PlaceExplorer({
         averageRating: null,
         reviewCount: 0,
         isDiscovered: true,
-        wikidataId: osm.wikidataId,
       });
     },
     [openReviewModal]

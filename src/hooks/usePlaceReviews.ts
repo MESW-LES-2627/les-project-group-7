@@ -80,7 +80,6 @@ export function usePlaceReviews({
             latitude: activeReviewPlace.latitude,
             longitude: activeReviewPlace.longitude,
             priceLevel: activeReviewPlace.priceLevel,
-            wikidataId: activeReviewPlace.wikidataId,
           },
         }),
       });
