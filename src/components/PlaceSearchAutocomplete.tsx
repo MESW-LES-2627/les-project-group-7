@@ -31,6 +31,8 @@ export default function PlaceSearchAutocomplete({
   const [isLoadingOsm, setIsLoadingOsm] = useState(false);
   // The query that was last sent to OpenStreetMap (set on Enter only).
   const [submittedQuery, setSubmittedQuery] = useState("");
+  // True when the server refused the last search because of the Nominatim rate limit.
+  const [osmBusy, setOsmBusy] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   // Only the answer to the latest submit may update the results.
   const requestIdRef = useRef(0);
@@ -55,6 +57,7 @@ export default function PlaceSearchAutocomplete({
 
     const requestId = ++requestIdRef.current;
     setSubmittedQuery(query);
+    setOsmBusy(false);
     setIsLoadingOsm(true);
     try {
       const params = new URLSearchParams({ q: query });
@@ -64,6 +67,7 @@ export default function PlaceSearchAutocomplete({
       if (requestId !== requestIdRef.current) return;
       if (!res.ok) {
         setOsmResults([]);
+        setOsmBusy(res.status === 429);
         return;
       }
 
@@ -239,7 +243,14 @@ export default function PlaceSearchAutocomplete({
             </div>
           )}
 
-          {osmSearchIsCurrent && !hasResults && !isLoadingOsm && (
+          {osmSearchIsCurrent && osmBusy && !isLoadingOsm && (
+            <div className="px-2 py-1.5 text-center text-[11px] text-amber-600">
+              Pesquisa no OpenStreetMap ocupada. Prima Enter outra vez dentro de
+              um segundo.
+            </div>
+          )}
+
+          {osmSearchIsCurrent && !osmBusy && !hasResults && !isLoadingOsm && (
             <div className="p-3 text-center text-xs text-slate-400">
               Nenhum local encontrado para &ldquo;{searchQuery}&rdquo;.
             </div>

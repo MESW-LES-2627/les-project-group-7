@@ -304,11 +304,11 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-004: Search outside the catalog with Nominatim
 
-- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). Two points of the decision are not fully in the code yet: the search box must run on submit only (fixed in the branch `fix/search-submit-and-schema-cleanup`, not merged yet), and the limit of 1 request per second for the whole app is not enforced (there is no throttle in `/api/osm/search`). Both must be done before real users, because the Nominatim policy forbids autocomplete and can block an application that exceeds the rate limit.
+- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). The search box runs on submit only, and the server enforces the limit of 1 request per second (per server instance, see below).
 - **Context:** Text search over the PostgreSQL catalog cannot find a place that is not in our database. The MVP search (city, filters, sort) runs on the catalog only. The public Nominatim service has a strict usage policy: it forbids autocomplete (search as you type), allows at most 1 request per second for the whole application, asks for caching and requires a User-Agent that identifies the application.
 - **Decision:** Use the OpenStreetMap geocoding service (**Nominatim API**) through a dedicated backend endpoint (`/api/osm/search`), within the policy:
   - Search runs only when the user submits (Enter), never while typing.
-  - At most 1 request per second in total, results cached on our side (15 min TTL), a defensive timeout of 3 seconds and an identifying `User-Agent`.
+  - At most 1 request per second in total (the endpoint answers HTTP 429 with `Retry-After: 1` to the extra requests, and answers from the cache do not count), results cached on our side (15 min TTL), a defensive timeout of 3 seconds and an identifying `User-Agent`. The counter is in the memory of one server instance, so on Vercel, where several instances can run, the limit is per instance. That is enough for the expected traffic, and a shared counter (for example in the database) would be needed to make it exact.
   - Results are shown in two groups: _Local catalog_ and _Found on OpenStreetMap_.
 - **Consequences:**
   - _Positive:_ any public place in the world can be found and shown on the map.
