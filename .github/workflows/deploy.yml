@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -76,7 +76,8 @@ jobs:
       # The Hobby plan only deploys commits authored by the account owner and blocks the rest.
       # The CLI reads the commit from .git, so hide .git while it uploads (the trap puts it back,
       # even on failure): the upload carries no commit author and teammates' pushes are not
-      # blocked. The commit is still recorded through custom metadata (ciSha, ciRef).
+      # blocked. The deployment shows no commit in Vercel (the --meta values below did not
+      # appear in the deployment), so the Action run is where to see which commit was deployed.
       - name: Deploy
         run: |
           mv .git "$RUNNER_TEMP/git-hidden"

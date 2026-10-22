@@ -77,7 +77,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v20.x or higher)
+- [Node.js](https://nodejs.org/) (v22.x or higher; the deploy workflow uses 22)
 - [Docker & Docker Compose](https://www.docker.com/)
 
 ### 1. Setup Database & Dependencies
