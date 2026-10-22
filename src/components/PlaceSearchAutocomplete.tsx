@@ -29,8 +29,11 @@ export default function PlaceSearchAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [osmResults, setOsmResults] = useState<OsmSearchResult[]>([]);
   const [isLoadingOsm, setIsLoadingOsm] = useState(false);
+  // The query that was last sent to OpenStreetMap (set on Enter only).
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  // Only the answer to the latest submit may update the results.
+  const requestIdRef = useRef(0);
 
   // 1. Instant local database search filter (up to 4 matches)
   const matchingLocalPlaces =
@@ -44,42 +47,35 @@ export default function PlaceSearchAutocomplete({
           .slice(0, 4)
       : [];
 
-  // 2. Debounced live OpenStreetMap search
-  const fetchOsmSearch = useCallback(
-    (query: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (query.trim().length < 2) {
+  // 2. OpenStreetMap search (Nominatim). The Nominatim usage policy forbids
+  // search-as-you-type, so this runs only when the user presses Enter (ADR-004).
+  const submitOsmSearch = useCallback(async () => {
+    const query = searchQuery.trim();
+    if (query.length < 2) return;
+
+    const requestId = ++requestIdRef.current;
+    setSubmittedQuery(query);
+    setIsLoadingOsm(true);
+    try {
+      const params = new URLSearchParams({ q: query });
+      if (cityName) params.set("city", cityName);
+
+      const res = await fetch(`/api/osm/search?${params}`);
+      if (requestId !== requestIdRef.current) return;
+      if (!res.ok) {
         setOsmResults([]);
-        setIsLoadingOsm(false);
         return;
       }
 
-      setIsLoadingOsm(true);
-      debounceRef.current = setTimeout(async () => {
-        try {
-          const params = new URLSearchParams({ q: query });
-          if (cityName) params.set("city", cityName);
-
-          const res = await fetch(`/api/osm/search?${params}`);
-          if (!res.ok) return;
-
-          const data: unknown = await res.json();
-          if (Array.isArray(data)) {
-            setOsmResults(data as OsmSearchResult[]);
-          }
-        } catch {
-          setOsmResults([]);
-        } finally {
-          setIsLoadingOsm(false);
-        }
-      }, 350);
-    },
-    [cityName]
-  );
-
-  useEffect(() => {
-    fetchOsmSearch(searchQuery);
-  }, [searchQuery, fetchOsmSearch]);
+      const data: unknown = await res.json();
+      if (requestId !== requestIdRef.current) return;
+      setOsmResults(Array.isArray(data) ? (data as OsmSearchResult[]) : []);
+    } catch {
+      if (requestId === requestIdRef.current) setOsmResults([]);
+    } finally {
+      if (requestId === requestIdRef.current) setIsLoadingOsm(false);
+    }
+  }, [searchQuery, cityName]);
 
   // 3. Dismiss dropdown on outside clicks
   useEffect(() => {
@@ -96,6 +92,8 @@ export default function PlaceSearchAutocomplete({
   }, []);
 
   const hasResults = matchingLocalPlaces.length > 0 || osmResults.length > 0;
+  // The OpenStreetMap results belong to the last submitted text, not to what is typed now.
+  const osmSearchIsCurrent = submittedQuery === searchQuery.trim();
 
   return (
     <div ref={containerRef} className="relative flex-1">
@@ -109,7 +107,13 @@ export default function PlaceSearchAutocomplete({
             onSearchChange(e.target.value);
             setIsOpen(true);
           }}
-          placeholder="Pesquisar locais por nome, morada ou OSM..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void submitOsmSearch();
+            }
+          }}
+          placeholder="Pesquisar locais por nome ou morada (Enter pesquisa no OSM)..."
           className="pl-9 pr-8 text-xs"
         />
         {isLoadingOsm && (
@@ -174,8 +178,8 @@ export default function PlaceSearchAutocomplete({
             </div>
           )}
 
-          {/* Section B: OpenStreetMap Live */}
-          {osmResults.length > 0 && (
+          {/* Section B: OpenStreetMap Live (shown only for the submitted text) */}
+          {osmSearchIsCurrent && osmResults.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold text-slate-400">
                 <Globe className="h-3 w-3 text-sky-500" />
@@ -229,7 +233,13 @@ export default function PlaceSearchAutocomplete({
             </div>
           )}
 
-          {!hasResults && !isLoadingOsm && (
+          {!osmSearchIsCurrent && !isLoadingOsm && (
+            <div className="px-2 py-1.5 text-center text-[11px] text-slate-400">
+              Prima Enter para pesquisar também no OpenStreetMap.
+            </div>
+          )}
+
+          {osmSearchIsCurrent && !hasResults && !isLoadingOsm && (
             <div className="p-3 text-center text-xs text-slate-400">
               Nenhum local encontrado para &ldquo;{searchQuery}&rdquo;.
             </div>
