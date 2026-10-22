@@ -56,7 +56,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 | Place               | Import places, Mark place visited, Recalculate rating and price level, Add place to catalog      | Places imported, Place visited, Place rating and price level updated, Place added to catalog                                                                          | MVP (_Add place to catalog_ is Dream)       |
 | Review              | Post review, Edit review, Delete review                                                          | Review posted, Review changed, Review deleted                                                                                                                         | MVP                                         |
 | Saved places        | Wishlist place, Bookmark place, Remove saved place                                               | Place wishlisted, Place bookmarked, Place removed from wishlist, Place removed from bookmarks                                                                         | MVP                                         |
-| List                | Add or remove place, Create list, Change list (rename or delete)                                 | Place added to list, Place removed from list, List created, List renamed, List deleted                                                                                | MVP (Iteration 4)                           |
+| List                | Add or remove place, Create list, Change list (rename or delete)                                 | Place added to list, Place removed from list, List created, List renamed, List deleted                                                                                | MVP                           |
 | Published itinerary | Publish itinerary, Bookmark published itinerary, Remove itinerary bookmark                       | Itinerary published, Itinerary bookmarked, Itinerary bookmark removed                                                                                                 | Stretch                                     |
 | Reminder            | Send a reminder                                                                                  | Visit reminder sent                                                                                                                                                   | Stretch                                     |
 | Place suggestion    | Suggest place, Approve suggestion, Reject suggestion                                             | Place suggested, Suggestion approved, Suggestion rejected                                                                                                             | Dream                                       |
@@ -67,7 +67,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 | --------------------------------------------------------------------------------------------- | ---------------- | ------------ | ------- |
 | Whenever a review is posted, mark the place as visited                                        | Review           | Place        | MVP     |
 | Whenever a review is posted, changed or deleted, the rating and price level are recalculated  | Review           | Place        | MVP     |
-| Whenever a place is removed from bookmarks, remove it from the user's lists                   | Saved places     | List         | MVP (Iteration 4) |
+| Whenever a place is removed from bookmarks, remove it from the user's lists                   | Saved places     | List         | MVP |
 | When a visit time is near, send a reminder                                                    | Trip             | Reminder     | Stretch |
 | Whenever a suggestion is approved, add the place to the catalog                               | Place suggestion | Place        | Dream   |
 
@@ -243,7 +243,7 @@ Saved Places to itself (lists), Trip Planner to Reminders.
 (route handlers) live in the same codebase, and each backend component above is a
 module of it. Data is stored in PostgreSQL through Prisma, with versioned Prisma
 migrations. The target setup is development in VS Code inside a dev container, with
-one container for the app and one for the database (planned for Iteration 1; today
+one container for the app and one for the database (planned; today
 Docker Compose runs only the database and the app runs on the developer's machine).
 The MVP is one deployable app plus one database.
 
@@ -333,10 +333,10 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Context:** Four people must work on the same stack with the same results, and teachers must not need to install anything to see the product.
 - **Decision:**
   - _Database:_ PostgreSQL, accessed through Prisma. The schema changes only through versioned Prisma migrations stored in the repository. A migration that was already applied is never edited or squashed: a change is always a new, incremental migration.
-  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database. This is planned for Iteration 1. Today `docker-compose.yml` runs only the database (PostgreSQL 18, the same major version as Neon) and the app runs on the developer's machine with `npm run dev`.
+  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database. This is planned. Today `docker-compose.yml` runs only the database (PostgreSQL 18, the same major version as Neon) and the app runs on the developer's machine with `npm run dev`.
   - Docker is used only for local work. Deployment does not use it (see ADR-007).
 - **Consequences:**
-  - _Positive:_ every member has the same environment (setting it up is the first task of Iteration 1), reproducible migrations and the same database engine (PostgreSQL) locally and in the cloud.
+  - _Positive:_ every member has the same environment (once the dev container exists), reproducible migrations and the same database engine (PostgreSQL) locally and in the cloud.
   - _Trade-offs:_ every member needs Docker installed. Local data and the cloud data are separate, so the seed script must be run in each environment. Docker and Neon both run PostgreSQL 18, so a migration that works locally behaves the same in the cloud.
 
 ### ADR-007: Deployment on Vercel and Neon

@@ -69,7 +69,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### SavedList (aggregate: List)
 
-- **Definition:** A user-defined named collection of **bookmarked** places (e.g., "Best Bakeries in Porto", "Architecture Tour"). MVP, planned for Iteration 4.
+- **Definition:** A user-defined named collection of **bookmarked** places (e.g., "Best Bakeries in Porto", "Architecture Tour"). MVP.
 - **Key Attributes:** `id`, `userId`, `name`, `createdAt`.
 - **ListEntry:**
   - Join entity linking `SavedList` to a `Place` with `addedAt` (in the schema it references `Place`, not `SavedPlace`).
