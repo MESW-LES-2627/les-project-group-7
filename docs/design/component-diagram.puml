@@ -17,6 +17,12 @@ legend right
   |<#FFF8E1> MVP component |
   |<#EEEEEE> Stretch (designed, not in the MVP) |
   |<#F8C9D8> External system |
+  --
+  Dashed arrow = depends on (calls) the component it points to.
+  Solid arrow = connects to a person, the database or an external system.
+  Lollipop (REST API) = interface that the backend offers to the Web App.
+  Plain line from the REST API = this component is reachable through the API.
+  Box "Backend" = the server side of the one Next.js app. Each component in it is a module.
 endlegend
 
 actor "User" as user
@@ -42,6 +48,7 @@ database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
 cloud "Routing service\n(OpenRouteService)\nStretch" as routing #F8C9D8
+cloud "Geocoding service\n(Nominatim)\nStretch" as geocoding #F8C9D8
 cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
 
 user --> web
@@ -65,8 +72,10 @@ publishing ..> planner : copy itinerary
 reminders ..> planner : upcoming visits
 
 catalog --> places : import places
+catalog ..> geocoding : search outside\nthe catalog (Stretch)
 planner ..> routing : real travel times
 reminders --> notif : send reminder
+
 
 backend --> db : reads / writes
 

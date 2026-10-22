@@ -2,7 +2,7 @@
 
 Group 7 · MESW LES 2026-27
 
-This glossary defines the canonical ubiquitous language for the place review and itinerary planning platform. All code, database schemas (`schema.prisma`), API endpoints, and team communications must strictly adhere to these definitions.
+This glossary defines the canonical ubiquitous language for the place review and itinerary planning platform. All code, database schemas (`schema.prisma`), API endpoints, and team communications must strictly adhere to these definitions. The names match the [EventStorming board and domain model](design.md). Items marked _post-MVP_ are designed but not built in the MVP (see [mvp.md](mvp.md)).
 
 ---
 
@@ -10,13 +10,17 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Place
 
-- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) imported from OpenStreetMap or suggested by users (post-MVP).
-- **Key Attributes:** `id`, `osmId`, `name`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`), `costPoints` (0..3), `averageRating`, `reviewCount`, `source`.
+- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) imported from OpenStreetMap, or suggested by users (post-MVP, Dream).
+- **Key Attributes:** `id`, `osmId`, `name`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`, may be unknown), `averageRating`, `reviewCount`, `source` (`IMPORTED` | `SUGGESTED`). Its cost points (0..3) are derived from `priceLevel`.
 - **Invariants & Policies:**
-  - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated active `Review` records.
-  - `priceLevel` is an intrinsic property of a place imported from OpenStreetMap metadata: places with `fee=no` (parks, viewpoints, public landmarks) map to `FREE` (0 cost points), while commercial or ticketed attractions map to `€`, `€€`, or `€€€`.
-  - **On-the-Fly Place Ingestion:** When a user reviews a live OpenStreetMap point of interest that is not yet saved in PostgreSQL, the place is automatically ingested and persisted into the `Place` table before linking the `Review`.
-  - **Quantized Bounding Box Cache:** Live Overpass map queries round bounding-box coordinates to ~100m grid precision (3 decimal places) with an in-memory LRU cache to prevent redundant external API hits.
+  - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated `Review` records.
+  - `priceLevel`: places tagged `fee=no` in OpenStreetMap (parks, viewpoints, public landmarks) are `FREE` (0 cost points). OpenStreetMap has no other price data, so for every other place the `priceLevel` is the most common (mode) price level given in its reviews. A place with neither is **unknown**.
+  - **Places only enter the catalog through the _Import places_ command** (an admin script, see ADR-002). There is no on-the-fly ingestion: a place that was not imported cannot be reviewed or planned. Approved suggestions (post-MVP) are the other way in.
+  - The app never calls OpenStreetMap live for place data.
+
+### Import places
+
+- **Definition:** The admin command that loads places for the MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin, London) from OpenStreetMap into PostgreSQL. Its event is _Places imported_.
 
 ### City
 
@@ -34,40 +38,42 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### Review
 
 - **Definition:** User-authored evaluation of an experience at a specific `Place`.
-- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `text`, `createdAt`, `updatedAt`.
+- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `priceLevel` (optional: how expensive it was, `€` | `€€` | `€€€`), `text`, `createdAt`, `updatedAt`.
 - **Lifecycle & Rules:**
-  - Posting a review triggers the policy: **Mark place as visited** and **Recalculate place averageRating**.
-  - Editing or deleting a review triggers recalculation of `averageRating`.
+  - Posting a review triggers two policies on `Place`: **Mark place visited** and **Recalculate rating and price level**.
+  - Editing or deleting a review triggers **Recalculate rating and price level**.
   - Deleting a review does **not** delete the corresponding `Visit`.
 
 ### Visit
 
-- **Definition:** Record confirming that a user has physically or personally visited a `Place`.
+- **Definition:** Record confirming that a user has physically or personally visited a `Place`. It belongs to the `Place` aggregate.
 - **Key Attributes:** `userId`, `placeId`, `visitedAt`.
 - **Invariants:**
   - One unique entry per `(User, Place)` pair.
-  - In MVP, created strictly via the policy triggered when a user submits a `Review` (no standalone "mark visited" button).
+  - In MVP, created strictly via the policy triggered when a user posts a `Review` (no standalone "mark visited" button).
   - Survives review deletion.
 
 ---
 
 ## 3. Saved Places & Lists
 
-### SavedPlace
+### SavedPlace (aggregate: Saved places)
 
 - **Definition:** A direct relation linking a `User` to a `Place`, categorized by intent.
 - **Key Attributes:** `id`, `userId`, `placeId`, `type` (`WISHLIST` | `BOOKMARK`), `savedAt`.
 - **Distinctions:**
-  - **`WISHLIST`**: Expresses explicit user intent to visit the place soon. Feeds the `ItineraryGenerator` as high-priority candidate stops.
-  - **`BOOKMARK`**: Generic bookmark ("remember this for later"). Does not automatically influence generator scoring.
+  - **`WISHLIST`**: Expresses explicit user intent to visit the place soon. Feeds the `ItineraryGenerator` as high-priority candidate stops (the generator reads it, there is no event).
+  - **`BOOKMARK`**: Generic bookmark ("remember this for later"). Does not influence generator scoring. Bookmarks are what custom lists are made of.
+- **Commands:** _Wishlist place_, _Bookmark place_, _Remove saved place_.
 
-### SavedList (Custom List)
+### SavedList (aggregate: List)
 
-- **Definition:** An independent, user-defined named collection of places (e.g., "Best Bakeries in Porto", "Architecture Tour").
+- **Definition:** A user-defined named collection of **bookmarked** places (e.g., "Best Bakeries in Porto", "Architecture Tour"). MVP, planned for Iteration 4.
 - **Key Attributes:** `id`, `userId`, `name`, `createdAt`.
 - **ListEntry:**
-  - Join entity linking `SavedList` to `Place` with `addedAt`.
-  - **Decoupling Rule:** `SavedList` references `Place` directly, not `SavedPlace`. Adding/removing bookmarks does **not** affect items in custom lists, and vice-versa.
+  - Join entity linking `SavedList` to a bookmarked `SavedPlace` with `addedAt`.
+  - **Consistency Rule:** a list only holds bookmarked places. When a bookmark is removed, a policy removes that place from all the user's lists. One place can be in several lists.
+- **Commands:** _Create list_, _Change list_ (rename or delete), _Add or remove place_.
 
 ---
 
@@ -75,16 +81,17 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Trip
 
-- **Definition:** A planning aggregate representing a planned travel experience to a specific destination `City`.
+- **Definition:** A planning aggregate representing a planned travel experience to a specific destination `City`. `Day` and `Itinerary` are part of it, not separate aggregates.
 - **Key Attributes:** `id`, `userId`, `cityId`, `name`, `createdAt`.
 - **Associations:** Owns `1 TripConstraints`, `* Day`s, and `0..1 Itinerary`.
+- **Commands:** _Create trip_, _Change trip constraints_, _Generate itinerary_, _Edit itinerary_ (assign or remove a place, set a visit time), _Delete trip_. Deleting a trip removes its days, itinerary and assigned places.
 
 ### TripConstraints (Value Object)
 
 - **Definition:** The parameters that bound and shape a trip plan.
 - **Attributes:** `startDate`, `endDate`, `budgetLevel` (`€` | `€€` | `€€€`), `allowedCategories` (Set of PlaceCategory).
 - **Rules:**
-  - Modifying `startDate` or `endDate` triggers `syncDays()` on the `Trip`.
+  - Modifying `startDate` or `endDate` triggers `syncDays()` on the `Trip`. The result is the events _Days added_ or _Days removed_.
 
 ### Day
 
@@ -92,7 +99,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Attributes:** `id`, `tripId`, `dayNumber` (1-based index: 1, 2, ... N), `date` (YYYY-MM-DD).
 - **Invariants & Cascade:**
   - The number of days strictly equals `(endDate - startDate) + 1`.
-  - If a trip is shortened, truncated `Day`s are deleted along with all their scheduled `ItineraryStop`s.
+  - If a trip is shortened, truncated `Day`s are deleted along with all their scheduled `ItineraryStop`s. This happens inside the `Trip` aggregate, it is not a policy.
 
 ### Itinerary
 
@@ -100,15 +107,15 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Key Attributes:** `id`, `tripId`, `mode` (`MANUAL` | `GENERATED`), `createdAt`.
 - **Cardinality:** Exactly `0..1` per `Trip` in the MVP.
 - **Behavior:**
-  - A generated itinerary populates `ItineraryStop`s.
+  - _Generate itinerary_ populates `ItineraryStop`s. A manual itinerary is built with _Edit itinerary_.
   - Once generated, the itinerary is freely editable (stops can be moved, deleted, or added manually).
 
 ### ItineraryStop
 
 - **Definition:** A planned visit to a `Place` assigned to a specific `Day` in an `Itinerary`.
-- **Key Attributes:** `id`, `itineraryId`, `dayId`, `placeId`, `visitTime` (HH:mm, optional), `position` (integer order within the day), `reminderSent` (boolean).
+- **Key Attributes:** `id`, `itineraryId`, `dayId`, `placeId`, `visitTime` (HH:mm, optional), `position` (integer order within the day).
 - **Rules:**
-  - A stop calculates `isOutsideOpeningHours()` against `Place.openingHours` when `visitTime` is specified.
+  - A stop calculates `isOutsideOpeningHours()` against `Place.openingHours` when `visitTime` is specified, and the plan raises a _Plan warning_ when it is outside (only where hours are known).
   - Straight-line travel time is computed between consecutive stops on the same `Day`.
 
 ---
@@ -119,25 +126,26 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 Places map to numeric **cost points** for algorithmic evaluation:
 
-- `FREE` = 0 points (parks, viewpoints, public monuments imported with `fee=no` from OpenStreetMap)
+- `FREE` = 0 points (parks, viewpoints, public monuments tagged `fee=no` in OpenStreetMap)
 - `€` = 1 point (budget / inexpensive)
 - `€€` = 2 points (moderate)
 - `€€€` = 3 points (expensive)
-- `UNKNOWN` = unreviewed place without fee tags (treated as neutral in averages; not penalized)
+- **Unknown** = no `fee=no` tag and no price in reviews. It is shown as "price unknown" and **not counted** in any average.
 
 ### Target Average Budget Heuristic (Soft Filter)
 
-The trip's `budgetLevel` acts as a **target average cost point** for each planned day:
+The trip's `budgetLevel` is a **soft target for the average cost points of the whole trip**. It is not a limit per day or per place, and it is not an amount in euros:
 
-- A `€` budget trip targets a daily average of **$\le 1.0$**.
-- A `€€` budget trip targets a daily average of **$\le 2.0$**.
-- A `€€€` budget trip targets a daily average of **$\le 3.0$**.
+- A `€` budget trip targets an average of about **1.0**.
+- A `€€` budget trip targets an average of about **2.0**.
+- A `€€€` budget trip targets an average of about **3.0**.
+- The trip's average is the mean of the cost points of its stops that have a known price. The planner shows it next to the budget level and warns when it is above.
 
 ### Generator Rules with Cost Points:
 
-1. **Wishlist Priority:** Wishlist places are inserted first, count toward the day's average, and remaining stops adapt around them.
-2. **Compensation:** Free places (0 cost points) pull the day's average down, allowing higher-rated `€€` or `€€€` stops (e.g. a nice dinner) while keeping the daily average within the budget tier.
-3. **Soft Degradation / Fallback:** If a day cannot meet the strict budget target because the city lacks cheaper options, the generator selects the closest fit rather than leaving an empty slot.
+1. **Wishlist Priority:** Wishlist places are always included, count toward the trip's average, and the remaining stops adapt around them.
+2. **Compensation:** Free places (0 cost points) pull the trip's average down, allowing higher-rated `€€` or `€€€` stops (e.g. a nice dinner) while keeping the average near the budget level.
+3. **Soft Degradation / Fallback:** If the trip cannot meet the target because the city lacks cheaper options, the generator selects the closest fit rather than leaving an empty slot, and the plan shows the average as a warning.
 
 ---
 
@@ -156,20 +164,21 @@ The trip's `budgetLevel` acts as a **target average cost point** for each planne
 - **Definition:** Performance optimization reducing DOM overhead for hundreds of geographic points.
 - **Behavior:** Only places lying within the active map viewport (with a 15% safety buffer) are mounted to Leaflet, rendered using HTML5 Canvas (`preferCanvas={true}`) for smooth 60fps panning and zooming.
 
-### Lazy OSM Ingestion
-
-- **Definition:** Just-In-Time persistence pattern where external OpenStreetMap nodes discovered in real time are only committed to the PostgreSQL `Place` table upon first user interaction (writing a review or scheduling a stop).
-
 ---
 
 ## 7. Search & Symbolic Representation
 
-### Nominatim Real-Time Autocomplete
+### Catalog Search (MVP)
 
-- **Definition:** Geocoding search capability querying OpenStreetMap's Nominatim engine with debounced typing (350ms).
+- **Definition:** Searching a city, browsing its places, filtering by type, price level and rating, and sorting by rating. It runs on our own PostgreSQL data only.
+
+### Search Outside the Catalog (Stretch)
+
+- **Definition:** Geocoding search that queries OpenStreetMap's Nominatim service for places not in our catalog (see ADR-004). Not in the MVP.
 - **Behavior:**
-  - Presents a split dropdown separating existing PostgreSQL database entries from newly discovered live OSM nodes.
-  - Selecting an OSM result centers the map on the node coordinates (`flyTo`) and mounts an interactive preview allowing direct review and _Lazy Ingestion_.
+  - Runs only when the user submits the search, never while typing, because the Nominatim usage policy forbids autocomplete. At most 1 request per second for the whole app, cached, with an identifying `User-Agent`.
+  - Shows results in two groups: the local catalog and what was found on OpenStreetMap.
+  - A place found this way can only be reviewed or planned after it is added to the catalog.
 
 ### Honest Symbolic Category Representation & Ranking DataTable
 
@@ -177,3 +186,36 @@ The trip's `budgetLevel` acts as a **target average cost point** for each planne
 - **Behavior:**
   - Categorical metadata defined in `src/domain/catalog/categories.ts` assigns dedicated icons, pastel backgrounds, and labels to every `PlaceCategory`.
   - Places are presented in a Letterboxd/TripAdvisor-style ranking table ordered by average rating descending, with direct toggles to symbolic card grid views.
+  - Landmark photos from Wikimedia Commons are Stretch, photos uploaded with reviews are Dream.
+
+---
+
+## 8. Post-MVP Terms
+
+### PlaceSuggestion (Dream)
+
+- **Definition:** A place proposed by a user and not yet in the catalog. Its own aggregate, _Place suggestion_.
+- **Key Attributes:** `id`, proposed name, category and address, `status` (`PENDING` | `APPROVED` | `REJECTED`), `suggestedAt`, `decidedAt`.
+- **Policy:** whenever a suggestion is approved, the place is added to the catalog (`source = SUGGESTED`).
+
+### Moderator (Dream)
+
+- **Definition:** A `User` with the `ADMIN` role who approves or rejects place suggestions.
+
+### PublishedItinerary and ItineraryBookmark (Stretch)
+
+- **Definition:** A published itinerary is a **copy** of a trip's itinerary that can be shared with a link (`shareToken`), so it survives the deletion of the original trip. An `ItineraryBookmark` is another user's bookmark of it. Aggregate: _Published itinerary_.
+
+### Reminder (Stretch)
+
+- **Definition:** A visit reminder sent for an `ItineraryStop`. Its own aggregate, _Reminder_, created by the policy "when a visit time is near, send a reminder". It replaces a `reminderSent` flag on the stop.
+
+---
+
+## 9. EventStorming Vocabulary
+
+- **Event:** the state of one domain object has changed (orange). Named in the past tense, e.g. _Review posted_.
+- **Command:** an intent to change the state of the system (blue), e.g. _Post review_. Not every event has a command of its own.
+- **Policy:** a business rule that links one aggregate to another: "whenever this event happens, do this command" (purple).
+- **Aggregate:** a cluster of objects that change together, with one root. The aggregates are User, Trip, Place, Review, Saved places, List, Published itinerary, Reminder and Place suggestion.
+- **Read model / query:** something the user sees that is not an event, for example _top-rated places_.
