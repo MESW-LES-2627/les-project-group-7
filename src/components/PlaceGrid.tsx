@@ -117,10 +117,10 @@ export default function PlaceGrid({
                       window.scrollTo({ top: 180, behavior: "smooth" });
                     }}
                     className="h-8 gap-1 text-xs text-slate-700 hover:text-slate-900"
-                    title="Centrar no mapa"
+                    title="Center on map"
                   >
                     <MapPin className="h-3 w-3 text-rose-500" />
-                    Mapa
+                    Map
                   </Button>
 
                   <Button
@@ -142,9 +142,9 @@ export default function PlaceGrid({
       {totalPages > 1 && (
         <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-4 sm:flex-row">
           <span className="text-xs text-slate-500">
-            A mostrar {(currentPage - 1) * pageSize + 1} a{" "}
-            {Math.min(currentPage * pageSize, filteredPlacesCount)} de{" "}
-            {filteredPlacesCount} locais
+            Showing {(currentPage - 1) * pageSize + 1} to{" "}
+            {Math.min(currentPage * pageSize, filteredPlacesCount)} of{" "}
+            {filteredPlacesCount} places
           </span>
 
           <div className="flex items-center gap-2">
@@ -156,11 +156,11 @@ export default function PlaceGrid({
               className="h-8 gap-1 text-xs"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              Anterior
+              Previous
             </Button>
 
             <span className="px-2 text-xs font-medium text-slate-700">
-              Página {currentPage} de {totalPages}
+              Page {currentPage} of {totalPages}
             </span>
 
             <Button
@@ -172,7 +172,7 @@ export default function PlaceGrid({
               }
               className="h-8 gap-1 text-xs"
             >
-              Seguinte
+              Next
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </div>

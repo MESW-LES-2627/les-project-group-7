@@ -21,7 +21,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Import places
 
-- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts` (today only for Porto). The seed script `prisma/seed.ts` creates the seven MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin and London, stored with their Portuguese names), their places, the demo users and the sample reviews. Its event is _Places imported_.
+- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts` (today only for Porto). The seed script `prisma/seed.ts` creates the seven MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin and London), their places, the demo users and the sample reviews. Its event is _Places imported_.
 
 ### City
 

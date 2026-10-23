@@ -84,8 +84,8 @@ export default function MapExplorerCard({
                 variant="secondary"
                 className="animate-pulse gap-1.5 border-indigo-200 bg-indigo-50 text-xs font-normal text-indigo-700"
               >
-                <Loader2 className="h-3 w-3 animate-spin text-indigo-600" />A
-                carregar OSM...
+                <Loader2 className="h-3 w-3 animate-spin text-indigo-600" />
+                Loading OSM...
               </Badge>
             </div>
           )}

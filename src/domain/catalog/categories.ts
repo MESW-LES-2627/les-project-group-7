@@ -29,35 +29,35 @@ export interface CategoryConfig {
 
 export const CATEGORY_CONFIGS: Record<PlaceCategory, CategoryConfig> = {
   [PlaceCategory.MONUMENT]: {
-    label: "Monumento",
+    label: "Monument",
     iconType: "Landmark",
     bgColor: "bg-indigo-50",
     textColor: "text-indigo-700",
     borderColor: "border-indigo-200",
   },
   [PlaceCategory.RESTAURANT]: {
-    label: "Restaurante",
+    label: "Restaurant",
     iconType: "Utensils",
     bgColor: "bg-amber-50",
     textColor: "text-amber-700",
     borderColor: "border-amber-200",
   },
   [PlaceCategory.MUSEUM]: {
-    label: "Museu",
+    label: "Museum",
     iconType: "Building2",
     bgColor: "bg-purple-50",
     textColor: "text-purple-700",
     borderColor: "border-purple-200",
   },
   [PlaceCategory.PARK]: {
-    label: "Parque",
+    label: "Park",
     iconType: "Trees",
     bgColor: "bg-emerald-50",
     textColor: "text-emerald-700",
     borderColor: "border-emerald-200",
   },
   [PlaceCategory.CAFE]: {
-    label: "Café",
+    label: "Cafe",
     iconType: "Coffee",
     bgColor: "bg-orange-50",
     textColor: "text-orange-700",
@@ -71,7 +71,7 @@ export const CATEGORY_CONFIGS: Record<PlaceCategory, CategoryConfig> = {
     borderColor: "border-rose-200",
   },
   [PlaceCategory.OTHER]: {
-    label: "Outro",
+    label: "Other",
     iconType: "MapPin",
     bgColor: "bg-slate-100",
     textColor: "text-slate-700",
