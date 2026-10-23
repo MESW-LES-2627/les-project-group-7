@@ -1,0 +1,59 @@
+name: Issue
+description: A piece of work that delivers all or part of a user story. Create it as a sub-issue of the story.
+title: "[US-<feature>-<nn>] "
+type: Task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Create this from the user story with **Create sub-issue**, so it is linked to its epic.
+        If you opened it from here, add it to the story afterwards (story → Sub-issues → Add existing issue).
+  - type: input
+    id: story
+    attributes:
+      label: User story
+      description: The epic this issue belongs to.
+      placeholder: "#12"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: Which part of the story this issue delivers. If it is the whole story, say so.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Copied from the story. Only the ones this issue covers; keep the story's numbers.
+      value: |
+        - [ ] AC<n>: **Given** <...>, **when** <...>, **then** <...>.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      value: |
+        - [ ] <e.g. Prisma migration>
+        - [ ] <e.g. API endpoint with server-side validation>
+        - [ ] <e.g. Page or component>
+        - [ ] Unit tests for the business rules: <which ones, or "none">
+  - type: textarea
+    id: depends-on
+    attributes:
+      label: Depends on
+      description: Issues that must be merged first.
+      placeholder: None
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done
+      description: Checked at the pull request. See docs/definition-of-done.md.
+      value: |
+        - [ ] Acceptance criteria above are checkable and the MVP feature is named
+        - [ ] Reviewed and approved by a teammate other than the author
+        - [ ] Build, lint and tests pass on the pull request
+        - [ ] Business rules have automated unit tests
