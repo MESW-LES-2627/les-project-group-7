@@ -34,7 +34,7 @@ The review dates are 23 Oct, 6 Nov, 20 Nov, 4 Dec and 18 Dec.
 - [ ] Every planned story meets the story rules, or goes back to the backlog.
       Partly done stories do not count.
 - [ ] **Before the review** (22 Oct, 5 Nov, 19 Nov, 3 Dec, 17 Dec), `prod` is
-      update through a pull request.
+      updated through a pull request.
 - [ ] `main` is deployed to prod, and the **demo scenario** from [mvp.md](mvp.md) (as
       far as the iteration covers it) passes on prod.
 - [ ] [vision.md](vision.md), [mvp.md](mvp.md), [design.md](design.md) and the
