@@ -235,7 +235,7 @@ async function main() {
       uniquePlaces.set(osmId, {
         osmId,
         name: item.name.trim(),
-        description: `${item.name} (${item.type.replace(/_/g, " ")}) no distrito do Porto, referenciado no OpenStreetMap.`,
+        description: `${item.name} (${item.type.replace(/_/g, " ")}) in the Porto district, listed on OpenStreetMap.`,
         category,
         address,
         latitude: lat,

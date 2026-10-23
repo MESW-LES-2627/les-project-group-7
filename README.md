@@ -14,7 +14,18 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.
 - **[Design & Architecture](docs/design.md):** Overview of EventStorming, Domain Model, and Component Diagram.
 - **[Domain Glossary & Rules (Ubiquitous Language)](docs/GLOSSARY.md):** Canonical definitions of `Place`, `Review`, `Visit`, `Wishlist`, `Bookmark`, `Trip`, `Itinerary`, cost points, and budget calculations.
-- **[Task Distribution & Outcomes](docs/user-stories.md):** Tracer bullet task breakdown across the 4 dev roles.
+- **[Deployment](docs/deployment.md):** How the app reaches the two sites (Vercel and Neon), the backup steps before a release and the known problems.
+
+---
+
+## Live Sites
+
+| Environment | Branch | Address                                                 |
+| ----------- | ------ | ------------------------------------------------------- |
+| Dev         | `dev`  | [les-group7-dev.vercel.app](https://les-group7-dev.vercel.app) |
+| Prod        | `main` | [les-group7.vercel.app](https://les-group7.vercel.app)         |
+
+Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](docs/deployment.md)). Prod is merged from `dev` the day before each review.
 
 ---
 
@@ -24,7 +35,7 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 | ------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
 | **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components              |
 | **Styling & UI**    | Tailwind CSS + Shadcn UI + Lucide Icons         | Accessible, responsive component design system                |
-| **ORM & Database**  | Prisma ORM + PostgreSQL 16 (Docker)             | Relational persistence, migrations, and type-safe queries     |
+| **ORM & Database**  | Prisma ORM + PostgreSQL 18 (Docker locally, Neon in the cloud) | Relational persistence, migrations, and type-safe queries |
 | **Testing**         | Vitest                                          | Fast unit testing for domain algorithms (`/tdd`)              |
 | **Mapping**         | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
 
@@ -34,25 +45,30 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 ```
 .
+├── .github/workflows/      # deploy.yml: GitHub Action that deploys dev and main
 ├── docker-compose.yml      # Local PostgreSQL container definition
-├── docs/                   # Vision, MVP, EventStorming, UML diagrams, GLOSSARY.md
-│   ├── adr/                # Architecture Decision Records
-│   ├── design/             # UML diagrams and EventStorming artifacts
-│   ├── GLOSSARY.md         # Ubiquitous Language definition
-│   └── user-stories.md     # Task breakdown for tracer bullet prototype
+├── docs/                   # Vision, MVP, design (with the ADRs), glossary, deployment
+│   └── design/             # UML diagrams and EventStorming artifacts
 ├── prisma/
 │   ├── schema.prisma       # Relational PostgreSQL database schema
-│   ├── seed.ts             # Pilot data seed script (Porto OSM & demo users)
-│   └── migrations/         # Prisma migration history
+│   ├── seed.ts             # Seed: the 7 MVP cities, their places, demo users and sample reviews
+│   ├── data/               # JSON data used by the seed
+│   └── migrations/         # Prisma migration history (never edit an applied migration)
+├── scripts/
+│   ├── import-osm.ts       # Imports Porto places from OpenStreetMap
+│   └── validate-docs.ts    # Checks the links and anchors in docs/ (npm run lint:docs)
 └── src/
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
+    │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
     │   ├── api/health/     # GET /api/health
     │   └── page.tsx        # Main tracer bullet UI
     ├── components/         # MapComponent, MapWrapper, PlaceExplorer, ui/ (Shadcn)
-    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary)
-    └── lib/                # Prisma client singleton & cn utility (clsx + twMerge)
+    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog)
+    ├── hooks/              # React hooks (place filtering, place reviews)
+    ├── lib/                # Prisma client singleton & cn utility (clsx + twMerge)
+    └── types/              # Shared TypeScript types
 ```
 
 ---
@@ -61,7 +77,7 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v20.x or higher)
+- [Node.js](https://nodejs.org/) (v22.x or higher; the deploy workflow uses 22)
 - [Docker & Docker Compose](https://www.docker.com/)
 
 ### 1. Setup Database & Dependencies
@@ -76,11 +92,13 @@ cp .env.example .env
 # Start local PostgreSQL container
 docker compose up -d
 
-# Apply database migrations and seed data (Porto OSM spots + demo users)
+# Apply database migrations and seed data (7 cities, their places, demo users and sample reviews)
 npm run prisma:generate
 npm run prisma:migrate
 npm run seed
 ```
+
+`npm run import:osm` additionally imports Porto places from OpenStreetMap (optional).
 
 ### 2. Running Tests
 
@@ -100,12 +118,26 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### 4. Other scripts
+
+| Script                                  | What it does                                                    |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `npm run build` / `npm start`           | Production build (runs `prisma generate` first) and server      |
+| `npm run test:watch` / `test:report`    | Vitest in watch mode / verbose report                           |
+| `npm run prisma:studio`                 | Opens Prisma Studio to browse the database                      |
+| `npm run import:osm`                    | Imports Porto places from OpenStreetMap                         |
+| `npm run format` / `format:check`       | Prettier on `src/` (write / check only)                         |
+| `npm run lint:docs` / `format:docs`     | Checks the links and anchors in `docs/` / formats `docs/*.md`   |
+| `npm run knip`                          | Finds unused files, exports and dependencies                    |
+| `npm run analyze`                       | Production build with the bundle analyzer                       |
+| `npm run ui:detect`                     | Runs the `impeccable` UI checks on `src/`                       |
+
 ---
 
 ## Key Features in Tracer Bullet
 
 - **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
-- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL.
-- **Dynamic Rating Recalculation:** Real-time arithmetic mean rating updates and visit tracking in PostgreSQL.
-- **OpenStreetMap Local POIs:** Interactive Leaflet map with real Porto landmarks imported from OpenStreetMap and cached locally.
+- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL. Real registration, login and per-user permissions are not implemented yet.
+- **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. Not built yet: price level on reviews and its recalculation, showing visited places after a page reload, and editing or deleting a review.
+- **OpenStreetMap Places:** Interactive Leaflet map with places loaded into PostgreSQL by the seed and import scripts, plus places discovered live from OpenStreetMap, which are saved when first reviewed.
 - **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.

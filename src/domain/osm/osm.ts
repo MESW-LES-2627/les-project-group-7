@@ -132,10 +132,6 @@ export interface NominatimRawItem {
     country?: string;
     [key: string]: string | undefined;
   };
-  extratags?: {
-    wikidata?: string;
-    [key: string]: string | undefined;
-  };
 }
 
 /**
@@ -252,6 +248,5 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
     latitude: Number(latNum.toFixed(6)),
     longitude: Number(lonNum.toFixed(6)),
     type: item.type || item.class || "spot",
-    wikidataId: item.extratags?.wikidata || null,
   };
 }

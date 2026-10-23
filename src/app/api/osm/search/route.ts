@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isNominatimResponse, parseNominatimResult } from "@/domain/osm/osm";
+import { createMinIntervalLimiter } from "@/domain/osm/rate-limit";
 import type { OsmSearchResult } from "@/types/search";
 
 interface CacheEntry {
@@ -10,6 +11,10 @@ interface CacheEntry {
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes TTL
 const MAX_CACHE_ENTRIES = 100;
 const searchCache = new Map<string, CacheEntry>();
+
+// Nominatim policy: at most 1 request per second for the whole application (ADR-004).
+// The counter lives in the memory of one server instance.
+const allowNominatimRequest = createMinIntervalLimiter(1000);
 
 export async function GET(req: Request): Promise<NextResponse> {
   const { searchParams } = new URL(req.url);
@@ -30,11 +35,18 @@ export async function GET(req: Request): Promise<NextResponse> {
     return NextResponse.json(cached.data);
   }
 
-  // 2. Fetch from Nominatim API
+  // 2. Fetch from Nominatim API. Answers from the cache above do not count towards the limit.
+  if (!allowNominatimRequest()) {
+    return NextResponse.json([], {
+      status: 429,
+      headers: { "Retry-After": "1" },
+    });
+  }
+
   try {
     const endpoint = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
       queryCombined
-    )}&format=json&addressdetails=1&extratags=1&limit=${limit}`;
+    )}&format=json&addressdetails=1&limit=${limit}`;
 
     const res = await fetch(endpoint, {
       headers: {

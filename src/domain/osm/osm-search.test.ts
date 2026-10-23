@@ -35,10 +35,6 @@ describe("Nominatim Result Parsing", () => {
         road: "Rua dos Clérigos",
         city: "Porto",
       },
-      extratags: {
-        wikidata: "Q2323565",
-        image: "https://upload.wikimedia.org/wikipedia/commons/clerigos.jpg",
-      },
     };
 
     const parsed = parseNominatimResult(raw);
@@ -48,7 +44,6 @@ describe("Nominatim Result Parsing", () => {
     expect(parsed?.category).toBe(PlaceCategory.MONUMENT);
     expect(parsed?.latitude).toBe(41.1458);
     expect(parsed?.longitude).toBe(-8.6142);
-    expect(parsed?.wikidataId).toBe("Q2323565");
   });
 
   it("extracts short clean name from display_name when address name is absent", () => {

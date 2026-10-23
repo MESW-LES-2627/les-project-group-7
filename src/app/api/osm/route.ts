@@ -28,7 +28,6 @@ export interface CachedPoi {
   latitude: number;
   longitude: number;
   priceLevel: PriceLevel;
-  wikidataId?: string | null;
 }
 
 // ── In-Memory LRU Cache with TTL ─────────────────────────────────────────────
@@ -179,7 +178,6 @@ export async function GET(request: Request) {
             latitude: element.lat,
             longitude: element.lon,
             priceLevel: mapOsmPriceLevel(tags),
-            wikidataId: tags.wikidata ?? null,
           });
         }
 
@@ -218,7 +216,6 @@ export async function GET(request: Request) {
           priceLevel: place.priceLevel,
           averageRating: place.averageRating,
           reviewCount: place.reviewCount,
-          wikidataId: place.wikidataId,
           isDiscovered: false,
         }))
       );
@@ -266,7 +263,6 @@ export async function GET(request: Request) {
         priceLevel: poi.priceLevel,
         averageRating: dbMatch ? dbMatch.averageRating : null,
         reviewCount: dbMatch ? dbMatch.reviewCount : 0,
-        wikidataId: poi.wikidataId ?? null,
         isDiscovered: !dbMatch,
       };
     });

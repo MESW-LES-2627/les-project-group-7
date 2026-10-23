@@ -50,7 +50,6 @@ export default async function Home() {
     averageRating: place.averageRating,
     reviewCount: place.reviewCount,
     city: place.city,
-    wikidataId: place.wikidataId,
   }));
 
   const cities = dbCities.map((city) => ({

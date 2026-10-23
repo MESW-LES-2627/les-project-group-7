@@ -18,11 +18,11 @@ organisation, and Vercel's free plan cannot connect to private organisation repo
 So a GitHub Action ([deploy.yml](../.github/workflows/deploy.yml)) builds the app and uploads
 the result with the Vercel command line tool. Vercel never connects to the repository.
 
-Docker and the dev container are only for working locally. Deployment does not use them.
+Docker (and the dev container, once it exists) are only for working locally. Deployment does not use them.
 
 ## One-time setup
 
-Status: the dev path was tested on 21 Oct 2026, first with a hello-world app (both sites opened with no login) and then with the real skeleton, including the Prisma migration step on the dev database. Not tested yet: the `main` path (prod).
+Status: the dev path was tested on 21 Oct 2026, first with a hello-world app (both sites opened with no login) and then with the real skeleton, including the Prisma migration step on the dev database. The `main` path (prod) ran on 22 Oct 2026: migrations applied, deploy succeeded, site answers (the prod database is still empty on purpose). Not tested yet: a deploy of a commit pushed by a teammate (see "Known problems" below).
 
 ### 1. Neon (two databases)
 
@@ -36,7 +36,7 @@ Status: the dev path was tested on 21 Oct 2026, first with a hello-world app (bo
 
 1. Create an account at vercel.com (sign in with GitHub, Hobby plan).
 2. Create two projects without connecting a Git repository, by running `vercel link`
-   twice in the app folder (in a throwaway `node:20` container, so nothing is installed):
+   twice in the app folder (in a throwaway `node:22` container, so nothing is installed):
    `les-group7` for prod and `les-group7-dev` for dev. Both are deployed to their own
    *production* environment, which gives each a fixed public address. (The first design
    used one project and a preview address, but `vercel alias set` failed with
@@ -63,10 +63,31 @@ Never paste these values in chat or commit them.
 
 ## Every iteration
 
-1. Before merging `dev` into `main`, back up the prod database: Neon Free keeps only
-   6 hours of history and one manual snapshot per project, so take the snapshot, or run
-   `pg_dump` from the dev container.
+1. Before merging `dev` into `main`, back up the prod database. Neon Free keeps only
+   6 hours of history (the project setting is at its maximum), so a backup you made
+   yourself is the only way back after more than 6 hours.
+   - Save a dump outside the repository. The `pg_dump` version must be at least the
+     server version (18), so use the Postgres 18 image, with the direct connection string
+     in an environment variable (never typed into a command that is saved or shared):
+     `docker run --rm -e URL="$PROD_DIRECT_URL" postgres:18 sh -c 'pg_dump "$URL"' > ~/backups/prod-YYYY-MM-DD.sql`
+     Never commit a dump: it holds user data.
 2. Merge, watch the Action, and run the demo scenario on prod.
+
+## Known problems and rules
+
+- **Migrations are incremental.** Never edit or squash a migration that was already applied
+  to dev or prod: `prisma migrate deploy` then fails on the other database (this broke the
+  prod deploy once, with "type Role already exists"). A schema change is always a new migration.
+- **Prisma binary target.** `prisma/schema.prisma` lists `native` and `rhel-openssl-3.0.x`.
+  Vercel Functions run on a different system than the CI runner, and without the second
+  target every page that reads the database fails with "could not locate the Query Engine".
+- **Hobby plan and commit authors.** Vercel Hobby only deploys commits authored by the
+  account owner and blocks the others. The workflow hides `.git` while it uploads so that
+  the upload has no author. This is proven for the owner's commits only: when a teammate
+  pushes to `dev` for the first time, check that the deploy succeeds. If it stays blocked,
+  the options are to let the owner deploy or to move to a paid plan.
+- **Logs.** Vercel Hobby keeps runtime logs for 1 hour only. The failed GitHub Action runs
+  are the longer history, and they show which commit each deploy came from.
 
 ## Things to know
 

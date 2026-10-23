@@ -37,7 +37,7 @@ async function main() {
     update: {},
     create: {
       id: "city-lisboa",
-      name: "Lisboa",
+      name: "Lisbon",
       country: "Portugal",
       latitude: 38.7223,
       longitude: -9.1393,
@@ -50,7 +50,7 @@ async function main() {
     create: {
       id: "city-madrid",
       name: "Madrid",
-      country: "Espanha",
+      country: "Spain",
       latitude: 40.4168,
       longitude: -3.7038,
     },
@@ -62,7 +62,7 @@ async function main() {
     create: {
       id: "city-paris",
       name: "Paris",
-      country: "França",
+      country: "France",
       latitude: 48.8566,
       longitude: 2.3522,
     },
@@ -73,8 +73,8 @@ async function main() {
     update: {},
     create: {
       id: "city-roma",
-      name: "Roma",
-      country: "Itália",
+      name: "Rome",
+      country: "Italy",
       latitude: 41.9028,
       longitude: 12.4964,
     },
@@ -85,8 +85,8 @@ async function main() {
     update: {},
     create: {
       id: "city-berlim",
-      name: "Berlim",
-      country: "Alemanha",
+      name: "Berlin",
+      country: "Germany",
       latitude: 52.52,
       longitude: 13.405,
     },
@@ -97,8 +97,8 @@ async function main() {
     update: {},
     create: {
       id: "city-londres",
-      name: "Londres",
-      country: "Reino Unido",
+      name: "London",
+      country: "United Kingdom",
       latitude: 51.5074,
       longitude: -0.1278,
     },
@@ -184,7 +184,7 @@ async function main() {
 
   // 3b. Import European Flagship Landmarks (Lisboa, Madrid, Paris, Roma)
   const europeanPlaces = [
-    // Lisboa
+    // Lisbon
     {
       osmId: "node/25299496",
       name: "Torre de Belém",
@@ -378,7 +378,7 @@ async function main() {
       comment:
         "Local perfeito para descansar nas cadeiras verdes ao lado da Fonte Médici.",
     },
-    // Roma
+    // Rome
     {
       osmId: "node/55299496",
       name: "Colosseo",
@@ -442,7 +442,7 @@ async function main() {
       comment:
         "Vista soberba sobre a Piazza del Popolo a partir do terraço do Pincio.",
     },
-    // Berlim
+    // Berlin
     {
       osmId: "node/65299496",
       name: "Portão de Brandemburgo",
@@ -506,7 +506,7 @@ async function main() {
       comment:
         "Uma experiência comovente que ensina em detalhe a história da Guerra Fria.",
     },
-    // Londres
+    // London
     {
       osmId: "node/75299496",
       name: "Big Ben & Palácio de Westminster",

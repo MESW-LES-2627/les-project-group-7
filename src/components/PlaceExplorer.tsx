@@ -31,13 +31,13 @@ export default function PlaceExplorer({
   initialCities?: CityOption[];
   initialUser?: SessionUser;
 }) {
-  // ── 1. Catálogo & Integração OSM ───────────────────────────────────────────
+  // ── 1. Catalog & OSM integration ───────────────────────────────────────────
   const [places, setPlaces] = useState<PlaceItem[]>(initialPlaces);
   const [osmPlaces, setOsmPlaces] = useState<PlaceItem[]>([]);
   const [isFetchingOsm, setIsFetchingOsm] = useState(false);
   const osmDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── 2. Mapa, Filtros & Sessão ──────────────────────────────────────────────
+  // ── 2. Map, filters & session ──────────────────────────────────────────────
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
@@ -146,7 +146,6 @@ export default function PlaceExplorer({
         averageRating: null,
         reviewCount: 0,
         isDiscovered: true,
-        wikidataId: osm.wikidataId,
       });
     },
     [openReviewModal]
@@ -226,11 +225,11 @@ export default function PlaceExplorer({
           <div>
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
               <Trophy className="h-5 w-5 text-amber-500" />
-              Ranking de Lugares{activeCityName ? ` em ${activeCityName}` : ""}
+              Place Ranking{activeCityName ? ` in ${activeCityName}` : ""}
             </h2>
             <p className="text-xs text-slate-500">
-              {filteredPlaces.length} de {allPlaces.length} locais visíveis no
-              mapa (ordenados por classificação)
+              {filteredPlaces.length} of {allPlaces.length} places visible on
+              the map (sorted by rating)
             </p>
           </div>
 
@@ -246,7 +245,7 @@ export default function PlaceExplorer({
               }`}
             >
               <LayoutList className="h-3.5 w-3.5" />
-              Tabela
+              Table
             </Button>
             <Button
               size="sm"
@@ -259,7 +258,7 @@ export default function PlaceExplorer({
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              Cartões
+              Cards
             </Button>
           </div>
         </div>

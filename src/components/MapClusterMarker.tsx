@@ -53,10 +53,10 @@ export default function MapClusterMarker({ cluster }: { cluster: MapCluster }) {
       <Popup>
         <div className="min-w-[150px] p-1">
           <h4 className="text-xs font-bold text-slate-900">
-            {cluster.count} locais nesta área
+            {cluster.count} places in this area
           </h4>
           <p className="mt-0.5 text-[11px] text-slate-500">
-            Clica na bolha para fazer zoom
+            Click the bubble to zoom in
           </p>
         </div>
       </Popup>

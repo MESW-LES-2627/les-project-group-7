@@ -19,5 +19,4 @@ export interface PlaceItem {
   
   isVisited?: boolean;
   isDiscovered?: boolean;
-  wikidataId?: string | null;
 }

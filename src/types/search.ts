@@ -12,6 +12,4 @@ export interface OsmSearchResult {
   latitude: number;
   longitude: number;
   type: string;
-  
-  wikidataId?: string | null;
 }
