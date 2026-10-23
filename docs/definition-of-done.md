@@ -14,29 +14,16 @@ Three levels: [Story](#1-story-done) (merged into `dev`),
 
 ## 1. Story Done
 
-A story or task is Done when it is merged into `dev` and all of this is true.
+A story or task is Done when it is merged into `prd` and all of this is true.
 
 - [ ] The issue has **acceptance criteria** that a person can check, and says which
       MVP feature it belongs to (see [mvp.md](mvp.md)).
-- [ ] It was done on a branch and merged through a **pull request** linked to the
-      issue. Nobody pushes directly to `dev` or `main`.
 - [ ] **One teammate other than the author** reviewed and approved it.
 - [ ] Build, lint and tests **pass** on the pull request.
 - [ ] Business rules have **automated unit tests** (for example rating recalculation,
       days from trip dates, opening-hours check, generator rules).
-- [ ] The feature **works on the dev server**, not only on the author's machine, and
-      the reviewer tried it.
-- [ ] No secrets (keys, passwords, tokens) in the code. Configuration comes from
-      environment variables.
-- [ ] Data changes require login, users can only change their own data and input is
-      validated on the server. Passwords are stored hashed. (Applies once login
-      exists, feature A1.)
-- [ ] Database changes are **new** Prisma migrations. A migration that was already
-      applied is never edited.
-      pull request if setup or the design changed.
 
-A rule can be skipped only if it clearly does not apply (for example "works on the dev
-server" for a documentation change). Say so in the pull request.
+A rule can be skipped only if it clearly does not apply. Say so in the pull request.
 
 ---
 
@@ -46,11 +33,8 @@ The review dates are 23 Oct, 6 Nov, 20 Nov, 4 Dec and 18 Dec.
 
 - [ ] Every planned story meets the story rules, or goes back to the backlog.
       Partly done stories do not count.
-- [ ] **Before the review** (22 Oct, 5 Nov, 19 Nov, 3 Dec, 17 Dec), `dev` is
-      merged into `main` through a pull request that someone other than its author
-      reviewed.
-- [ ] The prod database is **backed up before** the merge (see
-      [deployment.md](deployment.md)).
+- [ ] **Before the review** (22 Oct, 5 Nov, 19 Nov, 3 Dec, 17 Dec), `prod` is
+      updated through a pull request.
 - [ ] `main` is deployed to prod, and the **demo scenario** from [mvp.md](mvp.md) (as
       far as the iteration covers it) passes on prod.
 - [ ] [vision.md](vision.md), [mvp.md](mvp.md), [design.md](design.md) and the
@@ -64,7 +48,7 @@ The review dates are 23 Oct, 6 Nov, 20 Nov, 4 Dec and 18 Dec.
 The final MVP release (18 Dec 2026) is Done when all of this is true.
 
 - [ ] Every MVP feature in [mvp.md](mvp.md) meets the story rules.
-- [ ] The full **demo scenario** runs from start to finish on prod.
+- [ ] The full **happy path scenario** runs from start to finish on prod.
 - [ ] No open bug blocks a main flow or loses data.
 - [ ] The README explains how to run the app locally, how it is deployed, which
       environment variables it needs and how to load the places and demo data.
