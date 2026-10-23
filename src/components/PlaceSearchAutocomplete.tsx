@@ -117,7 +117,7 @@ export default function PlaceSearchAutocomplete({
               void submitOsmSearch();
             }
           }}
-          placeholder="Pesquisar locais por nome ou morada (Enter pesquisa no OSM)..."
+          placeholder="Search places by name or address (Enter searches OSM)..."
           className="pl-9 pr-8 text-xs"
         />
         {isLoadingOsm && (
@@ -127,12 +127,12 @@ export default function PlaceSearchAutocomplete({
 
       {isOpen && searchQuery.trim().length >= 2 && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
-          {/* Section A: Catálogo Local */}
+          {/* Section A: Local catalog */}
           {matchingLocalPlaces.length > 0 && (
             <div className="mb-2">
               <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold text-slate-400">
                 <MapPin className="h-3 w-3 text-rose-500" />
-                No Catálogo
+                In the catalog
               </div>
               <div className="space-y-1">
                 {matchingLocalPlaces.map((place) => {
@@ -187,7 +187,7 @@ export default function PlaceSearchAutocomplete({
             <div>
               <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold text-slate-400">
                 <Globe className="h-3 w-3 text-sky-500" />
-                Descobertos no OpenStreetMap
+                Found on OpenStreetMap
               </div>
               <div className="space-y-1">
                 {osmResults.map((osm) => {
@@ -228,7 +228,7 @@ export default function PlaceSearchAutocomplete({
                         </p>
                       </div>
                       <span className="shrink-0 text-[11px] font-medium text-sky-600">
-                        Ver no mapa →
+                        View on map →
                       </span>
                     </button>
                   );
@@ -239,20 +239,19 @@ export default function PlaceSearchAutocomplete({
 
           {!osmSearchIsCurrent && !isLoadingOsm && (
             <div className="px-2 py-1.5 text-center text-[11px] text-slate-400">
-              Prima Enter para pesquisar também no OpenStreetMap.
+              Press Enter to also search OpenStreetMap.
             </div>
           )}
 
           {osmSearchIsCurrent && osmBusy && !isLoadingOsm && (
             <div className="px-2 py-1.5 text-center text-[11px] text-amber-600">
-              Pesquisa no OpenStreetMap ocupada. Prima Enter outra vez dentro de
-              um segundo.
+              OpenStreetMap search is busy. Press Enter again in a second.
             </div>
           )}
 
           {osmSearchIsCurrent && !osmBusy && !hasResults && !isLoadingOsm && (
             <div className="p-3 text-center text-xs text-slate-400">
-              Nenhum local encontrado para &ldquo;{searchQuery}&rdquo;.
+              No places found for &ldquo;{searchQuery}&rdquo;.
             </div>
           )}
         </div>

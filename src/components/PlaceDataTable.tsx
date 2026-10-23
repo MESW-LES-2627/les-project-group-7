@@ -37,11 +37,11 @@ export default function PlaceDataTable({
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
                 <th className="w-12 py-3 pl-4 pr-2 text-center">#</th>
-                <th className="px-4 py-3">Lugar</th>
-                <th className="px-4 py-3">Categoria</th>
-                <th className="px-4 py-3 text-center">Preço</th>
-                <th className="px-4 py-3">Classificação</th>
-                <th className="py-3 pl-4 pr-6 text-right">Ações</th>
+                <th className="px-4 py-3">Place</th>
+                <th className="px-4 py-3">Category</th>
+                <th className="px-4 py-3 text-center">Price</th>
+                <th className="px-4 py-3">Rating</th>
+                <th className="py-3 pl-4 pr-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -51,7 +51,7 @@ export default function PlaceDataTable({
                     colSpan={6}
                     className="py-12 text-center text-sm text-slate-500"
                   >
-                    Nenhum local encontrado com os filtros atuais.
+                    No places found with the current filters.
                   </td>
                 </tr>
               ) : (
@@ -156,10 +156,10 @@ export default function PlaceDataTable({
                               window.scrollTo({ top: 180, behavior: "smooth" });
                             }}
                             className="h-7 gap-1 px-2.5 text-xs text-slate-700 hover:text-slate-900"
-                            title="Centrar no mapa"
+                            title="Center on map"
                           >
                             <MapPin className="h-3 w-3 text-rose-500" />
-                            Mapa
+                            Map
                           </Button>
 
                           <Button
@@ -185,9 +185,9 @@ export default function PlaceDataTable({
       {totalPages > 1 && (
         <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-4 sm:flex-row">
           <span className="text-xs text-slate-500">
-            A mostrar {(currentPage - 1) * pageSize + 1} a{" "}
-            {Math.min(currentPage * pageSize, filteredPlacesCount)} de{" "}
-            {filteredPlacesCount} locais
+            Showing {(currentPage - 1) * pageSize + 1} to{" "}
+            {Math.min(currentPage * pageSize, filteredPlacesCount)} of{" "}
+            {filteredPlacesCount} places
           </span>
 
           <div className="flex items-center gap-2">
@@ -199,11 +199,11 @@ export default function PlaceDataTable({
               className="h-8 gap-1 text-xs"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              Anterior
+              Previous
             </Button>
 
             <span className="px-2 text-xs font-medium text-slate-700">
-              Página {currentPage} de {totalPages}
+              Page {currentPage} of {totalPages}
             </span>
 
             <Button
@@ -215,7 +215,7 @@ export default function PlaceDataTable({
               }
               className="h-8 gap-1 text-xs"
             >
-              Seguinte
+              Next
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </div>

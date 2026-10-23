@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { placeId, rating, text, userId } = body;
 
-    // Passo 1: Validação dos dados de entrada da avaliação
+    // Step 1: Validate the review input
     if (!placeId || typeof rating !== "number" || rating < 1 || rating > 5) {
       return NextResponse.json(
         {
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Passo 2: Seleção e aprovisionamento de utilizador demo para testes
+    // Step 2: Pick and provision a demo user for testing
     const targetUserId = userId || "demo-user-1";
 
     if (DUMMY_USERS[targetUserId]) {
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // Passo 3: Ingestão On-the-Fly de local do OpenStreetMap (se ainda não existir na BD)
+    // Step 3: On-the-fly ingestion of an OpenStreetMap place (if it is not in the database yet)
     const existingPlace = await prisma.place.findUnique({
       where: { id: placeId },
     });
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // Passo 4: Criação do registo da Review
+    // Step 4: Create the Review record
     const newReview = await prisma.review.create({
       data: {
         userId: targetUserId,
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // Passo 5: Política de Domínio — Marcar local como visitado para o autor
+    // Step 5: Domain policy — mark the place as visited for the author
     await prisma.visit.upsert({
       where: {
         userId_placeId: {
@@ -194,7 +194,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // Passo 6: Política de Domínio — Recálculo da média aritmética das avaliações
+    // Step 6: Domain policy — recalculate the arithmetic mean of the ratings
     const allReviews = await prisma.review.findMany({
       where: { placeId },
       select: { rating: true },
@@ -206,7 +206,7 @@ export async function POST(request: Request) {
     }
     const newAvg = calculateAverageRating(ratingsList);
 
-    // Passo 7: Atualização do Place com a nova média e contagem
+    // Step 7: Update the Place with the new average and count
     const updatedPlace = await prisma.place.update({
       where: { id: placeId },
       data: {
