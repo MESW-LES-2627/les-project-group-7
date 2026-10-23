@@ -4,7 +4,10 @@ Group 7 · MESW LES 2026-27
 
 The templates are GitHub issue forms in
 [`.github/ISSUE_TEMPLATE`](../../.github/ISSUE_TEMPLATE). GitHub offers them on
-**New issue** and on **Create sub-issue**.
+**New issue** and on **Create sub-issue**, and both add the new issue to the
+[LES project board](https://github.com/orgs/MESW-LES-2627/projects/20).
+Priority, size, estimate and iteration are set as fields on the board, not in the
+issue text.
 
 How work moves from an idea to a merged pull request:
 

@@ -2,6 +2,7 @@ name: User story (epic)
 description: What a user needs and why. Delivered by one or more sub-issues.
 title: "[US-<feature>-<nn>] "
 labels: ["epic", "user story"]
+projects: ["MESW-LES-2627/20"]
 type: Feature
 body:
   - type: markdown
@@ -59,16 +60,6 @@ body:
       label: Business rules
       description: Rules that need automated unit tests (Definition of Done). Write "None" if there are none.
       placeholder: The number of days is the number of dates from start to end, inclusive.
-    validations:
-      required: true
-  - type: dropdown
-    id: priority
-    attributes:
-      label: Priority
-      options:
-        - Must
-        - Should
-        - Could
     validations:
       required: true
   - type: textarea

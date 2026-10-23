@@ -2,6 +2,7 @@ name: Issue
 description: A piece of work that delivers all or part of a user story. Create it as a sub-issue of the story.
 title: "[US-<feature>-<nn>] "
 type: Task
+projects: ["MESW-LES-2627/20"]
 body:
   - type: markdown
     attributes:
