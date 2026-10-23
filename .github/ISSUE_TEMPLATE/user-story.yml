@@ -1,0 +1,74 @@
+name: User story (epic)
+description: What a user needs and why. Delivered by one or more sub-issues.
+title: "[US-<feature>-<nn>] "
+labels: ["epic", "user story"]
+projects: ["MESW-LES-2627/20"]
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A user story is an **epic**: it says what the user needs, not how it is built.
+        After creating it, split it into issues with **Create sub-issue** (template "Issue").
+        See [docs/templates](https://github.com/MESW-LES-2627/les-project-group-7/blob/dev/docs/templates/README.md).
+  - type: input
+    id: feature
+    attributes:
+      label: MVP feature
+      description: ID and name from docs/mvp.md.
+      placeholder: E1 Create a trip
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: As a
+      options:
+        - Planner
+        - Explorer / reviewer
+        - Curator (admin)
+    validations:
+      required: true
+  - type: textarea
+    id: want
+    attributes:
+      label: I want
+      placeholder: to create a trip by choosing a city, dates and a budget level
+    validations:
+      required: true
+  - type: textarea
+    id: so-that
+    attributes:
+      label: So that
+      placeholder: I can start planning what to visit each day
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Each one must be checkable by a person on the dev server. Number them; sub-issues refer to these numbers.
+      value: |
+        1. **Given** <starting situation>, **when** <user action>, **then** <expected result>.
+        2. **Given** <...>, **when** <...>, **then** <...>.
+        3. <error or edge case>
+    validations:
+      required: true
+  - type: textarea
+    id: rules
+    attributes:
+      label: Business rules
+      description: Rules that need automated unit tests (Definition of Done). Write "None" if there are none.
+      placeholder: The number of days is the number of dates from start to end, inclusive.
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What this story does not do. Link the story that does it, if any.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Design links, glossary terms, open questions, dependencies on other stories.
