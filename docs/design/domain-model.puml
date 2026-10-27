@@ -153,6 +153,12 @@ class TripConstraints <<value object>> #FFE3CC {
   dayStart : HH:mm
   dayEnd : HH:mm
 }
+note right of TripConstraints
+  dayStart and dayEnd: the hours of the day.
+  Default 09:00 to 20:00, from 08:00 to 23:00
+  at the widest. Only the generator is limited
+  by them; manual planning is free.
+end note
 
 class Day #FFE3CC {
   dayNumber

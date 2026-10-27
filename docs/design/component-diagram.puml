@@ -37,8 +37,8 @@ package "Backend" as backend {
   component "Place Catalog\n(places, import,\nopening hours, visited, rating,\ntop-rated)" as catalog
   component "Reviews\n(post, edit, delete,\nprice level)" as reviews
   component "Saved Places\n(wishlist, bookmarks, lists)" as saved
-  component "Trip Planner\n(trips, days, itinerary,\nvisit times, travel time,\nhours and budget warnings)" as planner
-  component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist)" as generator
+  component "Trip Planner\n(trips, days, itinerary,\nvisit times, hours of the day,\ntravel time, opening-hours\nand budget warnings)" as planner
+  component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist,\nhours of the day,\nopening hours)" as generator
   component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing #EEEEEE
   component "Reminders\n(scheduler)" as reminders #EEEEEE
 }
@@ -47,7 +47,7 @@ database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 
 cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
-cloud "Routing service\n(OpenRouteService)\nStretch" as routing #F8C9D8
+cloud "Routing service\n(e.g. OpenRouteService)\nStretch" as routing #F8C9D8
 cloud "Geocoding service\n(Nominatim)\nbuilt, not in the\ncommitted MVP" as geocoding #F8C9D8
 cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
 
@@ -66,7 +66,7 @@ reviews ..> catalog : mark place visited,\nrecalculate rating
 saved ..> catalog
 planner ..> catalog : find places,\nopening hours
 planner ..> generator : generate
-generator ..> catalog : candidates\n(top-rated)
+generator ..> catalog : candidates\n(top-rated,\nopening hours)
 generator ..> saved : wishlist places
 publishing ..> planner : copy itinerary
 reminders ..> planner : upcoming visits
