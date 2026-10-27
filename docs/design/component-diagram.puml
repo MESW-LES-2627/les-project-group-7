@@ -34,7 +34,7 @@ package "Backend" as backend {
   interface "REST API" as api
 
   component "Identity\n(users, auth, roles)" as identity
-  component "Place Catalog\n(places, import, live discovery,\nopening hours, visited, rating,\ntop-rated)" as catalog
+  component "Place Catalog\n(places, import,\nopening hours, visited, rating,\ntop-rated)" as catalog
   component "Reviews\n(post, edit, delete,\nprice level)" as reviews
   component "Saved Places\n(wishlist, bookmarks, lists)" as saved
   component "Trip Planner\n(trips, days, itinerary,\nvisit times, travel time,\nhours and budget warnings)" as planner
@@ -71,7 +71,7 @@ generator ..> saved : wishlist places
 publishing ..> planner : copy itinerary
 reminders ..> planner : upcoming visits
 
-catalog --> places : import places and\ndiscover places live
+catalog --> places : import places\n(live discovery: Stretch)
 catalog ..> geocoding : search outside\nthe catalog
 planner ..> routing : real travel times
 reminders --> notif : send reminder

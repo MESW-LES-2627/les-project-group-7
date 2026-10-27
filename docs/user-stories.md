@@ -14,7 +14,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 ## How to read this file
 
 - **Story ID** is `US-<feature>-<nn>`. The feature is the ID in [mvp.md](mvp.md)
-  (`A1`, `E4`, ...). Stretch features have IDs `S1` to `S18`, also in
+  (`A1`, `E4`, ...). Stretch features have IDs `S1` to `S19`, also in
   [mvp.md](mvp.md).
 - Nothing is built yet. The first prototype (the tracer bullet) does not count: every
   story is open and its issues cover the whole story. Where the prototype has code worth
@@ -36,33 +36,32 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 ## Overview
 
-| Feature                       | Stories            |
-| ----------------------------- | ------------------ |
-| A1 Register and log in        | US-A1-01, US-A1-02 |
-| B1 Place import               | US-B1-01           |
-| B2 Demo data                  | US-B2-01           |
-| B3 City search and filters    | US-B3-01, US-B3-02 |
-| B4 Place page                 | US-B4-01           |
-| B5 Map view                   | US-B5-01           |
-| B6 Top-rated places           | US-B6-01           |
-| B7 Discover places on the map | US-B7-01           |
-| C1 Post a review              | US-C1-01           |
-| C2 Edit and delete a review   | US-C2-01           |
-| C3 Visited places             | US-C3-01           |
-| D1 Wishlist and bookmarks     | US-D1-01           |
-| D2 Custom lists               | US-D2-01, US-D2-02 |
-| E1 Create a trip              | US-E1-01           |
-| E2 Change a trip              | US-E2-01           |
-| E3 Delete a trip              | US-E3-01           |
-| E4 Manual itinerary           | US-E4-01           |
-| E5 Nearby suggestions         | US-E5-01           |
-| E6 Plan warnings              | US-E6-01, US-E6-02 |
-| E7 Travel-time estimate       | US-E7-01           |
-| E8 Basic generator            | US-E8-01           |
-| P1 Web app, no installation   | US-P1-01           |
-| P2 Dev and prod environments  | US-P2-01           |
-| P3 Attribution                | US-P3-01           |
-| S1 to S18 Stretch             | 20 stories         |
+| Feature                      | Stories            |
+| ---------------------------- | ------------------ |
+| A1 Register and log in       | US-A1-01, US-A1-02 |
+| B1 Place import              | US-B1-01           |
+| B2 Demo data                 | US-B2-01           |
+| B3 City search and filters   | US-B3-01, US-B3-02 |
+| B4 Place page                | US-B4-01           |
+| B5 Map view                  | US-B5-01           |
+| B6 Top-rated places          | US-B6-01           |
+| C1 Post a review             | US-C1-01           |
+| C2 Edit and delete a review  | US-C2-01           |
+| C3 Visited places            | US-C3-01           |
+| D1 Wishlist and bookmarks    | US-D1-01           |
+| D2 Custom lists              | US-D2-01, US-D2-02 |
+| E1 Create a trip             | US-E1-01           |
+| E2 Change a trip             | US-E2-01           |
+| E3 Delete a trip             | US-E3-01           |
+| E4 Manual itinerary          | US-E4-01           |
+| E5 Nearby suggestions        | US-E5-01           |
+| E6 Plan warnings             | US-E6-01, US-E6-02 |
+| E7 Travel-time estimate      | US-E7-01           |
+| E8 Basic generator           | US-E8-01           |
+| P1 Web app, no installation  | US-P1-01           |
+| P2 Dev and prod environments | US-P2-01           |
+| P3 Attribution               | US-P3-01           |
+| S1 to S19 Stretch            | 21 stories         |
 
 ---
 
@@ -181,7 +180,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Out of scope**
 
-- Live discovery on the map (US-B7-01), suggestions by users (Dream).
+- Live discovery on the map (S19), suggestions by users (Dream).
 
 **Notes**
 
@@ -190,7 +189,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Issues**
 
-1. **Import every MVP city** · covers AC1, AC2, AC3, AC4 · depends on: none
+1. **Import the three MVP cities** · covers AC1, AC2, AC3, AC4 · depends on: none
    - Make the city a parameter of the script
    - Read opening hours and `fee` from OpenStreetMap
    - Remove the guessed price level (or document why it stays)
@@ -209,7 +208,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Acceptance criteria**
 
-1. **Given** an empty migrated database, **when** I run the seed, **then** the seven cities exist (Porto, Lisbon, Madrid, Paris, Rome, Berlin, London).
+1. **Given** an empty migrated database, **when** I run the seed, **then** the three cities exist (Porto, Paris and Berlin).
 2. **Given** the seed finished, **when** I open the ranking of any city, **then** it shows places with ratings, and the ratings match the sample reviews.
 3. **Given** the seed finished, **when** I log in with a demo user and its documented password, **then** I am logged in.
 4. **Given** I run the seed twice, **when** it finishes, **then** nothing is duplicated.
@@ -227,11 +226,12 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 - The demo password goes in the README, not in the code of the app.
 - Every city needs enough places and reviews to rank well ([mvp.md](mvp.md) section 4).
+- The prototype seed also creates Lisbon, Madrid, Rome and London (4 landmarks each, on dev and prod). Remove them from the seed and decide what to do with the rows already in the databases (prod needs the team's approval).
 
 **Issues**
 
 1. **Seed with real hashes and rerunnable** · covers AC3, AC4 · depends on: Registration API
-2. **Enough reviews for every city** · covers AC1, AC2 · depends on: Import every MVP city
+2. **Enough reviews for every city** · covers AC1, AC2 · depends on: Import the three MVP cities
 
 ## B3 City search and filters
 
@@ -352,7 +352,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Out of scope**
 
-- Discovered places that are not yet in the catalog (US-B7-01).
+- Discovered places that are not yet in the catalog (S19).
 
 **Notes**
 
@@ -396,43 +396,6 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Ranking by city and type, independent of the map** · covers AC1, AC2, AC3, AC4 · depends on: Filter functions with unit tests (US-B3-02)
-
-## B7 Discover places on the map
-
-### US-B7-01 Discover places not yet in the catalog
-
-- **MVP feature:** B7 Discover places on the map
-- **As a:** Explorer / reviewer
-
-**I want** to see OpenStreetMap places that are not in the catalog, and review them,
-
-**So that** I am not limited to what was imported.
-
-**Acceptance criteria**
-
-1. **Given** I move the map, **when** it stops, **then** places from OpenStreetMap in the visible area that are not in the catalog appear as discovered pins.
-2. **Given** I post the first review on a discovered place, **when** it is saved, **then** the place is saved to the catalog in the correct city and its rating is calculated.
-3. **Given** OpenStreetMap does not answer, **when** I move the map, **then** the places already in the catalog are still shown and no error page appears.
-4. **Given** a discovered place is already in the catalog, **when** the map loads, **then** it appears once.
-
-**Business rules**
-
-- A discovered place is assigned to the nearest city that is in the catalog.
-- Unique by OpenStreetMap id.
-
-**Out of scope**
-
-- Search by name outside the catalog (S18).
-
-**Notes**
-
-- Known bug in ADR-002: today a saved place always goes to Porto. This story fixes it (AC2).
-
-**Issues**
-
-1. **Assign discovered places to the right city** · covers AC2 · depends on: none
-   - Nearest-city function with unit tests
-2. **Resilience when OpenStreetMap is slow** · covers AC1, AC3, AC4 · depends on: none
 
 ## C1 Post a review
 
@@ -485,13 +448,13 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 1. **Given** I wrote a review, **when** I change its rating, price level or text, **then** the review is updated and the place's rating and price level are recalculated.
 2. **Given** I wrote a review, **when** I delete it, **then** it disappears and the place's rating and price level are recalculated.
 3. **Given** my review was the only review of the place, **when** I delete it, **then** the place shows "no reviews" and its rating and price level are empty.
-4. **Given** a review written by someone else, **when** I look at it, **then** there are no edit or delete buttons, and the server refuses if I try anyway.
-5. **Given** I delete my review of a place, **when** it is deleted, **then** the place is no longer in my visited list.
+4. **Given** a review written by someone else, **when** I look at it, **then** there are no edit or delete buttons.
+5. **Given** I delete my review of a place, **when** it is deleted, **then** the place stays in my visited list.
 
 **Business rules**
 
 - Recalculation uses the same functions as US-C1-01.
-- A visit exists as long as the user has a review of the place. Deleting the last review removes the visit.
+- A visit survives the deletion of the review (glossary, _Visit_).
 
 **Out of scope**
 
@@ -575,7 +538,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **I want** to create, rename and delete named lists in my bookmarks,
 
-**So that** I can group places, like "Best cafés in Lisbon".
+**So that** I can group places, like "Best cafés in Paris".
 
 **Acceptance criteria**
 
@@ -626,35 +589,44 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E1 Create a trip
 - **As a:** Planner
 
-**I want** to create a trip by choosing a city, dates, a budget level and preferred types,
+**I want** to create a trip by choosing a city, dates, a budget level, preferred types and the hours of the day,
 
 **So that** I can start planning what to visit each day.
 
 **Acceptance criteria**
 
-1. **Given** I am logged in, **when** I send a name, a city, start and end dates, a budget level and at least one type, **then** the trip is created with one day per date.
+1. **Given** I am logged in, **when** I create a trip with a name, a city, start and end dates, a budget level and at least one place type, **then** the trip is saved with one day for each date from start to end.
 2. **Given** a trip of 3 days, **when** I open it, **then** I see Day 1, Day 2 and Day 3 with their dates.
 3. **Given** the end date is before the start date, **when** I send, **then** I see an error and nothing is saved.
-4. **Given** a trip, **when** I open "My trips", **then** it is in the list, and other users cannot see it.
-5. **Given** the form is incomplete, **when** I send, **then** I see which fields are missing.
+4. **Given** I leave the hours of the day empty, **when** I create the trip, **then** the day starts at 09:00 and ends at 20:00.
+5. **Given** a day start before 08:00, a day end after 23:00, or a start that is not before the end, **when** I send, **then** I see an error and nothing is saved.
+6. **Given** a trip, **when** I open "My trips", **then** it is in the list, and other users cannot see it.
+7. **Given** the form is incomplete, **when** I send, **then** I see which fields are missing.
 
 **Business rules**
 
 - Number of days = number of dates from start to end, inclusive. Unit tested.
 - Budget level is `€`, `€€` or `€€€`. It is the target average price for the **whole trip** ([mvp.md](mvp.md) section 4).
+- Hours of the day: `dayStart` and `dayEnd` (HH:mm), default 09:00 and 20:00, earliest start 08:00, latest end 23:00, start before end. Unit tested.
 - A trip has a maximum length (the team decides, for example 14 days).
 - Trips are private to their owner.
 
 **Out of scope**
 
 - Several cities in one trip (S13).
+- Different hours for different days.
+
+**Notes**
+
+- The database columns `dayStart` and `dayEnd` already exist in the schema (migration `20261027120000_add_trip_day_hours`). Existing and new trips get the defaults.
 
 **Issues**
 
-1. **Trip creation API with day creation** · covers AC1, AC2, AC3, AC5 · depends on: Session and write-endpoint guard (US-A1-02)
+1. **Trip creation API with day creation and hours of the day** · covers AC1, AC2, AC3, AC4, AC5, AC7 · depends on: Session and write-endpoint guard (US-A1-02)
    - Day-count function with unit tests
-2. **Create trip form and trip page** · covers AC1 to AC5 · depends on: Trip creation API
-3. **My trips list** · covers AC4 · depends on: Trip creation API
+   - Validation of the hours of the day with unit tests
+2. **Create trip form and trip page** · covers AC1 to AC5, AC7 · depends on: Trip creation API with day creation and hours of the day
+3. **My trips list** · covers AC6 · depends on: Trip creation API with day creation and hours of the day
 
 ## E2 Change a trip
 
@@ -663,7 +635,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E2 Change a trip
 - **As a:** Planner
 
-**I want** to edit the dates, budget level and types of a trip,
+**I want** to edit the dates, budget level, types and hours of the day of a trip,
 
 **So that** I can adapt it when my plans change.
 
@@ -672,13 +644,13 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 1. **Given** a trip, **when** I extend the end date, **then** new empty days are added at the end.
 2. **Given** a trip with stops on day 3, **when** I shorten it so day 3 disappears, **then** I am warned first and, if I accept, the day and its stops are removed.
 3. **Given** I move the start date, **when** I save, **then** the dates of all days change and the stops stay on their day numbers.
-4. **Given** I change the budget level or types, **when** I save, **then** the existing itinerary is unchanged until I generate again.
+4. **Given** I change the budget level, types or hours of the day, **when** I save, **then** the existing itinerary is unchanged until I generate again.
 5. **Given** an invalid change, **when** I save, **then** I see an error and nothing changes.
 
 **Business rules**
 
 - `syncDays()`: the days always match start to end, inclusive. Days are added or removed at the end, never in the middle. Unit tested.
-- Only the owner can change a trip.
+- The hours of the day follow the same rules as when the trip is created (US-E1-01).
 
 **Issues**
 
@@ -701,7 +673,6 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 1. **Given** a trip, **when** I delete it and confirm, **then** it is gone from "My trips".
 2. **Given** the trip had days, an itinerary and stops, **when** it is deleted, **then** all of them are deleted too.
 3. **Given** I cancel the confirmation, **when** I go back, **then** nothing changed.
-4. **Given** another user's trip, **when** I try to delete it, **then** the server refuses.
 
 **Business rules**
 
@@ -735,6 +706,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 - Positions in a day are 1, 2, 3 without gaps after any change. Unit tested.
 - A place appears at most once per trip.
+- Any visit time is allowed in a manual itinerary. The hours of the day only limit the generator.
 - A trip has at most one itinerary (`MANUAL` when built by hand).
 
 **Out of scope**
@@ -760,20 +732,21 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Acceptance criteria**
 
-1. **Given** a stop on a day, **when** I ask for suggestions, **then** I see places of the same city within 1 km, best rated first.
+1. **Given** a stop on a day, **when** I ask for suggestions, **then** I see places of the same city near it, best rated first, each with its distance and walking time.
 2. **Given** a type filter (for example restaurants), **when** I ask, **then** only that type is shown.
 3. **Given** a suggestion, **when** I click add, **then** it becomes a stop on that day.
 4. **Given** no place is near, **when** I ask, **then** I see a message instead of an empty list.
 5. **Given** places already in the trip, **when** I ask, **then** they are not suggested.
+6. **Given** fewer than 3 places within 1 km, **when** I ask, **then** the search widens to 2 km.
 
 **Business rules**
 
-- Distance is the straight-line (haversine) distance. Radius 1 km. Ordering by rating then distance. Unit tested.
+- Distance is the straight-line (haversine) distance. Radius 1 km, widened to 2 km when fewer than 3 places are found (both are named constants). Ordering by rating then distance. Unit tested.
 
 **Issues**
 
-1. **Nearby ranking function with unit tests** · covers AC1, AC2, AC4, AC5 · depends on: none
-2. **Suggestions panel on a stop** · covers AC1 to AC5 · depends on: Nearby ranking function, Stops API (US-E4-01)
+1. **Nearby ranking function with unit tests** · covers AC1, AC2, AC4, AC5, AC6 · depends on: none
+2. **Suggestions panel on a stop** · covers AC1 to AC6 · depends on: Nearby ranking function, Stops API (US-E4-01)
 
 ## E6 Plan warnings
 
@@ -876,33 +849,38 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Acceptance criteria**
 
-1. **Given** a trip, **when** I press "Generate itinerary", **then** each day gets stops chosen from the top-rated places of the preferred types.
-2. **Given** places are chosen, **when** a day is built, **then** its stops are grouped by distance and a lunch place is near the morning stop.
+1. **Given** a trip, **when** I press "Generate itinerary", **then** each day gets stops chosen from the top-rated places of the preferred types, and every stop has a visit time.
+2. **Given** places are chosen, **when** a day is built, **then** its stops are grouped by distance and a lunch place is near the morning stop, at lunch time.
 3. **Given** the trip has wishlist places in the city, **when** I generate, **then** all of them are included.
 4. **Given** the budget level, **when** I generate, **then** the average price of the stops is at or near the level, and the plan shows the average (a warning if above).
 5. **Given** the city has too few cheap places, **when** I generate, **then** the days are still filled with the closest fit.
-6. **Given** a generated itinerary, **when** I edit it, **then** it behaves like a manual one.
-7. **Given** a trip already has stops, **when** I generate again, **then** I am asked before they are replaced.
+6. **Given** a place with known opening hours, **when** I generate, **then** it is never given a visit time at which it is closed. A place with unknown hours can be given any time.
+7. **Given** the hours of the day of the trip, **when** I generate, **then** every stop, with its visit and the walk to it, falls inside them.
+8. **Given** a generated itinerary, **when** I edit it, **then** it behaves like a manual one.
+9. **Given** a trip already has stops, **when** I generate again, **then** I am asked before they are replaced.
 
 **Business rules**
 
 - Picks the best-ranked places first; skips or replaces a pick that would push the running average above the budget level. Wishlist places are always included and count towards the average.
-- At most N stops per day (the team decides, for example 5) and a maximum of hours per day.
+- The first stop starts at `dayStart`. A stop is placed only if its visit and the walk to it end by `dayEnd`. This replaces the prototype's `maxHoursPerDay`.
+- Visit duration per category and the lunch time (for example 12:00 to 14:30) are named constants chosen by the team.
+- If a place is known to be closed at a time, the generator tries another time or another place. If hours are unknown it does not check.
 - The same input gives the same result (deterministic). Unit tested.
 
 **Out of scope**
 
-- Opening hours and real travel times in the generator (S1).
+- Real travel times and finer budget balancing (S1).
 
 **Notes**
 
-- Change the existing function from a per-day budget to the trip average.
+- Change the existing function (`src/domain/itinerary/itinerary.ts`) from a per-day budget to the trip average, from `maxHoursPerDay` to the hours of the day, and add the opening-hours check from US-E6-01.
 
 **Issues**
 
 1. **Generator rules: trip-average budget, wishlist, lunch** · covers AC2, AC3, AC4, AC5 · depends on: Trip average (US-E6-02)
    - Adjust `itinerary.ts` and its tests
-2. **Generate button, replace confirmation and saving** · covers AC1, AC6, AC7 · depends on: Generator rules, Stops API (US-E4-01)
+2. **Visit times inside the hours of the day and opening hours** · covers AC1, AC6, AC7 · depends on: Generator rules, Opening-hours check with unit tests (US-E6-01), Trip creation API with day creation and hours of the day (US-E1-01)
+3. **Generate button, replace confirmation and saving** · covers AC1, AC8, AC9 · depends on: Generator rules, Stops API (US-E4-01)
 
 ## P1 to P3 Platform
 
@@ -918,7 +896,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Acceptance criteria**
 
 1. **Given** the latest Chrome, Firefox, Edge or Safari, **when** I do the demo scenario in [mvp.md](mvp.md) section 6, **then** every step works.
-2. **Given** a screen 360 px wide, **when** I use any page, **then** nothing needs horizontal scrolling and buttons are reachable.
+2. **Given** a phone-width screen, **when** I use any page, **then** nothing needs horizontal scrolling and the buttons can be reached.
 3. **Given** the map on a phone, **when** I use it, **then** I can pan, zoom and open a place.
 
 **Business rules**
@@ -993,24 +971,24 @@ at sprint planning, with the same template.
 
 ## S1 Smart generator
 
-### US-S1-01 Generate with opening hours, real travel times and finer budget balance
+### US-S1-01 Generate with real travel times and finer budget balance
 
 - **As a:** Planner
+- **Notes:** The basic generator (US-E8-01) already respects the hours of the day and known opening hours.
 
-**I want** the generator to respect opening hours and real travel times and balance the budget more precisely,
+**I want** the generator to use real travel times and balance the budget more precisely,
 
 **So that** the plan can be followed as it is.
 
 **Acceptance criteria**
 
-1. **Given** places with known hours, **when** I generate, **then** no stop falls outside its opening hours.
-2. **Given** real travel times, **when** I generate, **then** the day's visits plus travel fit in the hours per day.
-3. **Given** a budget level, **when** I generate, **then** the average price is closer to the level than the basic generator's.
-4. **Given** the same input, **when** I generate twice, **then** the result is the same.
+1. **Given** real travel times, **when** I generate, **then** the day's visits plus travel fit in the hours of the day.
+2. **Given** a budget level, **when** I generate, **then** the average price is closer to the level than the basic generator's.
+3. **Given** the same input, **when** I generate twice, **then** the result is the same.
 
 **Business rules**
 
-- Extends US-E8-01 with US-E6-01 and US-S2-01. Unit tested.
+- Extends US-E8-01 with US-S2-01. Unit tested.
 
 **Notes**
 
@@ -1078,8 +1056,7 @@ at sprint planning, with the same template.
 
 1. **Given** a trip with an itinerary, **when** I publish it, **then** I get a link.
 2. **Given** the link, **when** anyone opens it, **then** they see the itinerary without logging in.
-3. **Given** I delete the trip, **when** someone opens the link, **then** it still works (it is a copy).
-4. **Given** a published itinerary, **when** I unpublish it, **then** the link stops working.
+3. **Given** a published itinerary, **when** I unpublish it or delete it, **then** the link stops working.
 
 **Business rules**
 
@@ -1130,8 +1107,7 @@ at sprint planning, with the same template.
 **Acceptance criteria**
 
 1. **Given** a stop with a visit time, **when** the time is near, **then** I get a reminder.
-2. **Given** a reminder was sent, **when** the time passes, **then** I do not get a second one.
-3. **Given** I switch reminders off for a trip, **when** a visit is near, **then** nothing is sent.
+2. **Given** I switch reminders off for a trip, **when** a visit is near, **then** nothing is sent.
 
 **Business rules**
 
@@ -1243,7 +1219,7 @@ at sprint planning, with the same template.
 **Acceptance criteria**
 
 1. **Given** a place with a `charge` tag, **when** I open its page, **then** I see the price.
-2. **Given** a place without it, **when** I open its page, **then** no price is invented.
+2. **Given** a place without it, **when** I open its page, **then** no price is shown.
 
 **Business rules**
 
@@ -1372,9 +1348,37 @@ at sprint planning, with the same template.
 **Acceptance criteria**
 
 1. **Given** the search box, **when** I press Enter, **then** places from OpenStreetMap that match are listed.
-2. **Given** I choose one, **when** I review it, **then** it is saved to the catalog (US-B7-01).
+2. **Given** I choose one, **when** I review it, **then** it is saved to the catalog (US-S19-01).
 3. **Given** too many searches, **when** the limit is hit, **then** I see a message to wait.
 
 **Notes**
 
 - The prototype has this (ADR-004): the search runs on submit only, with a limit of 1 request per second. Reuse it.
+
+## S19 Discover places on the map
+
+### US-S19-01 Discover places that are not yet in the catalog
+
+- **As a:** Explorer / reviewer
+
+**I want** to see OpenStreetMap places that are not in the catalog, and review them,
+
+**So that** I am not limited to what was imported.
+
+**Acceptance criteria**
+
+1. **Given** I move the map, **when** it stops, **then** places from OpenStreetMap in the visible area that are not in the catalog appear as discovered pins.
+2. **Given** I post the first review on a discovered place, **when** it is saved, **then** the place is saved to the catalog in the correct city and its rating is calculated.
+3. **Given** OpenStreetMap does not answer, **when** I move the map, **then** the places already in the catalog are still shown and no error page appears.
+4. **Given** a discovered place is already in the catalog, **when** the map loads, **then** it appears once.
+
+**Business rules**
+
+- A discovered place is assigned to the nearest city that is in the catalog.
+- Unique by OpenStreetMap id.
+
+**Notes**
+
+- Was MVP feature B7; moved to Stretch because it depends on the public Overpass servers and is not needed for the demo scenario.
+- Known bug in ADR-002: in the prototype a saved place always goes to Porto. This story fixes it (AC2).
+- Search by name outside the catalog is S18.

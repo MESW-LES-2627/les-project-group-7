@@ -150,6 +150,8 @@ class TripConstraints <<value object>> #FFE3CC {
   endDate
   budgetLevel : € | €€ | €€€
   allowedCategories : PlaceCategory [*]
+  dayStart : HH:mm
+  dayEnd : HH:mm
 }
 
 class Day #FFE3CC {

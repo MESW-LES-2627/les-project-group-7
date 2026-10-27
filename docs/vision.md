@@ -51,8 +51,8 @@ in the [MVP](mvp.md). Each idea is tagged:
 ## 5. Where the data comes from
 
 - **Places** come from OpenStreetMap: name, type, coordinates and, where
-  mapped, opening hours. They are loaded by scripts, or discovered live on the map and
-  saved when first reviewed (see ADR-002 in [design.md](design.md)). We show "© OpenStreetMap contributors".
+  mapped, opening hours. They are loaded by scripts (see ADR-002 in [design.md](design.md));
+  discovering more places live on the map is Stretch. We show "© OpenStreetMap contributors".
 - **Ratings, reviews and price levels** are ours. OpenStreetMap has no ratings,
   and almost no price information, so the community fills that gap. Until real
   reviews arrive, demo users and sample reviews keep the rankings meaningful.
@@ -100,21 +100,21 @@ in the [MVP](mvp.md). Each idea is tagged:
 |---|---|
 | Wishlist ("I want to go there") and bookmarks ("remember this") | MVP |
 | Visited places diary | MVP |
-| Custom lists inside bookmarks: user-made named collections such as "Best cafés in Lisbon" | MVP |
+| Custom lists inside bookmarks: user-made named collections such as "Best cafés in Paris" | MVP |
 | Personal stats (places per city and type) and a map of everywhere I have been | Stretch |
 
 ### 6.4 Trip planning
 
 | Idea | Tier |
 |---|---|
-| Create a trip with city, dates, budget level and preferred place types | MVP |
+| Create a trip with city, dates, budget level, preferred place types and the hours of the day | MVP |
 | Days created automatically from the dates and kept in sync when they change | MVP |
 | Build an itinerary manually: assign places to days, set visit times | MVP |
-| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP |
+| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. Stops get visit times inside the hours of the day and avoid the times when a place is known to be closed. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP |
 | Suggest the best-ranked places nearby (for example lunch after the Eiffel Tower) | MVP |
 | Warn when a planned visit time is outside the place's opening hours, and show the trip's average price level against the budget level | MVP |
 | Estimated travel time between stops ("≈ 12 min walk", from straight-line distance) | MVP |
-| **Smart generator**: also uses opening hours and real travel times, and balances the budget more precisely | Stretch |
+| **Smart generator**: also uses real travel times, and balances the budget more precisely | Stretch |
 | Optional budget in euros per day, from price levels mapped to rough amounts | Stretch |
 | Real walking and driving times from a routing service | Stretch |
 | Other conflict warnings (overlapping visits, too much walking) | Stretch |
@@ -142,7 +142,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 | Idea | Tier |
 |---|---|
 | Import places from OpenStreetMap | MVP |
-| Discover places live on the map and save them when first reviewed | MVP |
+| Discover places live on the map and save them when first reviewed | Stretch (already built in the tracer bullet) |
 | Demo users and sample reviews so rankings work from day one | MVP |
 | Users suggest places, moderators approve or reject | Dream |
 | Duplicate detection and merging | Dream |
@@ -181,7 +181,7 @@ core: *trustworthy rankings that build good plans*.
 
 ## 8. What success looks like
 
-- A planner can go from "3 days in Lisbon, mid budget" to a plan they are happy
+- A planner can go from "3 days in Paris, mid budget" to a plan they are happy
   with in **under five minutes**.
 - Reviews visibly change what the app recommends.
 - A teacher can open the URL, create an account and try the whole flow without

@@ -84,12 +84,13 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 
 - The board is conceptual. A trip owns its days and its itinerary, so Day and
   Itinerary are not separate aggregates. The rules about days, assigned places,
-  opening hours and budget live inside Trip, so they are not policies.
-- Places come from OpenStreetMap through the import and seed scripts for seven cities,
-  and from live discovery on the map: a discovered place is saved to the catalog when
-  it is first reviewed (see ADR-002). The board does not show this yet: treat the
-  saving as part of _Post review_ until the board is updated. User suggestions with
-  moderation (Place suggestion) are designed but not in the MVP.
+  opening hours, the hours of the day and budget live inside Trip, so they are not policies.
+- Places come from OpenStreetMap through the import and seed scripts for three cities
+  (Porto, Paris and Berlin). Live discovery on the map, where a discovered place is
+  saved to the catalog when it is first reviewed, is built in the tracer bullet but is
+  Stretch (see ADR-002). The board does not show it yet: treat the saving as part of
+  _Post review_ until the board is updated. User suggestions with moderation (Place
+  suggestion) are designed but not in the MVP.
 - Posting a review is the only way a place is marked as visited. Deleting the
   review does not unmark it.
 - Days follow the trip date range: _Days added_ and _Days removed_ are events of
@@ -155,7 +156,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | SavedPlace                     | Saved places        | type (WISHLIST / BOOKMARK)                                                                   | a User saves a Place                                                                      |
 | SavedList                      | List                | name                                                                                         | owned by a User, contains bookmarked SavedPlaces                                          |
 | Trip                           | Trip                | name, /averageCostPoints                                                                     | owned by a User, goes to a City, has TripConstraints, Days and an Itinerary               |
-| TripConstraints (value object) | Trip                | startDate, endDate, budgetLevel (€, €€ or €€€: target average price of the whole trip), allowedCategories | part of a Trip                                                  |
+| TripConstraints (value object) | Trip                | startDate, endDate, budgetLevel (€, €€ or €€€: target average price of the whole trip), allowedCategories, dayStart, dayEnd (hours of the day) | part of a Trip                                                  |
 | Day                            | Trip                | dayNumber, date                                                                              | part of a Trip, one per date between the start and end date                               |
 | Itinerary                      | Trip                | mode (MANUAL / GENERATED)                                                                    | part of a Trip (0..1), schedules ItineraryStops                                           |
 | ItineraryStop                  | Trip                | visitTime (optional), position, /outsideOpeningHours, /travelTimeFromPreviousStop            | on a Day, visits a Place                                                                  |
@@ -216,17 +217,17 @@ designed, not in the MVP.
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Web App              | Browser UI for users and admins, including the map                                                                                                                           | Backend REST API, Map tiles (external)                                  |
 | Identity             | Users, authentication, roles                                                                                                                                                 | Database                                                                |
-| Place Catalog        | The whole Place aggregate: places, city search, import, live discovery of places, opening hours, visited marker, rating recalculation and the top-rated list (search outside the catalog is built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
+| Place Catalog        | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
 | Reviews              | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
 | Trip Planner         | Trips, days, itineraries, visit times, travel-time estimates, opening-hours and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
-| Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average and the wishlist.                           | Place Catalog, Saved Places                                             |
+| Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average, the wishlist, the hours of the day and known opening hours.                           | Place Catalog, Saved Places                                             |
 | Publishing (Stretch) | Published itineraries, sharing, bookmarks                                                                                                                                    | Trip Planner                                                            |
 | Reminders (Stretch)  | Scheduler that sends visit reminders                                                                                                                                         | Trip Planner, Notification service (external)                           |
 
 External systems:
 
-- **Places data source** (OpenStreetMap), used by Place Catalog to import places and to discover places live on the map (see ADR-002).
+- **Places data source** (OpenStreetMap), used by Place Catalog to import places and, outside the committed MVP, to discover places live on the map (see ADR-002).
 - **Map tiles** (OpenStreetMap), used by the Web App to draw the map.
 - **Routing service** (OpenRouteService, Stretch), used by Trip Planner for real travel times.
 - **Geocoding service** (Nominatim, built but outside the committed MVP), used by Place Catalog to search outside the catalog (see ADR-004).
@@ -258,7 +259,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR     | Decision                                                  | Status                |
 | ------- | --------------------------------------------------------- | --------------------- |
 | ADR-001 | Full-stack architecture with Next.js 15 App Router       | Accepted              |
-| ADR-002 | Places come from import and seed scripts and live discovery (OpenStreetMap) | Accepted |
+| ADR-002 | Places come from import and seed scripts and live discovery (OpenStreetMap) | Accepted (live discovery built, outside the committed MVP) |
 | ADR-003 | Soft budget metric based on cost points                   | Accepted              |
 | ADR-004 | Search outside the catalog with Nominatim                 | Accepted (built, outside the committed MVP) |
 | ADR-005 | Honest symbolic places and a Ranking DataTable            | Accepted              |
@@ -279,16 +280,16 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-002: Places come from import and seed scripts and live discovery (OpenStreetMap)
 
-- **Status:** Accepted. This replaces the first version of the ADR, which said all places come from an import script and the app never calls OpenStreetMap live. The tracer bullet was built with live discovery, so the ADR now describes what the code does.
+- **Status:** Accepted. This replaces the first version of the ADR, which said all places come from an import script and the app never calls OpenStreetMap live. The tracer bullet was built with live discovery, so the ADR describes what the code does. Live discovery is outside the committed MVP (Stretch S19, see [mvp.md](mvp.md)): in the MVP the catalog comes from the scripts only, for three cities.
 - **Context:** Reviews (`Review`), visits (`Visit`) and itinerary stops (`ItineraryStop`) need referential integrity with `Place.id` in the relational database. The public Overpass API servers have strict rate limits (HTTP 429), unpredictable latency (3 s to 60 s) and frequent failures (HTTP 502), so the app must keep working when they do not answer.
 - **Decision:** The catalog is the `Place` table in PostgreSQL. Places enter it in three ways:
-  - _Scripts (`source = IMPORTED`):_ `scripts/import-osm.ts` is the _Import places_ command and loads places from OpenStreetMap (today only Porto). `prisma/seed.ts` creates the seven MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin and London), their places, the demo users and the sample reviews. The demo data is not marked in the schema.
-  - _Live discovery (`source = LAZY_OSM`):_ when the map moves, `GET /api/osm` asks Overpass for the places in the visible area (small areas only, at most 40 places, three mirrors tried in turn with a 2 s timeout, 15 minute in-memory cache). If Overpass does not answer, the map shows the places already in PostgreSQL. A discovered place is saved to PostgreSQL by `POST /api/reviews` when a user posts the first review for it.
+  - _Scripts (`source = IMPORTED`):_ `scripts/import-osm.ts` is the _Import places_ command and loads places from OpenStreetMap (today only Porto). `prisma/seed.ts` creates the MVP cities (Porto, Paris and Berlin), their places, the demo users and the sample reviews. The demo data is not marked in the schema.
+  - _Live discovery (`source = LAZY_OSM`, Stretch):_ when the map moves, `GET /api/osm` asks Overpass for the places in the visible area (small areas only, at most 40 places, three mirrors tried in turn with a 2 s timeout, 15 minute in-memory cache). If Overpass does not answer, the map shows the places already in PostgreSQL. A discovered place is saved to PostgreSQL by `POST /api/reviews` when a user posts the first review for it.
   - _Suggestions (`source = SUGGESTED`):_ approved place suggestions, once they exist (Dream).
 - **Alternatives considered:** only the import script, with no live calls. It was the first version of this decision: the demos then need no external network, but a place that was not imported cannot be reviewed.
 - **Consequences:**
-  - _Positive:_ any place on the map can be reviewed, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
-  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. In the tracer bullet a place saved on the fly is always assigned to the city Porto, so this must be fixed before other cities are used with live discovery. The EventStorming board does not show the on-the-fly saving yet.
+  - _Positive:_ with live discovery any place on the map can be reviewed, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
+  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. In the tracer bullet a place saved on the fly is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities. The EventStorming board does not show the on-the-fly saving yet.
 
 ### ADR-003: Soft budget metric based on cost points
 

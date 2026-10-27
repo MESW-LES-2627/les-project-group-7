@@ -10,18 +10,18 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Place
 
-- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) loaded from OpenStreetMap by the import and seed scripts, discovered live on the map and saved when first reviewed, or suggested by users (post-MVP, Dream).
+- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) loaded from OpenStreetMap by the import and seed scripts, discovered live on the map and saved when first reviewed (Stretch, built in the tracer bullet), or suggested by users (post-MVP, Dream).
 - **Key Attributes:** `id`, `osmId`, `name`, `description`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`, may be unknown), `averageRating`, `reviewCount`, `source` (`IMPORTED` | `LAZY_OSM` | `SUGGESTED`). Its cost points (0..3) are derived from `priceLevel`.
 - **Invariants & Policies:**
   - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated `Review` records.
   - `priceLevel`: places tagged `fee=no` in OpenStreetMap (parks, viewpoints, public landmarks) are `FREE` (0 cost points). OpenStreetMap has no other price data, so for every other place the `priceLevel` is the most common (mode) price level given in its reviews. A place with neither is **unknown**.
-  - **A place enters the catalog in one of three ways** (see ADR-002): the _Import places_ command and the seed script (`source = IMPORTED`), on-the-fly saving when a user posts the first review for a place discovered live on the map (`source = LAZY_OSM`), or an approved suggestion (post-MVP, `source = SUGGESTED`).
+  - **A place enters the catalog in one of three ways** (see ADR-002): the _Import places_ command and the seed script (`source = IMPORTED`), on-the-fly saving when a user posts the first review for a place discovered live on the map (Stretch, `source = LAZY_OSM`), or an approved suggestion (post-MVP, `source = SUGGESTED`). In the committed MVP only the first one is used.
   - The place saved on the fly is created inside _Post review_. In the tracer bullet it is always assigned to the city Porto, which is a known limitation.
-  - The map and the search call OpenStreetMap live to _discover_ places (see _Live Discovery_ in section 7). A discovered place is not in the catalog, and cannot be rated or planned, until it is saved.
+  - The map and the search call OpenStreetMap live (Stretch) to _discover_ places (see _Live Discovery_ in section 7). A discovered place is not in the catalog, and cannot be rated or planned, until it is saved.
 
 ### Import places
 
-- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts` (today only for Porto). The seed script `prisma/seed.ts` creates the seven MVP cities (Porto, Lisbon, Madrid, Paris, Rome, Berlin and London), their places, the demo users and the sample reviews. Its event is _Places imported_.
+- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts` (today only for Porto; the MVP cities are Porto, Paris and Berlin). The seed script `prisma/seed.ts` creates the cities, their places, the demo users and the sample reviews. Its event is _Places imported_.
 
 ### City
 
@@ -90,8 +90,9 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### TripConstraints (Value Object)
 
 - **Definition:** The parameters that bound and shape a trip plan.
-- **Attributes:** `startDate`, `endDate`, `budgetLevel` (`€` | `€€` | `€€€`), `allowedCategories` (Set of PlaceCategory).
+- **Attributes:** `startDate`, `endDate`, `budgetLevel` (`€` | `€€` | `€€€`), `allowedCategories` (Set of PlaceCategory), `dayStart` and `dayEnd` (HH:mm, the hours of the day).
 - **Rules:**
+  - `dayStart` and `dayEnd` default to 09:00 and 20:00. `dayStart` is 08:00 or later, `dayEnd` is 23:00 or earlier, and `dayStart` is before `dayEnd`. The generator keeps every stop inside them; manual planning is not restricted.
   - Modifying `startDate` or `endDate` triggers `syncDays()` on the `Trip`. The result is the events _Days added_ or _Days removed_.
 
 ### Day
@@ -147,6 +148,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 1. **Wishlist Priority:** Wishlist places are always included, count toward the trip's average, and the remaining stops adapt around them.
 2. **Compensation:** Free places (0 cost points) pull the trip's average down, allowing higher-rated `€€` or `€€€` stops (e.g. a nice dinner) while keeping the average near the budget level.
 3. **Soft Degradation / Fallback:** If the trip cannot meet the target because the city lacks cheaper options, the generator selects the closest fit rather than leaving an empty slot, and the plan shows the average as a warning.
+4. **Hours of the Day and Opening Hours:** Every generated stop gets a visit time inside the trip's `dayStart` and `dayEnd`. A place whose `openingHours` are known is never given a time when it is closed; a place with unknown hours can be given any time.
 
 ---
 
@@ -173,7 +175,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 
 - **Definition:** Searching a city, browsing its places, filtering by type, price level and rating, and sorting by rating. It runs on our own PostgreSQL data only.
 
-### Live Discovery (MVP, tracer bullet)
+### Live Discovery (Stretch, built in the tracer bullet)
 
 - **Definition:** Showing OpenStreetMap places that are not in the catalog yet. When the map moves, the app asks the Overpass service for the places inside the visible area (small areas only, at most 40 places, cached for 15 minutes, with three mirrors as failover). If OpenStreetMap does not answer, the map shows the places already in PostgreSQL. Discovered places show the community rating when the place is already in the catalog.
 - **Behavior:** a discovered place is saved to the catalog (`source = LAZY_OSM`) when a user posts the first review for it (see ADR-002).
