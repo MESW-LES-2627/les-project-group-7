@@ -152,8 +152,7 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 
 ## 6. Demo scenario
 
-The MVP is shown, at each sprint review from Iteration 2 on and at the final
-release, with this scenario on the prod server:
+The MVP is shown, at each sprint review and at the final release, with this scenario on the prod server:
 
 1. Register and log in.
 2. Search a city, filter restaurants by price level, open the map and a place page.
