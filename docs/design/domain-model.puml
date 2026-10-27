@@ -108,6 +108,11 @@ class Review #D6ECFA {
   createdAt
 }
 
+note right of Review
+  A user can review a given place only once.
+  Different users can each review the same place.
+end note
+
 class Visit #FFF3C4 {
   visitedAt
 }

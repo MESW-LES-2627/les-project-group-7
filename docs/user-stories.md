@@ -217,6 +217,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 - Each place's `averageRating`, `reviewCount` and `priceLevel` are calculated from its reviews with the same functions the app uses.
 - Seed passwords are hashed with the same helper as registration.
+- No user reviews the same place twice (the rule of US-C1-01), so the seed needs at least as many demo users as the most-reviewed place has reviews.
 
 **Out of scope**
 
@@ -226,12 +227,16 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 - The demo password goes in the README, not in the code of the app.
 - Every city needs enough places and reviews to rank well ([mvp.md](mvp.md) section 4).
+- The prototype seed breaks the one-review rule: it has 2 demo users and up to 9 reviews on one place. On the dev database 20 user and place pairs have more than one review (70 reviews). The unique constraint of US-C1-01 cannot be added until the seed has enough demo users and the databases are cleaned. Prod was seeded with the same script, so it is very likely the same (not checked).
 - The prototype seed also creates Lisbon, Madrid, Rome and London (4 landmarks each, on dev and prod). Remove them from the seed and decide what to do with the rows already in the databases (prod needs the team's approval).
 
 **Issues**
 
 1. **Seed with real hashes and rerunnable** · covers AC3, AC4 · depends on: Registration API
 2. **Enough reviews for every city** · covers AC1, AC2 · depends on: Import the three MVP cities
+3. **Demo users and reviews without duplicates** · covers AC2 · depends on: none
+   - More demo users, each reviewing a place at most once
+   - Clean the existing duplicate reviews on dev and prod (prod needs the team's approval), then recalculate the ratings
 
 ## B3 City search and filters
 
@@ -420,7 +425,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 - Average rating = mean of all ratings, rounded to one decimal.
 - Place price level = most common price level in its reviews; ties go to the lower level.
-- One review per user and place.
+- A user can review a given place only once (to change an opinion the user edits the review). Different users can each review the same place.
 
 **Out of scope**
 
@@ -428,8 +433,8 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Issues**
 
-1. **One review per user and place** · covers AC3 · depends on: Session and write-endpoint guard (US-A1-02)
-   - Migration for a unique constraint
+1. **One review per user and place** · covers AC3 · depends on: Session and write-endpoint guard (US-A1-02), Demo users and reviews without duplicates (US-B2-01)
+   - Migration for a unique constraint on user and place. It fails while the databases hold duplicate reviews, so the demo data must be fixed first (see the notes of US-B2-01)
 2. **Review form validation and visited marker** · covers AC1, AC2, AC4, AC5 · depends on: Session and write-endpoint guard (US-A1-02)
 
 ## C2 Edit and delete a review

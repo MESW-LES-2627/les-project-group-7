@@ -39,7 +39,7 @@ iteration: the order is decided at each sprint planning.
 
 | ID | Feature | The user can… |
 |---|---|---|
-| C1 | Post a review | Rate 1 to 5, write text, say how expensive it was (€ / €€ / €€€). The place is marked as visited and its rating updates |
+| C1 | Post a review | Rate 1 to 5, write text, say how expensive it was (€ / €€ / €€€). A user can review a place only once (edit it to change it). The place is marked as visited and its rating updates |
 | C2 | Edit and delete a review | Change or remove own review; rating and top-rated update |
 | C3 | Visited places | See a list of the places they have visited |
 

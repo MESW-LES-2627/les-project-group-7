@@ -43,6 +43,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Lifecycle & Rules:**
   - Posting a review triggers two policies on `Place`: **Mark place visited** and **Recalculate rating and price level**.
   - Editing or deleting a review triggers **Recalculate rating and price level**.
+  - **A user can review a given place only once.** To change an opinion the user edits the review, and after deleting it can post a new one. Different users can each review the same place.
   - Deleting a review does **not** delete the corresponding `Visit`.
 
 ### Visit
