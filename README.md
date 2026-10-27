@@ -12,6 +12,7 @@ All Iteration 0 design deliverables and domain specifications are stored in this
 
 - **[Vision](docs/vision.md):** The long-term product vision and feature roadmap.
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.
+- **[User stories](docs/user-stories.md):** One user story per MVP and Stretch feature, with acceptance criteria and the issues each is split into.
 - **[Design & Architecture](docs/design.md):** Overview of EventStorming, Domain Model, and Component Diagram.
 - **[Domain Glossary & Rules (Ubiquitous Language)](docs/GLOSSARY.md):** Canonical definitions of `Place`, `Review`, `Visit`, `Wishlist`, `Bookmark`, `Trip`, `Itinerary`, cost points, and budget calculations.
 - **[Deployment](docs/deployment.md):** How the app reaches the two sites (Vercel and Neon), the backup steps before a release and the known problems.

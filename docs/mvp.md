@@ -78,14 +78,29 @@ Everything marked Stretch or Dream in the [vision](vision.md). The designs
 already cover some of it (suggestions and moderation, publishing and sharing,
 reminders), but it is **not built** in the MVP.
 
-If there is time left, the Stretch ideas we would take first, in this order:
+If there is time left, we take the Stretch ideas below, in this order. Each has an ID
+so that its user story can name it (see [user-stories.md](user-stories.md)).
 
-1. Smart generator (opening hours, real travel times, finer budget balancing)
-2. Real travel times from a routing service
-3. Photos for landmarks
-4. Publish and share itineraries
-5. Visit reminders
-6. Other conflict warnings, drag and drop, alternatives per stop
+| ID | Stretch idea |
+|---|---|
+| S1 | Smart generator (opening hours, real travel times, finer budget balancing) |
+| S2 | Real travel times from a routing service |
+| S3 | Photos for landmarks |
+| S4 | Publish and share itineraries (publish with a link, bookmark, copy into my own trip) |
+| S5 | Visit reminders |
+| S6 | Other conflict warnings (overlapping visits, too much walking) |
+| S7 | Drag and drop reordering |
+| S8 | Alternatives per stop |
+| S9 | "Helpful" votes on reviews |
+| S10 | Personal stats and a map of visited places |
+| S11 | Ticket prices where OpenStreetMap has them |
+| S12 | Optional budget in euros per day |
+| S13 | Multi-city trips |
+| S14 | Trip summary e-mail |
+| S15 | Push notifications on mobile |
+| S16 | Export an itinerary to PDF or calendar |
+| S17 | Installable web app (PWA) with offline itinerary |
+| S18 | Search outside the catalog with Nominatim (already built, see ADR-004) |
 
 ## 4. Data for the MVP
 
