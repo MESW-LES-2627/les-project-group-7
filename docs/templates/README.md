@@ -9,6 +9,9 @@ The templates are GitHub issue forms in
 Priority, size, estimate and iteration are set as fields on the board, not in the
 issue text.
 
+The stories for every MVP and Stretch feature are drafted in
+[user-stories.md](../user-stories.md).
+
 How work moves from an idea to a merged pull request:
 
 ```

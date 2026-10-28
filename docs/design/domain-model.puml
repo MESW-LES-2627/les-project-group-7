@@ -108,6 +108,11 @@ class Review #D6ECFA {
   createdAt
 }
 
+note right of Review
+  A user can review a given place only once.
+  Different users can each review the same place.
+end note
+
 class Visit #FFF3C4 {
   visitedAt
 }
@@ -150,7 +155,15 @@ class TripConstraints <<value object>> #FFE3CC {
   endDate
   budgetLevel : € | €€ | €€€
   allowedCategories : PlaceCategory [*]
+  dayStart : HH:mm
+  dayEnd : HH:mm
 }
+note right of TripConstraints
+  dayStart and dayEnd: the hours of the day.
+  Default 09:00 to 20:00, from 08:00 to 23:00
+  at the widest. Only the generator is limited
+  by them; manual planning is free.
+end note
 
 class Day #FFE3CC {
   dayNumber

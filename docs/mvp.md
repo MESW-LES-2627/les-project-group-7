@@ -34,13 +34,12 @@ iteration: the order is decided at each sprint planning.
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
 | B5 | Map view | See a city's places as pins on a map, with clustering |
 | B6 | Top-rated places | See the top-rated places per city and type |
-| B7 | Discover places on the map | See OpenStreetMap places that are not in the catalog yet; a discovered place is saved to the catalog when the user posts the first review for it |
 
 ### Reviews
 
 | ID | Feature | The user can… |
 |---|---|---|
-| C1 | Post a review | Rate 1 to 5, write text, say how expensive it was (€ / €€ / €€€). The place is marked as visited and its rating updates |
+| C1 | Post a review | Rate 1 to 5, write text, say how expensive it was (€ / €€ / €€€). A user can review a place only once (edit it to change it). The place is marked as visited and its rating updates |
 | C2 | Edit and delete a review | Change or remove own review; rating and top-rated update |
 | C3 | Visited places | See a list of the places they have visited |
 
@@ -55,14 +54,14 @@ iteration: the order is decided at each sprint planning.
 
 | ID | Feature | The user can… |
 |---|---|---|
-| E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip) and preferred types; days are created from the dates |
-| E2 | Change a trip | Edit the constraints; days are added or removed to match |
+| E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip), preferred types and the hours of the day (when the day starts and ends); days are created from the dates |
+| E2 | Change a trip | Edit the constraints (including the hours of the day); days are added or removed to match |
 | E3 | Delete a trip | Delete a trip with its days, itinerary and stops |
 | E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times |
 | E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) |
 | E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above |
 | E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance |
-| E8 | Basic generator | Press "Generate itinerary": per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one |
+| E8 | Basic generator | Press "Generate itinerary": per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. Each stop gets a visit time inside the hours of the day, and a place whose opening hours are known is never given a time when it is closed (places with unknown hours can go anywhere). It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one |
 
 ### Platform
 
@@ -78,30 +77,51 @@ Everything marked Stretch or Dream in the [vision](vision.md). The designs
 already cover some of it (suggestions and moderation, publishing and sharing,
 reminders), but it is **not built** in the MVP.
 
-If there is time left, the Stretch ideas we would take first, in this order:
+If there is time left, we take the Stretch ideas below, in this order. Each has an ID
+so that its user story can name it (see [user-stories.md](user-stories.md)).
 
-1. Smart generator (opening hours, real travel times, finer budget balancing)
-2. Real travel times from a routing service
-3. Photos for landmarks
-4. Publish and share itineraries
-5. Visit reminders
-6. Other conflict warnings, drag and drop, alternatives per stop
+| ID | Stretch idea |
+|---|---|
+| S1 | Smart generator (real travel times, finer budget balancing) |
+| S2 | Real travel times from a routing service |
+| S3 | Photos for landmarks |
+| S4 | Publish and share itineraries (publish with a link, bookmark, copy into my own trip) |
+| S5 | Visit reminders |
+| S6 | Other conflict warnings (overlapping visits, too much walking) |
+| S7 | Drag and drop reordering |
+| S8 | Alternatives per stop |
+| S9 | "Helpful" votes on reviews |
+| S10 | Personal stats and a map of visited places |
+| S11 | Ticket prices where OpenStreetMap has them |
+| S12 | Optional budget in euros per day |
+| S13 | Multi-city trips |
+| S14 | Trip summary e-mail |
+| S15 | Push notifications on mobile |
+| S16 | Export an itinerary to PDF or calendar |
+| S17 | Installable web app (PWA) with offline itinerary |
+| S18 | Search outside the catalog with Nominatim (already built, see ADR-004) |
+| S19 | Discover places on the map: OpenStreetMap places that are not in the catalog yet, saved when first reviewed (was B7; already built in the tracer bullet, see ADR-002) |
 
 ## 4. Data for the MVP
 
-- **Cities:** seven cities: Porto, Lisbon, Madrid, Paris, Rome, Berlin and London
-  (decided in ADR-002 in [design.md](design.md)). Every city needs enough places and
-  demo reviews to rank well.
-- **Places:** loaded from OpenStreetMap by the import script (Porto) and the seed script
-  (all seven cities) into our own database. The map also discovers places live from
-  OpenStreetMap, and saves one to the database when a user reviews it (see ADR-002).
-  If OpenStreetMap does not answer, the app shows the places already in the database.
+- **Cities:** three cities: Porto, Paris and Berlin (decided in ADR-002 in
+  [design.md](design.md)). Every city needs enough places and demo reviews to rank well.
+  The data is small (the prototype's dev database, with 535 places and 94 reviews, uses
+  9 MB of the 1 GB free limit), so the limit is the work of preparing the data for each
+  city, not storage.
+- **Places:** loaded from OpenStreetMap by the import script (all three cities) and the
+  seed script into our own database (see ADR-002). Only places in the catalog can be
+  reviewed and planned. Discovering other places live on the map is Stretch (S19).
 - **Opening hours:** taken from OpenStreetMap where mapped. Where they are missing
   the app says "unknown" and cannot warn.
 - **Ratings and price levels:** OpenStreetMap has none, so they come from reviews.
   The seed script creates demo users and sample reviews (the schema does not mark
   them as demo data).
   A place's price level is the most common (mode) price level given in its reviews.
+- **Hours of the day:** every trip has a time when the day starts and a time when it
+  ends (default 09:00 to 20:00; the earliest start is 08:00 and the latest end is
+  23:00). The generator keeps every stop inside these hours. When the user plans by
+  hand, any visit time is allowed.
 - **Budget level:** it is a soft target for the **whole trip**, not a limit per place
   or per day, and not an amount in euros (we have no real prices, and a trip total
   would include flights and hotels, which the app does not model).
@@ -132,15 +152,14 @@ If there is time left, the Stretch ideas we would take first, in this order:
 
 ## 6. Demo scenario
 
-The MVP is shown, at each sprint review from Iteration 2 on and at the final
-release, with this scenario on the prod server:
+The MVP is shown, at each sprint review and at the final release, with this scenario on the prod server:
 
 1. Register and log in.
 2. Search a city, filter restaurants by price level, open the map and a place page.
 3. Post a review with a price level; see the rating and top-rated list change and
    the place appear in "visited".
 4. Add a place to the wishlist and to a custom list.
-5. Create a 3-day trip with a budget level and preferred types.
+5. Create a 3-day trip to Paris with a budget level, preferred types and the hours of the day.
 6. Generate an itinerary, then edit it: move a place, set a visit time outside
    opening hours and see the warning, check the travel-time estimates and the
    trip's average price against the budget level.
