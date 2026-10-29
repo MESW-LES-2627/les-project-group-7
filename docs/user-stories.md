@@ -604,7 +604,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** a trip of 3 days, **when** I open it, **then** I see Day 1, Day 2 and Day 3 with their dates.
 3. **Given** the end date is before the start date, **when** I send, **then** I see an error and nothing is saved.
 4. **Given** I leave the hours of the day empty, **when** I create the trip, **then** the day starts at 09:00 and ends at 20:00.
-5. **Given** a day start before 08:00, a day end after 23:00, or a start that is not before the end, **when** I send, **then** I see an error and nothing is saved.
+5. **Given** the fields for the hours of the day, **when** the day start is before 08:00, the day end is after 23:00, or the start is not before the end, **then** I see an error and nothing is saved. This only limits these two fields; the visit time of a single stop is not limited (US-E4-01).
 6. **Given** a trip, **when** I open "My trips", **then** it is in the list, and other users cannot see it.
 7. **Given** the form is incomplete, **when** I send, **then** I see which fields are missing.
 
@@ -613,6 +613,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - Number of days = number of dates from start to end, inclusive. Unit tested.
 - Budget level is `€`, `€€` or `€€€`. It is the target average price for the **whole trip** ([mvp.md](mvp.md) section 4).
 - Hours of the day: `dayStart` and `dayEnd` (HH:mm), default 09:00 and 20:00, earliest start 08:00, latest end 23:00, start before end. Unit tested.
+- The hours of the day only limit the generator (US-E8-01). In a manual itinerary any visit time is allowed, also outside them (US-E4-01).
 - A trip has a maximum length (the team decides, for example 14 days).
 - Trips are private to their owner.
 
@@ -685,7 +686,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Issues**
 
-1. **Delete trip API and confirmation dialog** · covers AC1 to AC4 · depends on: Trip creation API (US-E1-01)
+1. **Delete trip API and confirmation dialog** · covers AC1 to AC3 · depends on: Trip creation API (US-E1-01)
 
 ## E4 Manual itinerary
 
@@ -706,6 +707,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 4. **Given** a stop, **when** I remove it, **then** the place is not in the day any more and the other stops keep their order.
 5. **Given** the same place already on the trip, **when** I add it again, **then** I am told it is already planned.
 6. **Given** a place from another city, **when** I try to add it, **then** it is refused.
+7. **Given** the hours of the day are 09:00 to 20:00, **when** I set the visit time of a stop to 22:30 or 00:00, **then** it is accepted. The hours of the day only limit the generator.
 
 **Business rules**
 
@@ -721,7 +723,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Stop ordering rules with unit tests** · covers AC2, AC4, AC5, AC6 · depends on: Trip creation API (US-E1-01)
-2. **Stops API (add, move, set time, remove)** · covers AC1 to AC6 · depends on: Stop ordering rules with unit tests
+2. **Stops API (add, move, set time, remove)** · covers AC1 to AC7 · depends on: Stop ordering rules with unit tests
 3. **Itinerary editing UI (day columns, add place, buttons to move)** · covers AC1 to AC5 · depends on: Stops API
 
 ## E5 Nearby suggestions

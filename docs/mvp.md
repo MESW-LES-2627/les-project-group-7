@@ -57,7 +57,7 @@ iteration: the order is decided at each sprint planning.
 | E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip), preferred types and the hours of the day (when the day starts and ends); days are created from the dates |
 | E2 | Change a trip | Edit the constraints (including the hours of the day); days are added or removed to match |
 | E3 | Delete a trip | Delete a trip with its days, itinerary and stops |
-| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times |
+| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times (any time, also outside the hours of the day) |
 | E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) |
 | E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above |
 | E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance |
