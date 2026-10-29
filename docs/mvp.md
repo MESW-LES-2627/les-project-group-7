@@ -33,7 +33,7 @@ iteration: the order is decided at each sprint planning.
 | B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating |
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
 | B5 | Map view | See a city's places as pins on a map, with clustering |
-| B6 | Top-rated places | See the top-rated places per city and type |
+| B6 | Top-rated places | See the top-rated places per city and type, ranked by a weighted rating (see section 4) |
 
 ### Reviews
 
@@ -118,6 +118,10 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   The seed script creates demo users and sample reviews (the schema does not mark
   them as demo data).
   A place's price level is the most common (mode) price level given in its reviews.
+- **Ranking:** places are ranked by a **weighted rating**, not by the plain average, so that
+  one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
+  `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 3` and
+  `C = 4.0`. The plain average and the number of reviews are still shown.
 - **Hours of the day:** every trip has a time when the day starts and a time when it
   ends (default 09:00 to 20:00; the earliest start is 08:00 and the latest end is
   23:00). The generator keeps every stop inside these hours. When the user plans by

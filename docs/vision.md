@@ -69,7 +69,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 |---|---|
 | Search a city and browse its places | MVP |
 | Filter by type (restaurant, museum, monument, park), price level and rating | MVP |
-| Top-rated places per city and per type | MVP |
+| Top-rated places per city and per type, ranked by a weighted rating | MVP |
 | Place detail page with description, address, rating and reviews | MVP |
 | **Map view with pins and clustering** | MVP |
 | **Opening hours shown on the place page** (when known) | MVP |
@@ -86,7 +86,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 |---|---|
 | Write, edit and delete a review with a 1 to 5 rating | MVP |
 | Reviewer says how expensive the place was (€ / €€ / €€€), which gives the place its price level | MVP |
-| Place rating and top-rated list recalculated from reviews | MVP |
+| Place rating and top-rated list recalculated from reviews. Places are ranked by a weighted rating, so that one review cannot outrank many | MVP |
 | Posting a review marks the place as visited | MVP |
 | "Helpful" votes and sorting by most helpful | Stretch |
 | Review photos | Dream |

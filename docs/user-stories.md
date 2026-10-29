@@ -287,11 +287,12 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** a city is open, **when** I choose a price level, **then** only places with that level are listed (places without a price level are listed only when no price filter is set).
 3. **Given** a city is open, **when** I choose a minimum rating, **then** only places with at least that rating are listed.
 4. **Given** several filters are set, **when** I look at the list, **then** all of them apply together, and I can clear them.
-5. **Given** the list is shown, **when** I sort by rating, **then** the best rated is first and places without ratings are last.
+5. **Given** the list is shown, **when** I sort by rating, **then** the places are ordered by their rating score (US-B6-01), best first, and places without reviews are last. Each place still shows its plain average and number of reviews.
 
 **Business rules**
 
-- Filters combine with AND. Sorting by rating is descending, unrated last, ties broken by number of reviews then name.
+- Filters combine with AND. The "minimum rating" filter uses the plain average.
+- Sorting by rating uses the rating score (weighted rating) of US-B6-01, descending, unrated last, ties broken by number of reviews then name. Unit tested.
 
 **Out of scope**
 
@@ -299,7 +300,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Issues**
 
-1. **Filter functions with unit tests** · covers AC1, AC2, AC3, AC4, AC5 · depends on: none
+1. **Filter functions with unit tests** · covers AC1, AC2, AC3, AC4, AC5 · depends on: Rating score (weighted rating) with unit tests (US-B6-01)
 2. **Filter controls on the explorer** · covers AC1, AC2, AC3, AC4, AC5 · depends on: Filter functions with unit tests
 
 ## B4 Place page
@@ -387,23 +388,33 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Acceptance criteria**
 
-1. **Given** a city is open, **when** I look at the ranking, **then** places are ordered by average rating, best first.
+1. **Given** a city is open, **when** I look at the ranking, **then** places are ordered by their rating score (the weighted rating of the business rules), best first.
 2. **Given** a type is chosen, **when** I look at the ranking, **then** only that type is ranked.
 3. **Given** a place has no reviews, **when** I look at the ranking, **then** it is listed after rated places and shows "no ratings".
 4. **Given** a review is posted, edited or deleted, **when** I reload the ranking, **then** the order reflects it.
+5. **Given** a place with one 5-star review and a place with 50 reviews averaging 4.8, **when** I look at the ranking, **then** the second one is ranked above the first, and each shows its own plain average and number of reviews.
 
 **Business rules**
 
-- The ranking order comes from the same sort as US-B3-02.
-- A place with a single 5-star review does not outrank one with many 4.8 reviews: the team decides the tie-break (number of reviews). Unit tests cover it.
+- Ranking method (decided, ADR-008): the **weighted rating** (a Bayesian average). `score = (n / (n + m)) × average + (m / (n + m)) × C`, where `n` is the number of reviews of the place, `average` is its plain average, `m = 3` and `C = 4.0` are named constants. Round to 2 decimals. Places without reviews have no score and are ranked last. Ties are broken by number of reviews, then by name.
+- The same score is used everywhere a list is sorted by rating (US-B3-02). The plain average and the number of reviews are still displayed.
+- Unit tests with these cases: 1 review of 5 gives 4.25; 3 reviews of 5 give 4.50; 50 reviews averaging 4.8 give 4.75; a place without reviews has no score.
 
 **Out of scope**
 
 - "Hidden gems" (Dream).
 
+**Notes**
+
+- **This weighted rating is the method we use to rank places.** A plain average would put one 5-star review above fifty reviews averaging 4.8. IMDb ranks its Top 250 this way. See ADR-008 in [design.md](design.md).
+- The score is computed when ranking, from the stored `averageRating` and `reviewCount`. The schema does not change.
+
 **Issues**
 
-1. **Ranking by city and type, independent of the map** · covers AC1, AC2, AC3, AC4 · depends on: Filter functions with unit tests (US-B3-02)
+1. **Rating score (weighted rating) with unit tests** · covers AC5 · depends on: none
+   - `ratingScore(average, count)` in `src/domain/reviews/rating.ts`, with `m = 3` and `C = 4.0` as named constants
+   - Unit tests with the cases of the business rules, and the case without reviews
+2. **Ranking by city and type, independent of the map** · covers AC1, AC2, AC3, AC4 · depends on: Rating score (weighted rating) with unit tests, Filter functions with unit tests (US-B3-02)
 
 ## C1 Post a review
 

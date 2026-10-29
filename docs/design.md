@@ -267,6 +267,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR-005 | Honest symbolic places and a Ranking DataTable            | Accepted              |
 | ADR-006 | Data and development environment                          | Accepted              |
 | ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
+| ADR-008 | Rank places by a weighted rating                          | Accepted              |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -360,3 +361,13 @@ truth. Domain policies are on the EventStorming board and in section 1.
   - _Trade-offs:_ Neon suspends the database after 5 minutes without use, so the first request is slower. Free limits apply (Neon: 1 GB and 100 compute-hours per month per project). Both Vercel projects belong to one person's account.
   - _Hobby plan:_ it only deploys commits authored by the account owner and blocks the rest (the deployment stays in the state `BLOCKED` and the upload waits). The workflow hides `.git` while it uploads so that the upload carries no commit author. This worked for the owner's commits on dev and prod, and has not been tested with a teammate's commit. If it fails, only the account owner can deploy until the plan changes. Which commit was deployed is visible in the GitHub Action run, not in Vercel.
   - _Data history:_ Neon Free keeps only 6 hours of history, so a prod backup must be taken before each release (see [deployment.md](deployment.md)).
+
+### ADR-008: Rank places by a weighted rating
+
+- **Status:** Accepted
+- **Context:** Ranking by the plain average puts a place with one 5-star review above a place with fifty reviews averaging 4.8. One opinion is weaker evidence than fifty. Our data is also sparse: most places have 0 to 2 reviews, so a rule such as "at least 3 reviews to appear" would leave the top-rated list almost empty.
+- **Decision:** Rank by a weighted rating, a Bayesian average (the method IMDb uses for its Top 250): `score = (n / (n + m)) × average + (m / (n + m)) × C`, where `n` is the number of reviews of the place, `average` is its plain average, `m = 3` and `C = 4.0`. These are named constants. Places without reviews have no score and come last. Ties are broken by number of reviews, then by name. The same score sorts every list by rating (the ranking, the top-rated list and the sort in search). The plain average and the number of reviews are still shown. The "minimum rating" filter uses the plain average. The score is computed when ranking from `averageRating` and `reviewCount`, so the schema does not change.
+- **Alternatives considered:** the plain average (simple, but one review can win); a minimum number of reviews (simple, but it hides most places while the data is sparse); the Wilson score, which suits up and down votes and not 1 to 5 stars.
+- **Consequences:**
+  - _Positive:_ one review cannot outrank many, a place moves smoothly as it gets reviews, and the rule is one small pure function that is easy to unit test.
+  - _Trade-offs:_ two constants (`m` and `C`) to explain. The order can differ from the order of the displayed averages, so the page shows the number of reviews next to the average. If the catalog gets many more reviews, `C` can become the real average of all reviews.

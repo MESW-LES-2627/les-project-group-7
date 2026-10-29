@@ -85,11 +85,14 @@ class Place #FFF3C4 {
   /priceLevel : PriceLevel [0..1]
   /averageRating
   /reviewCount
+  /ratingScore
 }
 note right of Place
   /priceLevel: free if OpenStreetMap says no fee,
   otherwise the most common level in its reviews.
   /averageRating and /reviewCount: from its reviews.
+  /ratingScore: weighted rating used to rank places, so
+  that one review cannot outrank many (ADR-008).
 end note
 
 class PlaceSuggestion <<post-MVP>> #F3E0A8 {

@@ -55,6 +55,16 @@ This glossary defines the canonical ubiquitous language for the place review and
   - In MVP, created strictly via the policy triggered when a user posts a `Review` (no standalone "mark visited" button).
   - Survives review deletion.
 
+### Rating Score (Weighted Rating)
+
+- **Definition:** The number used to **rank** places, instead of the plain `averageRating`, so that one review cannot outrank many (see ADR-008). It is a Bayesian average: `score = (n / (n + m)) × averageRating + (m / (n + m)) × C`, with `n` = `reviewCount`, `m = 3` and `C = 4.0` (named constants), rounded to 2 decimals.
+- **Rules:**
+  - A place with no reviews has no score and is ranked after all rated places.
+  - Ties are broken by `reviewCount`, then by name.
+  - Every list sorted by rating (the ranking, the top-rated list, the sort in search) uses this score. The place still shows its plain `averageRating` and `reviewCount`.
+  - The "minimum rating" filter uses the plain `averageRating`.
+  - Examples: 1 review of 5 gives 4.25, 3 reviews of 5 give 4.50, 50 reviews averaging 4.8 give 4.75.
+
 ---
 
 ## 3. Saved Places & Lists
@@ -194,7 +204,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 - **Definition:** Visual identity and ranking architecture ensuring zero misleading visuals by replacing external stock photography with canonical Lucide symbols and a rating-ordered ranking DataTable.
 - **Behavior:**
   - Categorical metadata defined in `src/domain/catalog/categories.ts` assigns dedicated icons, pastel backgrounds, and labels to every `PlaceCategory`.
-  - Places are presented in a Letterboxd/TripAdvisor-style ranking table ordered by average rating descending, with direct toggles to symbolic card grid views.
+  - Places are presented in a Letterboxd/TripAdvisor-style ranking table ordered by rating score (the weighted rating, see _Rating Score_ and ADR-008) descending, with direct toggles to symbolic card grid views.
   - Landmark photos from Wikimedia Commons are Stretch, photos uploaded with reviews are Dream.
 
 ---
