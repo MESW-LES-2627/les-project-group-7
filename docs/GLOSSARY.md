@@ -120,6 +120,8 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Rules:**
   - A stop calculates `isOutsideOpeningHours()` against `Place.openingHours` when `visitTime` is specified, and the plan raises a _Plan warning_ when it is outside (only where hours are known).
   - Straight-line travel time is computed between consecutive stops on the same `Day`.
+  - A stop calculates `overlapsAnotherStop()`: its visit lasts from `visitTime` for a duration that depends on the place category, and it overlaps when another stop of the day starts before it ends. Only stops with a `visitTime` count. The plan raises a _Plan warning_.
+  - A `Day` calculates its walking time, the sum of the straight-line walking estimates between its consecutive stops. When it is above a limit chosen by the team, the plan raises a _Plan warning_. Warnings never block saving.
 
 ---
 

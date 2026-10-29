@@ -59,7 +59,7 @@ iteration: the order is decided at each sprint planning.
 | E3 | Delete a trip | Delete a trip with its days, itinerary and stops |
 | E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times (any time, also outside the hours of the day) |
 | E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) |
-| E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above |
+| E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above. Also get a warning when two visits overlap and when a day has too much walking |
 | E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance |
 | E8 | Basic generator | Press "Generate itinerary": per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. Each stop gets a visit time inside the hours of the day, and a place whose opening hours are known is never given a time when it is closed (places with unknown hours can go anywhere). It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one |
 
@@ -83,11 +83,10 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 | ID | Stretch idea |
 |---|---|
 | S1 | Smart generator (real travel times, finer budget balancing) |
-| S2 | Real travel times from a routing service |
+| S2 | Real travel times from a routing service (on foot, by car and by public transport where the service has the data) |
 | S3 | Photos for landmarks |
 | S4 | Publish and share itineraries (publish with a link, bookmark, copy into my own trip) |
 | S5 | Visit reminders |
-| S6 | Other conflict warnings (overlapping visits, too much walking) |
 | S7 | Drag and drop reordering |
 | S8 | Alternatives per stop |
 | S9 | "Helpful" votes on reviews |
@@ -101,6 +100,9 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 | S17 | Installable web app (PWA) with offline itinerary |
 | S18 | Search outside the catalog with Nominatim (already built, see ADR-004) |
 | S19 | Discover places on the map: OpenStreetMap places that are not in the catalog yet, saved when first reviewed (was B7; already built in the tracer bullet, see ADR-002) |
+
+S6 (other conflict warnings: overlapping visits and too much walking) moved to the MVP, as
+part of E6.
 
 ## 4. Data for the MVP
 
@@ -161,8 +163,9 @@ The MVP is shown, at each sprint review and at the final release, with this scen
 4. Add a place to the wishlist and to a custom list.
 5. Create a 3-day trip to Paris with a budget level, preferred types and the hours of the day.
 6. Generate an itinerary, then edit it: move a place, set a visit time outside
-   opening hours and see the warning, check the travel-time estimates and the
-   trip's average price against the budget level.
+   opening hours and see the warning, make two visits overlap and see the warning,
+   check the travel-time estimates and the trip's average price against the budget
+   level.
 7. Change the trip dates and see the days update.
 8. Delete the trip.
 

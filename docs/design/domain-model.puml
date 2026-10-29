@@ -168,10 +168,13 @@ end note
 class Day #FFE3CC {
   dayNumber
   date
+  /walkingMinutes
 }
 note right of Day
   One Day per date between the start
   and the end date of the trip.
+  /walkingMinutes: sum of the walking estimates
+  between its stops. Above the limit it is a warning.
 end note
 
 class Itinerary #FFE3CC {
@@ -182,11 +185,14 @@ class ItineraryStop #FFE3CC {
   visitTime [0..1]
   position
   /outsideOpeningHours
+  /overlapsAnotherStop
   /travelTimeFromPreviousStop
 }
 note right of ItineraryStop
   /outsideOpeningHours: the visit time is outside the
   place's opening hours. Only where the hours are known.
+  /overlapsAnotherStop: another stop of the day starts before
+  this visit ends (visit time plus a duration per category).
   /travelTimeFromPreviousStop: estimate in minutes.
 end note
 

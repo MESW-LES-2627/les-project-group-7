@@ -76,7 +76,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 - **Places data source** (OpenStreetMap) feeds _Import places_, triggered by an admin.
 - **Map tiles** (OpenStreetMap) are used by the web app to draw the map. They are not tied to a command.
 - **Notification service** delivers visit reminders (Stretch). The trigger is a timer.
-- **Routing service** (OpenRouteService) provides real travel times (Stretch).
+- **Routing service** provides real travel times on foot, by car and by public transport (Stretch). The provider is chosen later.
 - **Moderator** (a user with the ADMIN role) approves or rejects place suggestions (Dream).
 - **Geocoding service** (Nominatim) finds places outside the catalog (built, outside the committed MVP, see ADR-004).
 
@@ -222,7 +222,7 @@ designed, not in the MVP.
 | Place Catalog        | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
 | Reviews              | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
-| Trip Planner         | Trips, days, itineraries, visit times, travel-time estimates, opening-hours and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
+| Trip Planner         | Trips, days, itineraries, visit times, travel-time estimates, opening-hours, budget, overlap and walking warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
 | Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average, the wishlist, the hours of the day and known opening hours.                           | Place Catalog, Saved Places                                             |
 | Publishing (Stretch) | Published itineraries, sharing, bookmarks                                                                                                                                    | Trip Planner                                                            |
 | Reminders (Stretch)  | Scheduler that sends visit reminders                                                                                                                                         | Trip Planner, Notification service (external)                           |
@@ -231,7 +231,7 @@ External systems:
 
 - **Places data source** (OpenStreetMap), used by Place Catalog to import places and, outside the committed MVP, to discover places live on the map (see ADR-002).
 - **Map tiles** (OpenStreetMap), used by the Web App to draw the map.
-- **Routing service** (OpenRouteService, Stretch), used by Trip Planner for real travel times.
+- **Routing service** (Stretch, provider chosen later), used by Trip Planner for real travel times.
 - **Geocoding service** (Nominatim, built but outside the committed MVP), used by Place Catalog to search outside the catalog (see ADR-004).
 - **Notification service** (e-mail or push, Stretch), used by Reminders.
 

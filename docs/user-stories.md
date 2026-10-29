@@ -14,7 +14,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 ## How to read this file
 
 - **Story ID** is `US-<feature>-<nn>`. The feature is the ID in [mvp.md](mvp.md)
-  (`A1`, `E4`, ...). Stretch features have IDs `S1` to `S19`, also in
+  (`A1`, `E4`, ...). Stretch features have IDs `S1` to `S19` (S6 moved to the MVP as part of E6, so there is no S6), also in
   [mvp.md](mvp.md).
 - Nothing is built yet. The first prototype (the tracer bullet) does not count: every
   story is open and its issues cover the whole story. Where the prototype has code worth
@@ -36,32 +36,32 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 ## Overview
 
-| Feature                      | Stories            |
-| ---------------------------- | ------------------ |
-| A1 Register and log in       | US-A1-01, US-A1-02 |
-| B1 Place import              | US-B1-01           |
-| B2 Demo data                 | US-B2-01           |
-| B3 City search and filters   | US-B3-01, US-B3-02 |
-| B4 Place page                | US-B4-01           |
-| B5 Map view                  | US-B5-01           |
-| B6 Top-rated places          | US-B6-01           |
-| C1 Post a review             | US-C1-01           |
-| C2 Edit and delete a review  | US-C2-01           |
-| C3 Visited places            | US-C3-01           |
-| D1 Wishlist and bookmarks    | US-D1-01           |
-| D2 Custom lists              | US-D2-01, US-D2-02 |
-| E1 Create a trip             | US-E1-01           |
-| E2 Change a trip             | US-E2-01           |
-| E3 Delete a trip             | US-E3-01           |
-| E4 Manual itinerary          | US-E4-01           |
-| E5 Nearby suggestions        | US-E5-01           |
-| E6 Plan warnings             | US-E6-01, US-E6-02 |
-| E7 Travel-time estimate      | US-E7-01           |
-| E8 Basic generator           | US-E8-01           |
-| P1 Web app, no installation  | US-P1-01           |
-| P2 Dev and prod environments | US-P2-01           |
-| P3 Attribution               | US-P3-01           |
-| S1 to S19 Stretch            | 21 stories         |
+| Feature                      | Stories                      |
+| ---------------------------- | ---------------------------- |
+| A1 Register and log in       | US-A1-01, US-A1-02           |
+| B1 Place import              | US-B1-01                     |
+| B2 Demo data                 | US-B2-01                     |
+| B3 City search and filters   | US-B3-01, US-B3-02           |
+| B4 Place page                | US-B4-01                     |
+| B5 Map view                  | US-B5-01                     |
+| B6 Top-rated places          | US-B6-01                     |
+| C1 Post a review             | US-C1-01                     |
+| C2 Edit and delete a review  | US-C2-01                     |
+| C3 Visited places            | US-C3-01                     |
+| D1 Wishlist and bookmarks    | US-D1-01                     |
+| D2 Custom lists              | US-D2-01, US-D2-02           |
+| E1 Create a trip             | US-E1-01                     |
+| E2 Change a trip             | US-E2-01                     |
+| E3 Delete a trip             | US-E3-01                     |
+| E4 Manual itinerary          | US-E4-01                     |
+| E5 Nearby suggestions        | US-E5-01                     |
+| E6 Plan warnings             | US-E6-01, US-E6-02, US-E6-03 |
+| E7 Travel-time estimate      | US-E7-01                     |
+| E8 Basic generator           | US-E8-01                     |
+| P1 Web app, no installation  | US-P1-01                     |
+| P2 Dev and prod environments | US-P2-01                     |
+| P3 Attribution               | US-P3-01                     |
+| S1 to S19 Stretch            | 20 stories                   |
 
 ---
 
@@ -816,6 +816,44 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 1. **Trip average with unit tests** · covers AC2, AC3, AC4 · depends on: none
 2. **Average and warning in the trip view** · covers AC1 to AC5 · depends on: Trip average, Stops API (US-E4-01)
 
+### US-E6-03 Warn about overlapping visits and too much walking
+
+- **MVP feature:** E6 Plan warnings
+- **As a:** Planner
+
+**I want** a warning when two visits overlap or when a day has too much walking,
+
+**So that** the plan is realistic.
+
+**Acceptance criteria**
+
+1. **Given** two stops of the same day with visit times, **when** one starts before the other ends, **then** both show a warning that they overlap.
+2. **Given** a stop without a visit time, **when** I look at the day, **then** it is never part of an overlap warning.
+3. **Given** the walking time of a day is above the limit, **when** I look at the day, **then** the day shows a warning with its total walking time.
+4. **Given** I fix the cause (change a time, move or remove a stop), **when** it saves, **then** the warning disappears.
+5. **Given** a warning, **when** I save the plan, **then** it is saved: warnings never block.
+
+**Business rules**
+
+- A visit lasts from its visit time for a duration that depends on the place category. These durations are the same named constants the generator uses (US-E8-01). Two visits overlap when one starts before the other ends. Unit tested.
+- The walking time of a day is the sum of the straight-line walking estimates between its consecutive stops (US-E7-01). The limit is a named constant chosen by the team (for example 2 hours). Unit tested.
+
+**Out of scope**
+
+- Real travel times (S2).
+- A warning when there is too little time to travel between two stops.
+
+**Notes**
+
+- Was Stretch S6; moved to the MVP.
+
+**Issues**
+
+1. **Overlap and walking checks with unit tests** · covers AC1, AC2, AC3 · depends on: none
+   - Visit duration per category, shared with the generator
+   - Overlap check and walking total of a day, with unit tests
+2. **Overlap and walking warnings in the day view** · covers AC1 to AC5 · depends on: Overlap and walking checks with unit tests, Stops API (US-E4-01)
+
 ## E7 Travel-time estimate
 
 ### US-E7-01 See the walking time between stops
@@ -1006,27 +1044,29 @@ at sprint planning, with the same template.
 
 ## S2 Real travel times
 
-### US-S2-01 See real walking and driving times
+### US-S2-01 See real walking, driving and public transport times
 
 - **As a:** Planner
 
-**I want** real walking and driving times between stops,
+**I want** real travel times between stops, on foot, by car and by public transport,
 
 **So that** the estimates are not straight lines.
 
 **Acceptance criteria**
 
-1. **Given** two consecutive stops, **when** I look at the day, **then** I see the time by foot and by car from a routing service.
-2. **Given** the routing service does not answer, **when** I look, **then** the straight-line estimate (US-E7-01) is shown instead.
-3. **Given** the same pair of places, **when** I look again, **then** the answer comes from a cache.
+1. **Given** two consecutive stops, **when** I look at the day, **then** I see the travel time on foot, by car and by public transport from a routing service.
+2. **Given** the service has no answer for one or more of these (for example there is no public transport in that city), **when** I look, **then** I see the ones it did answer and the others are left out.
+3. **Given** the service has no walking time for the pair, or does not answer at all, **when** I look, **then** the straight-line estimate (US-E7-01) is shown as the walking time, marked as approximate, and the other times that are known are still shown.
+4. **Given** the same pair of places, **when** I look again, **then** the answer comes from a cache.
 
 **Business rules**
 
-- Fallback to the estimate. Respect the service's usage policy and limits.
+- Each mode is independent: a missing time never hides the others. Only walking has a fallback (the estimate).
+- Respect the service's usage policy and limits.
 
 **Notes**
 
-- Choose the provider (open routing service) in an ADR.
+- Choose the provider in an ADR. Public transport needs a provider with transit data for our cities. OpenRouteService has none, so another provider, or a second one, may be needed. If no free and usable one exists, this story ships with walking and driving only.
 
 ## S3 Photos for landmarks
 
@@ -1122,26 +1162,6 @@ at sprint planning, with the same template.
 **Business rules**
 
 - One reminder per stop. Needs a scheduled job; the Vercel Hobby plan limits how often one can run (check in an ADR).
-
-## S6 Other conflict warnings
-
-### US-S6-01 Warn about overlapping visits and too much walking
-
-- **As a:** Planner
-
-**I want** warnings about overlapping visits and too much walking in a day,
-
-**So that** the plan is realistic.
-
-**Acceptance criteria**
-
-1. **Given** two stops whose visit times overlap, **when** I look at the day, **then** both show a warning.
-2. **Given** a day whose walking time passes a limit, **when** I look at it, **then** the day shows a warning.
-3. **Given** I fix the cause, **when** it saves, **then** the warning disappears.
-
-**Business rules**
-
-- Visit duration per category and the walking limit are constants chosen by the team. Unit tested.
 
 ## S7 Drag and drop reordering
 
