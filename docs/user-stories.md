@@ -170,11 +170,12 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** I run the import a second time, **when** it finishes, **then** no place is duplicated (same OpenStreetMap id).
 3. **Given** OpenStreetMap does not answer, **when** the import runs, **then** it prints a clear error and the places already in the database are unchanged.
 4. **Given** the import finished, **when** I look at the places, **then** each one has a category from the app's list and places without a name are not saved.
+5. **Given** the import finished, **when** I look at the price levels, **then** a place has `FREE` only if OpenStreetMap says `fee=no`, and every other place has no price level (unknown) until a review gives one.
 
 **Business rules**
 
 - The OpenStreetMap tags map to one `PlaceCategory`; anything unknown becomes `OTHER`.
-- `fee=no` gives price level `FREE`. Other places have no price level until a review gives one.
+- `fee=no` gives price level `FREE`. Every other place has no price level until a review gives one. The import never guesses a price level, for example from the category.
 - OpenStreetMap id is unique per place.
 - Rate limit of the services is respected (1 request per second to Nominatim).
 
@@ -184,15 +185,17 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Notes**
 
-- Today the import guesses a price level from the category (for example restaurants get `€€`). That conflicts with "ratings and price levels come from reviews" in [mvp.md](mvp.md) section 4, and with the glossary. The first issue should decide and fix this.
+- Decision: a place is `FREE` only when OpenStreetMap says `fee=no`; otherwise its price level comes only from reviews. This is what [mvp.md](mvp.md) section 4 and the glossary already say.
+- The prototype breaks it twice: the import script (`inferPriceLevel`) guesses a level from the category, and the curated Porto file (`prisma/data/porto-places.json`) has a level for all 501 places (241 `FREE`, 166 `€`, 94 `€€`), also guessed from the category. Both must stop, and the price levels already in the dev and prod databases must be cleaned (prod needs the team's approval).
 - Opening hours are not read by the current script.
 
 **Issues**
 
-1. **Import the three MVP cities** · covers AC1, AC2, AC3, AC4 · depends on: none
+1. **Import the three MVP cities** · covers AC1, AC2, AC3, AC4, AC5 · depends on: none
    - Make the city a parameter of the script
-   - Read opening hours and `fee` from OpenStreetMap
-   - Remove the guessed price level (or document why it stays)
+   - Read opening hours and the `fee` tag from OpenStreetMap
+   - Remove the guessed price level: only `fee=no` gives `FREE`, all others stay unknown
+   - Remove the price levels from the curated Porto file and clean the databases
    - Unit tests for the tag-to-category and `fee=no` rules
 
 ## B2 Demo data
