@@ -1052,7 +1052,7 @@ at sprint planning, with the same template.
 
 **Notes**
 
-- A new migration is needed (the columns were removed).
+- A new migration is needed.
 
 ## S4 Publish and share itineraries
 

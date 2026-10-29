@@ -28,7 +28,7 @@ iteration: the order is decided at each sprint planning.
 
 | ID | Feature | The user can… |
 |---|---|---|
-| B1 | Place import | (Admin) import places from OpenStreetMap with the import script (Porto so far; the seed script adds the other MVP cities) |
+| B1 | Place import | (Admin) import places from OpenStreetMap with the import script, for each MVP city (Porto, Paris and Berlin) |
 | B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one |
 | B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating |
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
