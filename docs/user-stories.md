@@ -170,11 +170,12 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** I run the import a second time, **when** it finishes, **then** no place is duplicated (same OpenStreetMap id).
 3. **Given** OpenStreetMap does not answer, **when** the import runs, **then** it prints a clear error and the places already in the database are unchanged.
 4. **Given** the import finished, **when** I look at the places, **then** each one has a category from the app's list and places without a name are not saved.
+5. **Given** the import finished, **when** I look at the price levels, **then** a place has `FREE` only if OpenStreetMap says `fee=no`, and every other place has no price level (unknown) until a review gives one.
 
 **Business rules**
 
 - The OpenStreetMap tags map to one `PlaceCategory`; anything unknown becomes `OTHER`.
-- `fee=no` gives price level `FREE`. Other places have no price level until a review gives one.
+- `fee=no` gives price level `FREE`. Every other place has no price level until a review gives one. The import never guesses a price level, for example from the category.
 - OpenStreetMap id is unique per place.
 - Rate limit of the services is respected (1 request per second to Nominatim).
 
@@ -184,15 +185,17 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Notes**
 
-- Today the import guesses a price level from the category (for example restaurants get `€€`). That conflicts with "ratings and price levels come from reviews" in [mvp.md](mvp.md) section 4, and with the glossary. The first issue should decide and fix this.
+- Decision: a place is `FREE` only when OpenStreetMap says `fee=no`; otherwise its price level comes only from reviews. This is what [mvp.md](mvp.md) section 4 and the glossary already say.
+- The prototype breaks it twice: the import script (`inferPriceLevel`) guesses a level from the category, and the curated Porto file (`prisma/data/porto-places.json`) has a level for all 501 places (241 `FREE`, 166 `€`, 94 `€€`), also guessed from the category. Both must stop, and the price levels already in the dev and prod databases must be cleaned (prod needs the team's approval).
 - Opening hours are not read by the current script.
 
 **Issues**
 
-1. **Import the three MVP cities** · covers AC1, AC2, AC3, AC4 · depends on: none
+1. **Import the three MVP cities** · covers AC1, AC2, AC3, AC4, AC5 · depends on: none
    - Make the city a parameter of the script
-   - Read opening hours and `fee` from OpenStreetMap
-   - Remove the guessed price level (or document why it stays)
+   - Read opening hours and the `fee` tag from OpenStreetMap
+   - Remove the guessed price level: only `fee=no` gives `FREE`, all others stay unknown
+   - Remove the price levels from the curated Porto file and clean the databases
    - Unit tests for the tag-to-category and `fee=no` rules
 
 ## B2 Demo data
@@ -284,11 +287,12 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** a city is open, **when** I choose a price level, **then** only places with that level are listed (places without a price level are listed only when no price filter is set).
 3. **Given** a city is open, **when** I choose a minimum rating, **then** only places with at least that rating are listed.
 4. **Given** several filters are set, **when** I look at the list, **then** all of them apply together, and I can clear them.
-5. **Given** the list is shown, **when** I sort by rating, **then** the best rated is first and places without ratings are last.
+5. **Given** the list is shown, **when** I sort by rating, **then** the places are ordered by their rating score (US-B6-01), best first, and places without reviews are last. Each place still shows its plain average and number of reviews.
 
 **Business rules**
 
-- Filters combine with AND. Sorting by rating is descending, unrated last, ties broken by number of reviews then name.
+- Filters combine with AND. The "minimum rating" filter uses the plain average.
+- Sorting by rating uses the rating score (weighted rating) of US-B6-01, descending, unrated last, ties broken by number of reviews then name. Unit tested.
 
 **Out of scope**
 
@@ -296,7 +300,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Issues**
 
-1. **Filter functions with unit tests** · covers AC1, AC2, AC3, AC4, AC5 · depends on: none
+1. **Filter functions with unit tests** · covers AC1, AC2, AC3, AC4, AC5 · depends on: Rating score (weighted rating) with unit tests (US-B6-01)
 2. **Filter controls on the explorer** · covers AC1, AC2, AC3, AC4, AC5 · depends on: Filter functions with unit tests
 
 ## B4 Place page
@@ -384,23 +388,33 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Acceptance criteria**
 
-1. **Given** a city is open, **when** I look at the ranking, **then** places are ordered by average rating, best first.
+1. **Given** a city is open, **when** I look at the ranking, **then** places are ordered by their rating score (the weighted rating of the business rules), best first.
 2. **Given** a type is chosen, **when** I look at the ranking, **then** only that type is ranked.
 3. **Given** a place has no reviews, **when** I look at the ranking, **then** it is listed after rated places and shows "no ratings".
 4. **Given** a review is posted, edited or deleted, **when** I reload the ranking, **then** the order reflects it.
+5. **Given** a place with one 5-star review and a place with 50 reviews averaging 4.8, **when** I look at the ranking, **then** the second one is ranked above the first, and each shows its own plain average and number of reviews.
 
 **Business rules**
 
-- The ranking order comes from the same sort as US-B3-02.
-- A place with a single 5-star review does not outrank one with many 4.8 reviews: the team decides the tie-break (number of reviews). Unit tests cover it.
+- Ranking method (decided, ADR-008): the **weighted rating** (a Bayesian average). `score = (n / (n + m)) × average + (m / (n + m)) × C`, where `n` is the number of reviews of the place, `average` is its plain average, `m = 3` and `C = 4.0` are named constants. Round to 2 decimals. Places without reviews have no score and are ranked last. Ties are broken by number of reviews, then by name.
+- The same score is used everywhere a list is sorted by rating (US-B3-02). The plain average and the number of reviews are still displayed.
+- Unit tests with these cases: 1 review of 5 gives 4.25; 3 reviews of 5 give 4.50; 50 reviews averaging 4.8 give 4.75; a place without reviews has no score.
 
 **Out of scope**
 
 - "Hidden gems" (Dream).
 
+**Notes**
+
+- **This weighted rating is the method we use to rank places.** A plain average would put one 5-star review above fifty reviews averaging 4.8. IMDb ranks its Top 250 this way. See ADR-008 in [design.md](design.md).
+- The score is computed when ranking, from the stored `averageRating` and `reviewCount`. The schema does not change.
+
 **Issues**
 
-1. **Ranking by city and type, independent of the map** · covers AC1, AC2, AC3, AC4 · depends on: Filter functions with unit tests (US-B3-02)
+1. **Rating score (weighted rating) with unit tests** · covers AC5 · depends on: none
+   - `ratingScore(average, count)` in `src/domain/reviews/rating.ts`, with `m = 3` and `C = 4.0` as named constants
+   - Unit tests with the cases of the business rules, and the case without reviews
+2. **Ranking by city and type, independent of the map** · covers AC1, AC2, AC3, AC4 · depends on: Rating score (weighted rating) with unit tests, Filter functions with unit tests (US-B3-02)
 
 ## C1 Post a review
 
@@ -604,7 +618,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** a trip of 3 days, **when** I open it, **then** I see Day 1, Day 2 and Day 3 with their dates.
 3. **Given** the end date is before the start date, **when** I send, **then** I see an error and nothing is saved.
 4. **Given** I leave the hours of the day empty, **when** I create the trip, **then** the day starts at 09:00 and ends at 20:00.
-5. **Given** a day start before 08:00, a day end after 23:00, or a start that is not before the end, **when** I send, **then** I see an error and nothing is saved.
+5. **Given** the fields for the hours of the day, **when** the day start is before 08:00, the day end is after 23:00, or the start is not before the end, **then** I see an error and nothing is saved. This only limits these two fields; the visit time of a single stop is not limited (US-E4-01).
 6. **Given** a trip, **when** I open "My trips", **then** it is in the list, and other users cannot see it.
 7. **Given** the form is incomplete, **when** I send, **then** I see which fields are missing.
 
@@ -613,6 +627,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - Number of days = number of dates from start to end, inclusive. Unit tested.
 - Budget level is `€`, `€€` or `€€€`. It is the target average price for the **whole trip** ([mvp.md](mvp.md) section 4).
 - Hours of the day: `dayStart` and `dayEnd` (HH:mm), default 09:00 and 20:00, earliest start 08:00, latest end 23:00, start before end. Unit tested.
+- The hours of the day only limit the generator (US-E8-01). In a manual itinerary any visit time is allowed, also outside them (US-E4-01).
 - A trip has a maximum length (the team decides, for example 14 days).
 - Trips are private to their owner.
 
@@ -685,7 +700,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Issues**
 
-1. **Delete trip API and confirmation dialog** · covers AC1 to AC4 · depends on: Trip creation API (US-E1-01)
+1. **Delete trip API and confirmation dialog** · covers AC1 to AC3 · depends on: Trip creation API (US-E1-01)
 
 ## E4 Manual itinerary
 
@@ -706,6 +721,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 4. **Given** a stop, **when** I remove it, **then** the place is not in the day any more and the other stops keep their order.
 5. **Given** the same place already on the trip, **when** I add it again, **then** I am told it is already planned.
 6. **Given** a place from another city, **when** I try to add it, **then** it is refused.
+7. **Given** the hours of the day are 09:00 to 20:00, **when** I set the visit time of a stop to 22:30 or 00:00, **then** it is accepted. The hours of the day only limit the generator.
 
 **Business rules**
 
@@ -721,7 +737,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Stop ordering rules with unit tests** · covers AC2, AC4, AC5, AC6 · depends on: Trip creation API (US-E1-01)
-2. **Stops API (add, move, set time, remove)** · covers AC1 to AC6 · depends on: Stop ordering rules with unit tests
+2. **Stops API (add, move, set time, remove)** · covers AC1 to AC7 · depends on: Stop ordering rules with unit tests
 3. **Itinerary editing UI (day columns, add place, buttons to move)** · covers AC1 to AC5 · depends on: Stops API
 
 ## E5 Nearby suggestions
@@ -1001,27 +1017,29 @@ at sprint planning, with the same template.
 
 ## S2 Real travel times
 
-### US-S2-01 See real walking and driving times
+### US-S2-01 See real walking, driving and public transport times
 
 - **As a:** Planner
 
-**I want** real walking and driving times between stops,
+**I want** real travel times between stops, on foot, by car and by public transport,
 
 **So that** the estimates are not straight lines.
 
 **Acceptance criteria**
 
-1. **Given** two consecutive stops, **when** I look at the day, **then** I see the time by foot and by car from a routing service.
-2. **Given** the routing service does not answer, **when** I look, **then** the straight-line estimate (US-E7-01) is shown instead.
-3. **Given** the same pair of places, **when** I look again, **then** the answer comes from a cache.
+1. **Given** two consecutive stops, **when** I look at the day, **then** I see the travel time on foot, by car and by public transport from a routing service.
+2. **Given** the service has no answer for one or more of these (for example there is no public transport in that city), **when** I look, **then** I see the ones it did answer and the others are left out.
+3. **Given** the service has no walking time for the pair, or does not answer at all, **when** I look, **then** the straight-line estimate (US-E7-01) is shown as the walking time, marked as approximate, and the other times that are known are still shown.
+4. **Given** the same pair of places, **when** I look again, **then** the answer comes from a cache.
 
 **Business rules**
 
-- Fallback to the estimate. Respect the service's usage policy and limits.
+- Each mode is independent: a missing time never hides the others. Only walking has a fallback (the estimate).
+- Respect the service's usage policy and limits.
 
 **Notes**
 
-- Choose the provider (open routing service) in an ADR.
+- Choose the provider in an ADR. Public transport needs a provider with transit data for our cities. OpenRouteService has none, so another provider, or a second one, may be needed. If no free and usable one exists, this story ships with walking and driving only.
 
 ## S3 Photos for landmarks
 
@@ -1045,7 +1063,7 @@ at sprint planning, with the same template.
 
 **Notes**
 
-- A new migration is needed (the columns were removed).
+- A new migration is needed.
 
 ## S4 Publish and share itineraries
 

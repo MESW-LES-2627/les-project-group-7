@@ -47,7 +47,7 @@ database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 
 cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
-cloud "Routing service\n(e.g. OpenRouteService)\nStretch" as routing #F8C9D8
+cloud "Routing service\n(on foot, by car,\npublic transport)\nStretch" as routing #F8C9D8
 cloud "Geocoding service\n(Nominatim)\nbuilt, not in the\ncommitted MVP" as geocoding #F8C9D8
 cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
 

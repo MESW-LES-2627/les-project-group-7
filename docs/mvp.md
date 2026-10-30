@@ -28,12 +28,12 @@ iteration: the order is decided at each sprint planning.
 
 | ID | Feature | The user can… |
 |---|---|---|
-| B1 | Place import | (Admin) import places from OpenStreetMap with the import script (Porto so far; the seed script adds the other MVP cities) |
+| B1 | Place import | (Admin) import places from OpenStreetMap with the import script, for each MVP city (Porto, Paris and Berlin) |
 | B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one |
 | B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating |
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
 | B5 | Map view | See a city's places as pins on a map, with clustering |
-| B6 | Top-rated places | See the top-rated places per city and type |
+| B6 | Top-rated places | See the top-rated places per city and type, ranked by a weighted rating (see section 4) |
 
 ### Reviews
 
@@ -57,7 +57,7 @@ iteration: the order is decided at each sprint planning.
 | E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip), preferred types and the hours of the day (when the day starts and ends); days are created from the dates |
 | E2 | Change a trip | Edit the constraints (including the hours of the day); days are added or removed to match |
 | E3 | Delete a trip | Delete a trip with its days, itinerary and stops |
-| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times |
+| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times (any time, also outside the hours of the day) |
 | E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) |
 | E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above |
 | E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance |
@@ -83,7 +83,7 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 | ID | Stretch idea |
 |---|---|
 | S1 | Smart generator (real travel times, finer budget balancing) |
-| S2 | Real travel times from a routing service |
+| S2 | Real travel times from a routing service (on foot, by car and by public transport where the service has the data) |
 | S3 | Photos for landmarks |
 | S4 | Publish and share itineraries (publish with a link, bookmark, copy into my own trip) |
 | S5 | Visit reminders |
@@ -118,6 +118,10 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   The seed script creates demo users and sample reviews (the schema does not mark
   them as demo data).
   A place's price level is the most common (mode) price level given in its reviews.
+- **Ranking:** places are ranked by a **weighted rating**, not by the plain average, so that
+  one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
+  `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 3` and
+  `C = 4.0`. The plain average and the number of reviews are still shown.
 - **Hours of the day:** every trip has a time when the day starts and a time when it
   ends (default 09:00 to 20:00; the earliest start is 08:00 and the latest end is
   23:00). The generator keeps every stop inside these hours. When the user plans by

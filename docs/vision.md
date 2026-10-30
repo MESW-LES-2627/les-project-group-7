@@ -69,7 +69,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 |---|---|
 | Search a city and browse its places | MVP |
 | Filter by type (restaurant, museum, monument, park), price level and rating | MVP |
-| Top-rated places per city and per type | MVP |
+| Top-rated places per city and per type, ranked by a weighted rating | MVP |
 | Place detail page with description, address, rating and reviews | MVP |
 | **Map view with pins and clustering** | MVP |
 | **Opening hours shown on the place page** (when known) | MVP |
@@ -86,7 +86,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 |---|---|
 | Write, edit and delete a review with a 1 to 5 rating | MVP |
 | Reviewer says how expensive the place was (€ / €€ / €€€), which gives the place its price level | MVP |
-| Place rating and top-rated list recalculated from reviews | MVP |
+| Place rating and top-rated list recalculated from reviews. Places are ranked by a weighted rating, so that one review cannot outrank many | MVP |
 | Posting a review marks the place as visited | MVP |
 | "Helpful" votes and sorting by most helpful | Stretch |
 | Review photos | Dream |
@@ -116,12 +116,11 @@ in the [MVP](mvp.md). Each idea is tagged:
 | Estimated travel time between stops ("≈ 12 min walk", from straight-line distance) | MVP |
 | **Smart generator**: also uses real travel times, and balances the budget more precisely | Stretch |
 | Optional budget in euros per day, from price levels mapped to rough amounts | Stretch |
-| Real walking and driving times from a routing service | Stretch |
+| Real walking, driving and public transport times from a routing service (public transport where the provider has the data) | Stretch |
 | Other conflict warnings (overlapping visits, too much walking) | Stretch |
 | Drag and drop reordering | Stretch |
 | Alternatives per stop ("swap this restaurant") | Stretch |
 | Multi-city trips | Stretch |
-| Public transit travel times | Dream |
 | Weather-aware plans (indoor places on rainy days) | Dream |
 | Real-time re-planning during the trip | Dream |
 | Budget tracking with real expenses | Dream |
