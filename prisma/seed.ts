@@ -115,6 +115,7 @@ async function main() {
     create: {
       id: "demo-user-1",
       username: "viajante_porto",
+      name: "viajante_porto", // required by the authentication library; replaced by the seed of #19
       email: "demo@tripbook.pt",
       passwordHash: "hash_demo_12345",
       role: "USER",
@@ -127,6 +128,7 @@ async function main() {
     create: {
       id: "demo-user-2",
       username: "ana_exploradora",
+      name: "ana_exploradora", // required by the authentication library; replaced by the seed of #19
       email: "ana@tripbook.pt",
       passwordHash: "hash_demo_12345",
       role: "USER",

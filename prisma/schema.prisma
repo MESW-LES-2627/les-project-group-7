@@ -43,11 +43,22 @@ enum ItineraryMode {
 // -------------------------------------------------------------
 model User {
   id           String       @id @default(uuid())
-  username     String       @unique
-  email        String       @unique
-  passwordHash String
+  username     String       @unique   // stored in lower case; displayUsername keeps what the person typed
+  email        String       @unique   // stored in lower case
+  // Legacy: the password hash now lives in Account.password, kept by the authentication library
+  // (ADR-009). Optional until the seed and the reviews endpoint stop writing it; dropped later.
+  passwordHash String?
   role         Role         @default(USER)
   registeredAt DateTime     @default(now())
+
+  // Columns required by the authentication library (Better Auth, ADR-009)
+  name            String                 // set to the username
+  emailVerified   Boolean   @default(false)
+  image           String?
+  updatedAt       DateTime  @updatedAt
+  displayUsername String?
+  sessions        Session[]
+  accounts        Account[]
 
   reviews      Review[]
   visits       Visit[]
@@ -225,4 +236,62 @@ model ItineraryStop {
 
   placeId      String
   place        Place     @relation(fields: [placeId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 6. Authentication (Better Auth, ADR-009). Created and read by the library.
+// -------------------------------------------------------------
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// The password of a user is here (providerId "credential"), as a salted scrypt hash.
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// Counters of the login rate limit, stored in the database because memory does not suit serverless.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
 }
