@@ -29,7 +29,8 @@ export const auth = betterAuth({
     },
   },
   // Counters in the database: the default memory storage does not suit serverless (Vercel).
-  // The library only applies the limit in production unless it is enabled explicitly.
-  rateLimit: { storage: "database" },
+  // Enabled everywhere, not only in production, so that what we test locally is what runs live.
+  // Limits: 3 sign-ins by e-mail in 10 seconds, 100 requests in 10 seconds for the other endpoints.
+  rateLimit: { enabled: true, storage: "database" },
   telemetry: { enabled: false },
 });
