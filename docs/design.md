@@ -268,7 +268,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR-006 | Data and development environment                          | Accepted              |
 | ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
-| ADR-009 | Authentication with Better Auth                           | Accepted (to confirm in a spike before coding) |
+| ADR-009 | Authentication with Better Auth                           | Accepted (confirmed in a spike) |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -375,7 +375,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-009: Authentication with Better Auth
 
-- **Status:** Accepted. Before coding, a short spike (a throwaway branch and the dev database) confirms the points listed at the end.
+- **Status:** Accepted. Confirmed by a spike on 31 Oct 2026 (a throwaway local branch, Postgres 18, Prisma 6.19, Next 15; see the end of this ADR).
 - **Context:** The MVP needs registration, login, logout, and "every write action requires login, users can only change their own data" (see [mvp.md](mvp.md)). The prototype has none of it: the user is chosen with buttons and the review endpoint trusts a `userId` from the request body. Security code (password hashing, sessions, rate limiting) is easy to get wrong, so we prefer a maintained library to our own.
 - **Decision:** Use **Better Auth** (npm `better-auth`, pinned to an exact version, 1.7.x at the time of writing) with the Prisma adapter, e-mail and password, and the `username` plugin.
   - _Where:_ the server instance in `src/lib/auth.ts`, the client in `src/lib/auth-client.ts`, and the library's routes under `src/app/api/auth/[...all]/route.ts`.
@@ -395,4 +395,16 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ a maintained, widely used library, revocable database sessions, hashing and rate limiting that we do not write ourselves, and less security code to defend.
   - _Trade-offs:_ new tables (`Session`, `Account`, `Verification`, `RateLimit`) and new `User` columns (the library requires a `name`, which we set to the username, and `emailVerified`), through incremental migrations. The seed must create users through the library's hashing. The library is a young 1.x package, so we pin the version and upgrade deliberately.
-- **To confirm in the spike:** the cookie flags (`HttpOnly`, `SameSite`, `Secure`) and the origin checks; that e-mails are stored in lower case; mapping our `Role` enum to the library's `role` field; the `Prisma` 6 setup with `generateId` and UUID ids; that the telemetry the library can send is turned off; how the seed uses `better-auth/crypto`; and that the 401 and 409 answers match the contract above.
+- **Confirmed in the spike (31 Oct 2026):**
+  - _Works with our stack:_ Better Auth 1.7.14 with the Prisma adapter, Prisma 6.19 and Next 15. 16 checks passed against a running server: registration, login by username and by e-mail, logout, the guard, duplicates, validation errors, the origin check and the rate limit.
+  - _Cookie:_ `better-auth.session_token`, `HttpOnly`, `SameSite=Lax`, 7 days, and with an https site URL `__Secure-` plus `Secure`. A request that carries the cookie is refused (403) when its `Origin` is foreign or missing, which is the protection against cross-site posts.
+  - _Data:_ e-mails and usernames are stored in lower case (the original username is kept in `displayUsername`). The password hash is in `Account.password` (scrypt, provider `credential`). A `role` sent in the sign-up body is ignored and the stored role is `USER`, so our `Role` enum works with the library's `role` field. The library creates its own string ids for new users, and the ids of existing users do not change.
+  - _Errors:_ a wrong password and an unknown user give the same answer. The library reports one error at a time, so our own validation runs first to give one message per field (a user who is wrong on two fields is told about both).
+  - _Rate limit:_ with database storage, the 4th sign-in within 10 seconds answers 429 and the counter recovers after the window. The counter is keyed by the address in `x-forwarded-for`, which Vercel sets.
+  - _Telemetry:_ off by default (it needs an explicit setting or `BETTER_AUTH_TELEMETRY`), and we also set it off in the config.
+  - _Seed:_ `hashPassword` from `better-auth/crypto` plus an `Account` row lets a demo user log in with a known password, and the old fake hash no longer works.
+- **Things the spike found that the plan must respect:**
+  - The migration cannot be the generated one. The library needs a required `name` and `updatedAt` on `User`, and the dev and prod databases already have users, so the generated SQL fails ("column contains null values"). The migration adds the columns as nullable, fills them for existing users (`name` = username) and then makes them required.
+  - The CLI wants to rename our tables (`@@map("user")`) and add a second `createdAt`. We keep our table names and map the library's `createdAt` to our `registeredAt` (`user.fields`), so no existing column or table changes name.
+  - `auth.api.signUpEmail` reports some failures by returning an error Response and others (for example the username checks) by throwing `APIError`. The `POST /api/register` wrapper handles both. The library answers a successful sign-up with 200, and the wrapper answers 201.
+  - The old `passwordHash` column goes away, so the two places that still write it (the seed, and the reviews endpoint that creates demo users) must change in the same release. They are issues #19 and #14. The type check shows exactly those two places.
