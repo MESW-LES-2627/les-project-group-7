@@ -26,7 +26,8 @@ function failureAnswer(code: unknown) {
  * 201 { user: { id, username, email } } and the session cookie: the account is created and the
  * person is logged in. 400 or 409 { errors: { username?, email?, password? } } with one message per
  * wrong or taken field, nothing saved. 415 if the body is not JSON, 403 if the request comes from
- * another site, 429 { error } and a Retry-After header after too many attempts from one address.
+ * another site, 429 { error } and a Retry-After header after too many valid-looking attempts from
+ * one address (20 in 10 minutes).
  * Any other failure is 500 { error }.
  *
  * This is the only way to create an account: the library's own sign-up path is switched off in
@@ -49,18 +50,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid origin" }, { status: 403 });
   }
 
-  // 0b. Every attempt counts, also the ones that fail below, so taken names cannot be probed.
-  const limit = await consumeRegisterAttempt(clientAddress(request.headers));
-  if (!limit.allowed) {
-    return Response.json(
-      { error: "Too many attempts, try again later" },
-      {
-        status: 429,
-        headers: { "Retry-After": String(limit.retryAfterSeconds) },
-      }
-    );
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -74,6 +63,21 @@ export async function POST(request: Request) {
     return Response.json({ errors: checked.errors }, { status: 400 });
   }
   const { username, email, password } = checked.value;
+
+  // 1b. Count the attempt. It comes after the input check on purpose: a form with a typo costs us
+  // nothing and shows nothing, so it is free. What is limited is what costs something (the lookup
+  // of taken names and the password hash), also when the name turns out to be taken, so taken
+  // names cannot be probed without limit.
+  const limit = await consumeRegisterAttempt(clientAddress(request.headers));
+  if (!limit.allowed) {
+    return Response.json(
+      { error: "Too many attempts, try again later" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(limit.retryAfterSeconds) },
+      }
+    );
+  }
 
   // 2. Taken fields. The library stops at the first problem, so ask the database for both.
   const existing = await prisma.user.findMany({

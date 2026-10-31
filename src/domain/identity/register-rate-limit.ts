@@ -1,8 +1,9 @@
 /**
  * Limit on registration attempts per address (pure helpers; the counter itself is stored in the
  * database by src/lib/register-rate-limit.ts). Fixed window: at most REGISTER_MAX_ATTEMPTS calls
- * in REGISTER_WINDOW_MS. Every call counts, also the ones that fail validation, so the endpoint
- * cannot be used to probe for taken usernames and e-mails without limit.
+ * in REGISTER_WINDOW_MS. A call counts once it passes the input check, also when the name then
+ * turns out to be taken, so the endpoint cannot be used to probe for taken usernames and e-mails
+ * (or to burn CPU on password hashes) without limit. Typos in the form are free.
  */
 
 export const REGISTER_WINDOW_MS = 10 * 60 * 1000;
