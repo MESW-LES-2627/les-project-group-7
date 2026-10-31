@@ -32,5 +32,9 @@ export const auth = betterAuth({
   // Enabled everywhere, not only in production, so that what we test locally is what runs live.
   // Limits: 3 sign-ins by e-mail in 10 seconds, 100 requests in 10 seconds for the other endpoints.
   rateLimit: { enabled: true, storage: "database" },
+  // Switched off for the outside world (the HTTP route only; server code can still call it):
+  // accounts are created through POST /api/register, which validates, limits and checks the origin,
+  // and the username check would let anyone list taken usernames.
+  disabledPaths: ["/sign-up/email", "/is-username-available"],
   telemetry: { enabled: false },
 });
