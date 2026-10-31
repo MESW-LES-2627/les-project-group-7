@@ -80,8 +80,8 @@ reminders --> notif : send reminder
 backend --> db : reads / writes
 
 note right of web
-  Every component authenticates
-  its calls through Identity.
+  Every write action authenticates
+  through Identity (reading is public).
   One Next.js app: React UI plus
   server-side modules. PostgreSQL
   through Prisma.

@@ -53,7 +53,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 │   └── design/             # UML diagrams and EventStorming artifacts
 ├── prisma/
 │   ├── schema.prisma       # Relational PostgreSQL database schema
-│   ├── seed.ts             # Seed: the 7 MVP cities, their places, demo users and sample reviews
+│   ├── seed.ts             # Seed: the cities, their places, demo users and sample reviews
 │   ├── data/               # JSON data used by the seed
 │   └── migrations/         # Prisma migration history (never edit an applied migration)
 ├── scripts/
@@ -94,7 +94,7 @@ cp .env.example .env
 # Start local PostgreSQL container
 docker compose up -d
 
-# Apply database migrations and seed data (3 cities, their places, demo users and sample reviews)
+# Apply database migrations and seed data (the cities, their places, demo users and sample reviews)
 npm run prisma:generate
 npm run prisma:migrate
 npm run seed
@@ -133,6 +133,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run knip`                          | Finds unused files, exports and dependencies                    |
 | `npm run analyze`                       | Production build with the bundle analyzer                       |
 | `npm run ui:detect`                     | Runs the `impeccable` UI checks on `src/`                       |
+
+---
+
+## Known issues
+
+- E-mail addresses are only checked for their format and are never verified, and there is no password reset. Both are out of scope for the MVP (US-A1-01). A mistyped e-mail or a forgotten password cannot be recovered.
+- The site sends no HTTP security headers yet (for example a Content-Security-Policy or protection against being embedded in another page).
+- `npm audit` reports vulnerable packages in `next`, `prisma` and their dependencies that are not fixed yet.
 
 ---
 
