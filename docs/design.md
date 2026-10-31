@@ -171,7 +171,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 Design notes:
 
 - The model leaves out on purpose what belongs to the solution: technical ids, the
-  stored password hash, the share token, the OpenStreetMap id and the origin of a
+  stored password hash (kept by the authentication library, ADR-009), the share token, the OpenStreetMap id and the origin of a
   place, and all operations. The database schema and the components add them.
 - Wishlist and bookmark are one class with a type, because they behave the same.
   Only the wishlist feeds the itinerary generator.
@@ -218,7 +218,7 @@ designed, not in the MVP.
 | Component            | Responsibility                                                                                                                                                               | Depends on                                                              |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Web App              | Browser UI for users and admins, including the map                                                                                                                           | Backend REST API, Map tiles (external)                                  |
-| Identity             | Users, authentication, roles                                                                                                                                                 | Database                                                                |
+| Identity             | Users, authentication (Better Auth, see ADR-009), roles                                                                                                                                                 | Database                                                                |
 | Place Catalog        | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
 | Reviews              | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
@@ -268,6 +268,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR-006 | Data and development environment                          | Accepted              |
 | ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
+| ADR-009 | Authentication with Better Auth                           | Accepted (to confirm in a spike before coding) |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -371,3 +372,27 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ one review cannot outrank many, a place moves smoothly as it gets reviews, and the rule is one small pure function that is easy to unit test.
   - _Trade-offs:_ two constants (`m` and `C`) to explain. The order can differ from the order of the displayed averages, so the page shows the number of reviews next to the average. If the catalog gets many more reviews, `C` can become the real average of all reviews.
+
+### ADR-009: Authentication with Better Auth
+
+- **Status:** Accepted. Before coding, a short spike (a throwaway branch and the dev database) confirms the points listed at the end.
+- **Context:** The MVP needs registration, login, logout, and "every write action requires login, users can only change their own data" (see [mvp.md](mvp.md)). The prototype has none of it: the user is chosen with buttons and the review endpoint trusts a `userId` from the request body. Security code (password hashing, sessions, rate limiting) is easy to get wrong, so we prefer a maintained library to our own.
+- **Decision:** Use **Better Auth** (npm `better-auth`, pinned to an exact version, 1.7.x at the time of writing) with the Prisma adapter, e-mail and password, and the `username` plugin.
+  - _Where:_ the server instance in `src/lib/auth.ts`, the client in `src/lib/auth-client.ts`, and the library's routes under `src/app/api/auth/[...all]/route.ts`.
+  - _Passwords:_ hashed by the library (scrypt by default) and stored in its `Account` table. `User.passwordHash` is dropped. Minimum length 8, maximum 128.
+  - _Usernames:_ 3 to 30 characters, letters, numbers, underscores and dots, stored in lower case (the plugin's defaults).
+  - _Sessions:_ kept in the database (table `Session`), valid for 7 days, and revocable on the server. Logging out ends the session.
+  - _Protecting endpoints:_ every handler that writes data reads the user with `auth.api.getSession({ headers })` and answers 401 without one. The user id always comes from the session. We do not rely on middleware alone, as the library's own docs advise.
+  - _Registration contract:_ the form posts to `POST /api/register` with `{ username, email, password }`. Our own validation runs first and answers 400 with `{ errors: { username?, email?, password? } }`, a duplicate answers 409 with the same shape, and success answers 201 with the session cookie. The contract does not depend on how it is implemented.
+  - _Login:_ with e-mail or username (two library calls, chosen by the presence of "@"). The error never says whether the user exists.
+  - _Rate limiting:_ on in production by default (3 sign-in attempts per 10 seconds). Memory storage does not suit serverless, so the counters are stored in the database (table `RateLimit`).
+  - _Environment:_ `BETTER_AUTH_SECRET` (at least 32 characters, a different value for dev and prod) and `BETTER_AUTH_URL`, set in each Vercel project. Values are never committed.
+  - _Not in the MVP:_ e-mail verification, password reset, social login, two-factor authentication.
+- **Alternatives considered:**
+  - _Our own signed cookie_ (HMAC): little code, but we would own the cryptography and the session handling, and could not revoke a session.
+  - _Auth.js v5_ (NextAuth): still a beta (5.0.0-beta.32) and in maintenance mode since September 2025, when the Better Auth team took over its maintenance. Its Credentials provider has no registration, hashing or rate limiting, and its sessions are JWTs that cannot be revoked.
+  - _Hosted services_ (Clerk, WorkOS): user data lives on third-party servers, and graders would need accounts there.
+- **Consequences:**
+  - _Positive:_ a maintained, widely used library, revocable database sessions, hashing and rate limiting that we do not write ourselves, and less security code to defend.
+  - _Trade-offs:_ new tables (`Session`, `Account`, `Verification`, `RateLimit`) and new `User` columns (the library requires a `name`, which we set to the username, and `emailVerified`), through incremental migrations. The seed must create users through the library's hashing. The library is a young 1.x package, so we pin the version and upgrade deliberately.
+- **To confirm in the spike:** the cookie flags (`HttpOnly`, `SameSite`, `Secure`) and the origin checks; that e-mails are stored in lower case; mapping our `Role` enum to the library's `role` field; the `Prisma` 6 setup with `generateId` and UUID ids; that the telemetry the library can send is turned off; how the seed uses `better-auth/crypto`; and that the 401 and 409 answers match the contract above.

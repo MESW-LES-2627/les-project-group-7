@@ -43,7 +43,10 @@ Status: the dev path was tested on 21 Oct 2026, first with a hello-world app (bo
    "User not found" on a personal account.)
 3. In each project, **Settings, Environment Variables**, add `DATABASE_URL` (the
    **pooled** string) for the Production environment: the prod string in `les-group7`,
-   the dev string in `les-group7-dev`.
+   the dev string in `les-group7-dev`. Once authentication is deployed (ADR-009), add in the
+   same place `BETTER_AUTH_SECRET` (a random value of at least 32 characters, **different** in
+   each project, for example from `openssl rand -base64 32`) and `BETTER_AUTH_URL` (the address
+   of that site). Never commit or print these values.
 4. Write down the `orgId` (the same for both) and the two `projectId`s from `.vercel/project.json`.
 5. Create an access token on vercel.com/account/tokens. **Scope: choose the team, then "All Projects".** A token limited to one project cannot see the other project, and gives confusing errors ("Project not found", "User not found"). Set an expiry after the final release.
 

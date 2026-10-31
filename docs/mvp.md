@@ -146,11 +146,11 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 |---|---|
 | Access | Browser only. A teacher can use the whole app from the URL with no installation |
 | Environments | Separate dev and prod servers |
-| Security | Passwords stored hashed, every write action requires login, users can only change their own data, input is validated |
+| Security | Passwords stored hashed, every write action requires login, users can only change their own data, input is validated. Authentication with Better Auth (ADR-009 in [design.md](design.md)) |
 | Compatibility | Latest Chrome, Firefox, Edge and Safari; usable on a phone-width screen |
 | Map | Follows the OpenStreetMap tile usage policy (attribution, no bulk or offline use), or uses a provider that allows our usage |
 | Licensing | OpenStreetMap attribution shown |
-| Tech stack | One Next.js app (React UI and server side in the same project), PostgreSQL accessed through Prisma |
+| Tech stack | One Next.js app (React UI and server side in the same project), PostgreSQL accessed through Prisma, authentication with Better Auth |
 | Development setup | Target: developed in VS Code inside a dev container, with one container for the app and one for the database, started together (planned, not built yet). Today: Docker Compose runs the database and the app runs on the developer's machine |
 | Understandability | Every team member can explain the design and code, including anything written with AI help |
 
