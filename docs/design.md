@@ -171,7 +171,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 Design notes:
 
 - The model leaves out on purpose what belongs to the solution: technical ids, the
-  stored password hash, the share token, the OpenStreetMap id and the origin of a
+  stored password hash (kept by the authentication library, ADR-009), the share token, the OpenStreetMap id and the origin of a
   place, and all operations. The database schema and the components add them.
 - Wishlist and bookmark are one class with a type, because they behave the same.
   Only the wishlist feeds the itinerary generator.
@@ -218,7 +218,7 @@ designed, not in the MVP.
 | Component            | Responsibility                                                                                                                                                               | Depends on                                                              |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Web App              | Browser UI for users and admins, including the map                                                                                                                           | Backend REST API, Map tiles (external)                                  |
-| Identity             | Users, authentication, roles                                                                                                                                                 | Database                                                                |
+| Identity             | Users, authentication (Better Auth, see ADR-009), roles                                                                                                                                                 | Database                                                                |
 | Place Catalog        | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
 | Reviews              | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
@@ -268,6 +268,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR-006 | Data and development environment                          | Accepted              |
 | ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
+| ADR-009 | Authentication with Better Auth                           | Accepted (confirmed in a spike) |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -371,3 +372,45 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ one review cannot outrank many, a place moves smoothly as it gets reviews, and the rule is one small pure function that is easy to unit test.
   - _Trade-offs:_ two constants (`m` and `C`) to explain. The order can differ from the order of the displayed averages, so the page shows the number of reviews next to the average. If the catalog gets many more reviews, `C` can become the real average of all reviews.
+
+### ADR-009: Authentication with Better Auth
+
+- **Status:** Accepted. Confirmed by a spike on 31 Oct 2026 (a throwaway local branch, Postgres 18, Prisma 6.19, Next 15; see the end of this ADR).
+- **Context:** The MVP needs registration, login, logout, and "every write action requires login, users can only change their own data" (see [mvp.md](mvp.md)). The prototype has none of it: the user is chosen with buttons and the review endpoint trusts a `userId` from the request body. Security code (password hashing, sessions, rate limiting) is easy to get wrong, so we prefer a maintained library to our own.
+- **Decision:** Use **Better Auth** (npm `better-auth`, pinned to an exact version, 1.7.x at the time of writing) with the Prisma adapter, e-mail and password, and the `username` plugin.
+  - _Where:_ the server instance in `src/lib/auth.ts`, the library's routes under `src/app/api/auth/[...all]/route.ts`, and our own `POST /api/register`. The browser client (`src/lib/auth-client.ts`) is created with the login page, where it is first used.
+  - _Passwords:_ hashed by the library (scrypt by default) and stored in its `Account` table. `User.passwordHash` stays as an optional legacy column and is dropped in a later migration, once the seed and the reviews endpoint no longer write it. Minimum length 8, maximum 128.
+  - _Usernames:_ 3 to 30 characters, letters, numbers, underscores and dots, stored in lower case (the plugin's defaults).
+  - _Sessions:_ kept in the database (table `Session`), valid for 7 days, and revocable on the server. Logging out ends the session.
+  - _Protecting endpoints:_ every handler that writes data reads the user with `auth.api.getSession({ headers })` and answers 401 without one. The user id always comes from the session. We do not rely on middleware alone, as the library's own docs advise. Against cross-site requests the cookie is `SameSite=Lax`, and our endpoints also check that the `Origin` header is this site (`isAllowedOrigin`, `src/domain/identity/origin.ts`): `POST /api/register` does it now, and the guard of the write endpoints does it for the rest.
+  - _Registration:_ the form posts to `POST /api/register` with `{ username, email, password }`, and this is the only way to create an account (the library's own sign-up path and its username probe are switched off with `disabledPaths`, so the checks below cannot be skipped). The body must be JSON (415) and the `Origin` must be this site (403). Our own validation answers 400 with `{ errors: { username?, email?, password? } }`, one message per wrong field. A taken username or e-mail answers 409 with the same shape and names every taken field. Success answers 201 with the session cookie. Every well-formed attempt counts towards a limit of 20 per 10 minutes per address, then 429 with `Retry-After`; a form with a typo is free. The counter is a row of the `RateLimit` table with its own key.
+  - _Login:_ with e-mail or username (two library calls, chosen by the presence of "@"). The error never says whether the user exists.
+  - _Login rate limit:_ enabled in every environment, not only in production, so that what we test locally is what runs live: 3 sign-in attempts by e-mail per 10 seconds, and 100 requests per 10 seconds for the other endpoints. Memory storage does not suit serverless, so the counters are stored in the database (table `RateLimit`).
+  - _Environment:_ `BETTER_AUTH_SECRET` (at least 32 characters, a different value for dev and prod) and `BETTER_AUTH_URL`, set in each Vercel project. Values are never committed.
+  - _Not in the MVP:_ e-mail verification, password reset, social login, two-factor authentication.
+- **Alternatives considered:**
+  - _Our own signed cookie_ (HMAC): little code, but we would own the cryptography and the session handling, and could not revoke a session.
+  - _Auth.js v5_ (NextAuth): still a beta (5.0.0-beta.32) and in maintenance mode since September 2025, when the Better Auth team took over its maintenance. Its Credentials provider has no registration, hashing or rate limiting, and its sessions are JWTs that cannot be revoked.
+  - _Hosted services_ (Clerk, WorkOS): user data lives on third-party servers, and graders would need accounts there.
+- **Consequences:**
+  - _Positive:_ a maintained, widely used library, revocable database sessions, hashing and rate limiting that we do not write ourselves, and less security code to defend.
+  - _Trade-offs:_ new tables (`Session`, `Account`, `Verification`, `RateLimit`) and new `User` columns (the library requires a `name`, which we set to the username, and `emailVerified`), through incremental migrations. The seed must create users through the library's hashing. The library is a young 1.x package, so we pin the version and upgrade deliberately.
+- **Confirmed in the spike (31 Oct 2026):**
+  - _Works with our stack:_ Better Auth 1.7.14 with the Prisma adapter, Prisma 6.19 and Next 15. 16 checks passed against a running server: registration, login by username and by e-mail, logout, the guard, duplicates, validation errors, the origin check and the rate limit.
+  - _Cookie:_ `better-auth.session_token`, `HttpOnly`, `SameSite=Lax`, 7 days, and with an https site URL `__Secure-` plus `Secure`. A request that carries the cookie is refused (403) when its `Origin` is foreign or missing, which is the protection against cross-site posts.
+  - _Data:_ e-mails and usernames are stored in lower case (the original username is kept in `displayUsername`). The password hash is in `Account.password` (scrypt, provider `credential`). A `role` sent in the sign-up body is ignored and the stored role is `USER`, so our `Role` enum works with the library's `role` field. The library creates its own string ids for new users, and the ids of existing users do not change.
+  - _Errors:_ a wrong password and an unknown user give the same answer. The library reports one error at a time, so our own validation runs first to give one message per field (a user who is wrong on two fields is told about both).
+  - _Rate limit:_ with database storage, the 4th sign-in within 10 seconds answers 429 and the counter recovers after the window. The counter is keyed by the address in `x-forwarded-for`, which Vercel sets.
+  - _Telemetry:_ off by default (it needs an explicit setting or `BETTER_AUTH_TELEMETRY`), and we also set it off in the config.
+  - _Seed:_ `hashPassword` from `better-auth/crypto` plus an `Account` row lets a demo user log in with a known password, and the old fake hash no longer works.
+- **Things the spike found that the plan must respect:**
+  - The migration cannot be the generated one. The library needs a required `name` and `updatedAt` on `User`, and the dev and prod databases already have users, so the generated SQL fails ("column contains null values"). The migration adds the columns as nullable, fills them for existing users (`name` = username) and then makes them required.
+  - The CLI wants to rename our tables (`@@map("user")`) and add a second `createdAt`. We keep our table names and map the library's `createdAt` to our `registeredAt` (`user.fields`), so no existing column or table changes name.
+  - `auth.api.signUpEmail` reports some failures by returning an error Response and others (for example the username checks) by throwing `APIError`. The `POST /api/register` wrapper handles both. The library answers a successful sign-up with 200, and the wrapper answers 201.
+  - The library never writes the old `passwordHash` column, which is required in the old schema, so the migration makes it optional. The two places that still write it (the seed, and the reviews endpoint that creates demo users) only get the new required `name` for now, and issues #19 and #14 replace them. The column is dropped afterwards, in a new migration, so that no deploy breaks code that still writes it.
+- **Verified on the real database (31 Oct 2026):** the migration was applied through the direct connection to a copy of the dev database (a temporary Neon branch). The two demo users got their new columns, all 535 places and 94 reviews were intact, and the four new tables existed. The app then ran through Neon's pooled connection, which is what Vercel uses, and the 35 curl checks passed there, including the rate limit counters in the database. The procedure is in [deployment.md](deployment.md).
+- **Security review (31 Oct 2026):**
+  - _Found and fixed:_ `POST /api/register` accepted a cross-site request (a foreign `Origin` and a `text/plain` body registered an account and set the cookie), because calling the library from server code skips its own origin check. It now requires a JSON body and the site's own `Origin`. Sign-up had no rate limit, and the library's own public sign-up path would have bypassed one, so that path is switched off and the registration route carries the limit.
+  - _Checked and fine:_ a `role` sent at sign-up or through `update-user` is ignored; `delete-user` and `change-email` are not exposed; a wrong password and an unknown user answer the same and take the same time (about 370 ms each); the cookie is `HttpOnly` and `SameSite=Lax`, and `Secure` over https.
+  - _Known and accepted:_ registration tells which username or e-mail is taken (the story requires it), e-mails are not verified, and the password policy is length only.
+  - _Not done yet:_ HTTP security headers (clickjacking and content type protection) and the dependency updates that `npm audit` suggests. Both are separate tickets.
