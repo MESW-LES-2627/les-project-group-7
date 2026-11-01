@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/guard";
 import { calculateAverageRating } from "@/domain/reviews/rating";
 
 /**
@@ -9,12 +10,6 @@ import { calculateAverageRating } from "@/domain/reviews/rating";
 function isPlaceCategory(val: unknown): val is PlaceCategory {
   return typeof val === "string" && val in PlaceCategory;
 }
-
-// Known dummy users for automatic fallback provisioning if DB is empty
-const DUMMY_USERS: Record<string, { username: string; email: string }> = {
-  "demo-user-1": { username: "viajante_porto", email: "demo@tripbook.pt" },
-  "demo-user-2": { username: "ana_exploradora", email: "ana@tripbook.pt" },
-};
 
 /**
  * GET /api/reviews?placeId={id}
@@ -60,6 +55,8 @@ export async function GET(request: Request) {
  * POST /api/reviews
  *
  * Reviews & Rating Domain Policy API Handler.
+ * Needs a logged-in user (401 without one, 403 for a request from another site): the author is
+ * the user of the session, never a `userId` from the body.
  * Creates a review, updates place average rating, and marks place visited.
  * Automatically enforces Domain Policy:
  * 1. Upserts place dynamically from OpenStreetMap if discovered on-the-fly.
@@ -68,9 +65,15 @@ export async function GET(request: Request) {
  * 4. Recalculates arithmetic average rating and review counts.
  */
 export async function POST(request: Request) {
+  // Step 0: Only a logged-in user, from this site's own pages, may write. This comes first, so an
+  // anonymous request reads no body and touches no table.
+  const guard = await requireUser(request);
+  if (!guard.ok) return guard.response;
+  const authorId = guard.user.id;
+
   try {
     const body = await request.json();
-    const { placeId, rating, text, userId } = body;
+    const { placeId, rating, text } = body;
 
     // Step 1: Validate the review input
     if (!placeId || typeof rating !== "number" || rating < 1 || rating > 5) {
@@ -83,25 +86,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Step 2: Pick and provision a demo user for testing
-    const targetUserId = userId || "demo-user-1";
-
-    if (DUMMY_USERS[targetUserId]) {
-      await prisma.user.upsert({
-        where: { id: targetUserId },
-        update: {},
-        create: {
-          id: targetUserId,
-          username: DUMMY_USERS[targetUserId].username,
-          name: DUMMY_USERS[targetUserId].username, // required by the authentication library; this block goes away in #14
-          email: DUMMY_USERS[targetUserId].email,
-          passwordHash: "hash_demo_12345",
-          role: "USER",
-        },
-      });
-    }
-
-    // Step 3: On-the-fly ingestion of an OpenStreetMap place (if it is not in the database yet)
+    // Step 2: On-the-fly ingestion of an OpenStreetMap place (if it is not in the database yet)
     const existingPlace = await prisma.place.findUnique({
       where: { id: placeId },
     });
@@ -160,10 +145,10 @@ export async function POST(request: Request) {
       });
     }
 
-    // Step 4: Create the Review record
+    // Step 3: Create the Review record
     const newReview = await prisma.review.create({
       data: {
-        userId: targetUserId,
+        userId: authorId,
         placeId,
         rating: Math.round(rating),
         text: text || "",
@@ -178,11 +163,11 @@ export async function POST(request: Request) {
       },
     });
 
-    // Step 5: Domain policy — mark the place as visited for the author
+    // Step 4: Domain policy — mark the place as visited for the author
     await prisma.visit.upsert({
       where: {
         userId_placeId: {
-          userId: targetUserId,
+          userId: authorId,
           placeId,
         },
       },
@@ -190,12 +175,12 @@ export async function POST(request: Request) {
         visitedAt: new Date(),
       },
       create: {
-        userId: targetUserId,
+        userId: authorId,
         placeId,
       },
     });
 
-    // Step 6: Domain policy — recalculate the arithmetic mean of the ratings
+    // Step 5: Domain policy — recalculate the arithmetic mean of the ratings
     const allReviews = await prisma.review.findMany({
       where: { placeId },
       select: { rating: true },
@@ -207,7 +192,7 @@ export async function POST(request: Request) {
     }
     const newAvg = calculateAverageRating(ratingsList);
 
-    // Step 7: Update the Place with the new average and count
+    // Step 6: Update the Place with the new average and count
     const updatedPlace = await prisma.place.update({
       where: { id: placeId },
       data: {
