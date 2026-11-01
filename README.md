@@ -63,13 +63,15 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
+    │   ├── api/register/   # POST /api/register (creates the account and logs the person in)
+    │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
     │   ├── api/health/     # GET /api/health
     │   └── page.tsx        # Main tracer bullet UI
     ├── components/         # MapComponent, MapWrapper, PlaceExplorer, ui/ (Shadcn)
-    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog)
+    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog, identity)
     ├── hooks/              # React hooks (place filtering, place reviews)
-    ├── lib/                # Prisma client singleton & cn utility (clsx + twMerge)
+    ├── lib/                # Prisma client singleton, Better Auth setup (auth.ts), registration rate limit & cn utility
     └── types/              # Shared TypeScript types
 ```
 
@@ -88,7 +90,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 # Clone the repository and install dependencies
 npm install
 
-# Copy environment variables
+# Copy environment variables, then set BETTER_AUTH_SECRET in .env (for example with `openssl rand -base64 32`)
 cp .env.example .env
 
 # Start local PostgreSQL container
@@ -147,7 +149,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Key Features in Tracer Bullet
 
 - **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
-- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL. Real registration, login and per-user permissions are not implemented yet.
+- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL. Registration works through the API (`POST /api/register`, with Better Auth behind it), but there is no registration or login page yet, and the reviews endpoint does not check the logged-in user yet (login and per-user permissions are still to do).
 - **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. Not built yet: price level on reviews and its recalculation, showing visited places after a page reload, and editing or deleting a review.
 - **OpenStreetMap Places:** Interactive Leaflet map with places loaded into PostgreSQL by the seed and import scripts, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
 - **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.

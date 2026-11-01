@@ -93,6 +93,7 @@ export async function POST(request: Request) {
         create: {
           id: targetUserId,
           username: DUMMY_USERS[targetUserId].username,
+          name: DUMMY_USERS[targetUserId].username, // required by the authentication library; this block goes away in #14
           email: DUMMY_USERS[targetUserId].email,
           passwordHash: "hash_demo_12345",
           role: "USER",
