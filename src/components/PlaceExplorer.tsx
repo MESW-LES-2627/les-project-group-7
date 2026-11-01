@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";
 import { Button } from "@/components/ui/button";
-import { type SessionUser, AVAILABLE_USERS } from "./UserSessionBar";
 import MapExplorerCard from "./MapExplorerCard";
 import PlaceGrid from "./PlaceGrid";
 import PlaceDataTable from "./PlaceDataTable";
@@ -22,11 +21,11 @@ const PAGE_SIZE = 18;
 export default function PlaceExplorer({
   initialPlaces,
   initialCities = [],
-  initialUser = AVAILABLE_USERS[0],
+  currentUsername,
 }: {
   initialPlaces: PlaceItem[];
   initialCities?: CityOption[];
-  initialUser?: SessionUser;
+  currentUsername: string | null;
 }) {
   // ── 1. Catalog & OSM integration ───────────────────────────────────────────
   const [places, setPlaces] = useState<PlaceItem[]>(initialPlaces);
@@ -38,8 +37,6 @@ export default function PlaceExplorer({
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
-  // Demo author of new reviews until the reviews endpoint reads the real session (#14, #15).
-  const currentUser = initialUser;
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -125,7 +122,7 @@ export default function PlaceExplorer({
     closeReviewModal,
     handleSubmitReview,
   } = usePlaceReviews({
-    currentUser,
+    currentUsername,
     onPlaceUpdated: handlePlaceUpdated,
   });
 
@@ -264,7 +261,7 @@ export default function PlaceExplorer({
       {/* ── 4. Review Dialog ─────────────────────────────────────────────── */}
       <ReviewModal
         place={activeReviewPlace}
-        currentUser={currentUser}
+        currentUsername={currentUsername}
         reviews={reviewsList}
         isLoadingReviews={isLoadingReviews}
         isSubmitting={isSubmitting}
