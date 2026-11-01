@@ -2,10 +2,11 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { Compass } from "lucide-react";
 import { auth } from "@/lib/auth";
+import LogoutButton from "@/components/LogoutButton";
 
 /**
- * Top bar on every page. Logged out: link to the registration page.
- * Logged in: the username as typed.
+ * Top bar on every page. Logged out: links to the login and registration pages.
+ * Logged in: the username as typed, and the logout button.
  */
 export default async function SiteHeader() {
   // A database failure must not take down every page (404s, /register): show the logged-out bar.
@@ -29,16 +30,27 @@ export default async function SiteHeader() {
 
         <div className="flex items-center gap-3">
           {session ? (
-            <span className="text-sm font-medium text-slate-700">
-              @{session.user.displayUsername ?? session.user.username}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-slate-700">
+                @{session.user.displayUsername ?? session.user.username}
+              </span>
+              <LogoutButton />
+            </div>
           ) : (
-            <Link
-              href="/register"
-              className="text-sm font-medium text-indigo-600 hover:underline"
-            >
-              Register
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-indigo-600 hover:underline"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                className="text-sm font-medium text-indigo-600 hover:underline"
+              >
+                Register
+              </Link>
+            </>
           )}
         </div>
       </div>

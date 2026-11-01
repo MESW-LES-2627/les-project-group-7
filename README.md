@@ -149,7 +149,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Key Features in Tracer Bullet
 
 - **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
-- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL. Registration works through the API (`POST /api/register`, with Better Auth behind it), but there is no registration or login page yet, and the reviews endpoint does not check the logged-in user yet (login and per-user permissions are still to do).
+- **Accounts:** Registration (`/register`, `POST /api/register`), login by username or e-mail (`/login`) and logout, with Better Auth behind them. The top bar shows the logged-in username. The reviews endpoint does not read the session yet, so reviews are still saved as the demo account `@viajante_porto` (per-user permissions are still to do).
 - **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. Not built yet: price level on reviews and its recalculation, showing visited places after a page reload, and editing or deleting a review.
 - **OpenStreetMap Places:** Interactive Leaflet map with places loaded into PostgreSQL by the seed and import scripts, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
 - **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.

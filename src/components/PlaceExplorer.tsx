@@ -4,10 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";
 import { Button } from "@/components/ui/button";
-import UserSessionBar, {
-  type SessionUser,
-  AVAILABLE_USERS,
-} from "./UserSessionBar";
+import { type SessionUser, AVAILABLE_USERS } from "./UserSessionBar";
 import MapExplorerCard from "./MapExplorerCard";
 import PlaceGrid from "./PlaceGrid";
 import PlaceDataTable from "./PlaceDataTable";
@@ -41,7 +38,8 @@ export default function PlaceExplorer({
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
-  const [currentUser, setCurrentUser] = useState<SessionUser>(initialUser);
+  // Demo author of new reviews until the reviews endpoint reads the real session (#14, #15).
+  const currentUser = initialUser;
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -190,13 +188,6 @@ export default function PlaceExplorer({
 
   return (
     <div className="space-y-8">
-      {/* ── 1. User Session Bar ───────────────────────────────────────────── */}
-      <UserSessionBar
-        currentUser={currentUser}
-        availableUsers={AVAILABLE_USERS}
-        onSelectUser={setCurrentUser}
-      />
-
       {/* ── 2. Map Explorer & City Selector ──────────────────────────────── */}
       <MapExplorerCard
         places={mapPlaces}
