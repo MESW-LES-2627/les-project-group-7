@@ -2,14 +2,8 @@ import { isAllowedOrigin } from "./origin";
 
 /**
  * Who may call an endpoint (US-A1-02, acceptance criteria 4 and 5). Pure function, so it is
- * tested without the authentication library; src/lib/guard.ts feeds it the real request.
- *
- * - A request that changes data (any method except GET, HEAD and OPTIONS) must come from this
- *   site's own pages: a foreign Origin is refused with 403. This is checked first, so a page on
- *   another site learns nothing about the visitor's session.
- * - Then the person must be logged in, else 401.
+ * tested without the authentication library, src/lib/guard.ts feeds it the real request.
  */
-
 export type AccessDecision =
   { ok: true } | { ok: false; status: 401 | 403; error: string };
 

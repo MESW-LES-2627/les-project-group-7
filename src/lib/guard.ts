@@ -7,10 +7,6 @@ export type SessionUser = Session["user"];
 /**
  * The guard of every endpoint that needs a logged-in user (ADR-009). The user always comes from
  * the session cookie, never from the request body.
- *
- *   const guard = await requireUser(request);
- *   if (!guard.ok) return guard.response;   // 401 not logged in, 403 request from another site
- *   const { user } = guard;
  */
 export async function requireUser(
   request: Request
