@@ -70,4 +70,50 @@ describe("Nominatim Result Parsing", () => {
 
     expect(parseNominatimResult(invalid)).toBeNull();
   });
+
+  it("keeps the bounding box so the map can show a whole city or country", () => {
+    const parsed = parseNominatimResult({
+      place_id: 1,
+      osm_id: 2,
+      lat: "40.4",
+      lon: "-3.7",
+      display_name: "Madrid, Spain",
+      boundingbox: ["40.31", "40.64", "-3.89", "-3.52"],
+    });
+
+    expect(parsed?.boundingBox).toEqual({
+      south: 40.31,
+      north: 40.64,
+      west: -3.89,
+      east: -3.52,
+    });
+    expect(
+      parseNominatimResult({
+        place_id: 1,
+        osm_id: 2,
+        lat: "40.4",
+        lon: "-3.7",
+        display_name: "Madrid, Spain",
+      })?.boundingBox
+    ).toBeUndefined();
+  });
+
+  it("marks a city or town result, with its country, so it can be added to the catalog", () => {
+    const base = { place_id: 1, osm_id: 2, lat: "40.4", lon: "-3.7" };
+    const city = parseNominatimResult({
+      ...base,
+      display_name: "Madrid, España",
+      addresstype: "city",
+      address: { country: "España" },
+    });
+    expect(city).toMatchObject({ isCity: true, country: "España" });
+
+    const shop = parseNominatimResult({
+      ...base,
+      display_name: "Livraria Lello, Porto",
+      addresstype: "shop",
+      address: { country: "Portugal" },
+    });
+    expect(shop?.isCity).toBeUndefined();
+  });
 });

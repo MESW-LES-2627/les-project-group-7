@@ -10,6 +10,7 @@ import PlaceGrid from "./PlaceGrid";
 import PlaceDataTable from "./PlaceDataTable";
 import ReviewModal, { type ReviewItem } from "./ReviewModal";
 import type { CityOption } from "./CitySelector";
+import { cityBounds } from "@/domain/catalog/city";
 import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
 
@@ -22,10 +23,12 @@ const PAGE_SIZE = 18;
 export default function PlaceExplorer({
   initialPlaces,
   initialCities = [],
+  isLoggedIn = false,
   initialUser = AVAILABLE_USERS[0],
 }: {
   initialPlaces: PlaceItem[];
   initialCities?: CityOption[];
+  isLoggedIn?: boolean;
   initialUser?: SessionUser;
 }) {
   // ── 1. Catalog & OSM integration ───────────────────────────────────────────
@@ -38,18 +41,30 @@ export default function PlaceExplorer({
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
+  // Where the map flies to. With bounds it shows that whole area (a city, a country); without,
+  // it zooms in on the point.
+  const [selectedMapBounds, setSelectedMapBounds] =
+    useState<BoundingBox | null>(null);
+  const flyTo = useCallback(
+    (center: [number, number], bounds: BoundingBox | null = null) => {
+      setSelectedMapCenter(center);
+      setSelectedMapBounds(bounds);
+    },
+    []
+  );
   // Demo author of new reviews until the reviews endpoint reads the real session (#14, #15).
   const currentUser = initialUser;
-  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  // The map starts on Porto (see MapExplorerCard), so Porto is the active city.
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(
+    () => initialCities.find((c) => c.name === "Porto")?.id ?? null
+  );
+  const [cities, setCities] = useState<CityOption[]>(initialCities);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [mapBounds, setMapBounds] = useState<BoundingBox | null>(null);
 
-  const activeCityName = initialCities.find(
-    (c) => c.id === selectedCityId
-  )?.name;
+  const activeCityName = cities.find((c) => c.id === selectedCityId)?.name;
 
   // Multi-criteria filtering, spatial bounding box, pagination and pin projections
   const { allPlaces, filteredPlaces, paginatedPlaces, mapPlaces, totalPages } =
@@ -57,8 +72,6 @@ export default function PlaceExplorer({
       places,
       osmPlaces,
       selectedCityId,
-      selectedCategory,
-      searchQuery,
       currentPage,
       pageSize: PAGE_SIZE,
       mapBounds,
@@ -67,17 +80,36 @@ export default function PlaceExplorer({
   // Reset pagination on filter, city or viewport change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, searchQuery, selectedCityId, mapBounds]);
+  }, [selectedCityId, mapBounds]);
 
   // Smoothly pan map to selected city
-  const handleSelectCity = useCallback((city: CityOption | null) => {
-    if (!city) {
-      setSelectedCityId(null);
-      return;
-    }
-    setSelectedCityId(city.id);
-    setSelectedMapCenter([city.latitude, city.longitude]);
-  }, []);
+  const handleSelectCity = useCallback(
+    (city: CityOption | null) => {
+      if (!city) {
+        setSelectedCityId(null);
+        return;
+      }
+      setSelectedCityId(city.id);
+      flyTo(
+        [city.latitude, city.longitude],
+        cityBounds(city.latitude, city.longitude)
+      );
+    },
+    [flyTo]
+  );
+
+  // A city added from the search joins the chips and becomes the active one.
+  const handleAddCity = useCallback(
+    (city: CityOption) => {
+      setCities((prev) =>
+        prev.some((c) => c.id === city.id)
+          ? prev
+          : [...prev, { ...city, count: 0 }]
+      );
+      handleSelectCity(city);
+    },
+    [handleSelectCity]
+  );
 
   // Callback to sync catalog updates when a review is submitted
   const handlePlaceUpdated = useCallback(
@@ -129,24 +161,20 @@ export default function PlaceExplorer({
     onPlaceUpdated: handlePlaceUpdated,
   });
 
-  const handleSelectDiscoveredPlace = useCallback(
-    (osm: OsmSearchResult) => {
-      setSelectedMapCenter([osm.latitude, osm.longitude]);
-      openReviewModal({
-        id: `osm-${osm.osmId}`,
-        osmId: osm.osmId,
-        name: osm.name,
-        category: osm.category,
-        address: osm.address,
-        latitude: osm.latitude,
-        longitude: osm.longitude,
-        priceLevel: "€",
-        averageRating: null,
-        reviewCount: 0,
-        isDiscovered: true,
-      });
+  // Search results take you to the place on the map. A catalog place also switches to its city,
+  // otherwise the city filter would hide its pin.
+  const handleGoToPlace = useCallback(
+    (place: PlaceItem) => {
+      if (place.cityId) setSelectedCityId(place.cityId);
+      flyTo([place.latitude, place.longitude]);
     },
-    [openReviewModal]
+    [flyTo]
+  );
+
+  const handleSelectDiscoveredPlace = useCallback(
+    (osm: OsmSearchResult) =>
+      flyTo([osm.latitude, osm.longitude], osm.boundingBox ?? null),
+    [flyTo]
   );
 
   // Debounced bounding-box OSM fetcher & viewport tracker
@@ -182,7 +210,7 @@ export default function PlaceExplorer({
     totalPages,
     pageSize: PAGE_SIZE,
     onPageChange: setCurrentPage,
-    onSelectMapCenter: setSelectedMapCenter,
+    onSelectMapCenter: (coords: [number, number]) => flyTo(coords),
     onOpenReview: openReviewModal,
   };
 
@@ -193,19 +221,21 @@ export default function PlaceExplorer({
         places={mapPlaces}
         allPlaces={allPlaces}
         selectedCenter={selectedMapCenter}
+        selectedBounds={selectedMapBounds}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
         isFetchingOsm={isFetchingOsm}
-        cities={initialCities}
+        cities={cities}
         selectedCityId={selectedCityId}
-        activeCityName={activeCityName}
+        mapBounds={mapBounds}
         onSelectCity={handleSelectCity}
+        onAddCity={handleAddCity}
+        canAddCity={isLoggedIn}
         onSelectPlace={(id) => {
           const place = allPlaces.find((item) => item.id === id);
           if (place) openReviewModal(place);
         }}
+        onGoToPlace={handleGoToPlace}
         onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
         onMapMove={handleMapMove}
       />

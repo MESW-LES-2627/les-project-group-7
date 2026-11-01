@@ -2,7 +2,7 @@ import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { consumeRegisterAttempt } from "@/lib/register-rate-limit";
-import { isAllowedOrigin } from "@/domain/identity/origin";
+import { rejectCrossSiteRequest } from "@/lib/request-guard";
 import { clientAddress } from "@/domain/identity/register-rate-limit";
 import { validateRegistration } from "@/domain/identity/registration";
 import {
@@ -36,19 +36,9 @@ function failureAnswer(code: unknown) {
  * Passwords are hashed and stored by the authentication library (ADR-009), never by this code.
  */
 export async function POST(request: Request) {
-  // 0. Only our own pages may call this. A form on another site could send a text/plain body
-  // without a preflight and register an account in a visitor's browser (login CSRF), so the body
-  // must be JSON and the Origin must be this site.
-  if (!request.headers.get("content-type")?.startsWith("application/json")) {
-    return Response.json(
-      { error: "Content-Type must be application/json" },
-      { status: 415 }
-    );
-  }
-  const siteUrl = process.env.BETTER_AUTH_URL ?? new URL(request.url).origin;
-  if (!isAllowedOrigin(request.headers.get("origin"), siteUrl)) {
-    return Response.json({ error: "Invalid origin" }, { status: 403 });
-  }
+  // 0. Only our own pages may call this (JSON body, Origin is this site): login CSRF.
+  const rejected = rejectCrossSiteRequest(request);
+  if (rejected) return rejected;
 
   let body: unknown;
   try {

@@ -89,7 +89,7 @@ export default function RegisterPage() {
       const data = await res.json().catch(() => ({}));
       if (data.errors) setErrors(data.errors);
       else if (res.status === 403)
-        setFormError("Request blocked: open the site at http://localhost:3000");
+        setFormError("Request blocked: open the site at its official address");
       else setFormError(data.error ?? "Registration failed, try again");
     } catch {
       setFormError("Could not reach the server, try again");

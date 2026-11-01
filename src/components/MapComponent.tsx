@@ -126,16 +126,27 @@ function MapEventHandler({
 
 function MapFlyController({
   targetCenter,
+  targetBounds,
 }: {
   targetCenter?: [number, number] | null;
+  targetBounds?: BoundingBox | null;
 }) {
   const map = useMap();
 
   useEffect(() => {
-    if (targetCenter) {
+    if (targetBounds) {
+      // A city or a country is shown whole; a single place has a tiny box, capped by maxZoom.
+      map.flyToBounds(
+        [
+          [targetBounds.south, targetBounds.west],
+          [targetBounds.north, targetBounds.east],
+        ],
+        { duration: 0.8, maxZoom: 16 }
+      );
+    } else if (targetCenter) {
       map.flyTo(targetCenter, 16, { duration: 0.8 });
     }
-  }, [targetCenter, map]);
+  }, [targetCenter, targetBounds, map]);
 
   return null;
 }
@@ -145,6 +156,7 @@ export default function MapComponent({
   center = [41.147, -8.615],
   zoom = 14,
   selectedCenter,
+  selectedBounds,
   onSelectPlace,
   onMapMove,
 }: {
@@ -152,6 +164,7 @@ export default function MapComponent({
   center?: [number, number];
   zoom?: number;
   selectedCenter?: [number, number] | null;
+  selectedBounds?: BoundingBox | null;
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
 }) {
@@ -229,7 +242,10 @@ export default function MapComponent({
         />
 
         {/* Smooth Fly-To Controller */}
-        <MapFlyController targetCenter={selectedCenter} />
+        <MapFlyController
+          targetCenter={selectedCenter}
+          targetBounds={selectedBounds}
+        />
 
         {/* 1. Render Clustered Badges */}
         {clusters.map((cluster) => (

@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PlaceExplorer from "@/components/PlaceExplorer";
 
@@ -11,6 +13,11 @@ export const dynamic = "force-dynamic";
  * the interactive client explorer with OpenStreetMap points of interest.
  */
 export default async function Home() {
+  // Adding a city needs a session, so the explorer hides the button without one.
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch(() => null);
+
   // 1. Fetch all places persisted in the database including city details
   const dbPlaces = await prisma.place.findMany({
     include: {
@@ -63,7 +70,11 @@ export default async function Home() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <main>
-        <PlaceExplorer initialPlaces={places} initialCities={cities} />
+        <PlaceExplorer
+          initialPlaces={places}
+          initialCities={cities}
+          isLoggedIn={!!session}
+        />
       </main>
     </div>
   );

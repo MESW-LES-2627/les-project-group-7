@@ -8,6 +8,7 @@ export interface MapWrapperProps {
   center?: [number, number];
   zoom?: number;
   selectedCenter?: [number, number] | null;
+  selectedBounds?: BoundingBox | null;
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
 }

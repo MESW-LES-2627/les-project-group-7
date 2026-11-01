@@ -3,7 +3,6 @@
 import { MapPin, Loader2 } from "lucide-react";
 import MapWrapper from "./MapWrapper";
 import type { BoundingBox, MapPlace } from "./MapComponent";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import CitySelector, { type CityOption } from "./CitySelector";
@@ -11,36 +10,22 @@ import PlaceSearchAutocomplete from "./PlaceSearchAutocomplete";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
 
-export interface CategoryOption {
-  label: string;
-  value: string;
-}
-
-export const CATEGORIES: CategoryOption[] = [
-  { label: "All Spots", value: "ALL" },
-  { label: "Monuments", value: "MONUMENT" },
-  { label: "Restaurants", value: "RESTAURANT" },
-  { label: "Parks", value: "PARK" },
-  { label: "Museums", value: "MUSEUM" },
-  { label: "Cafes", value: "CAFE" },
-  { label: "Bars", value: "BAR" },
-];
-
 interface MapExplorerCardProps {
   places: MapPlace[];
   allPlaces?: PlaceItem[];
   selectedCenter: [number, number] | null;
+  selectedBounds?: BoundingBox | null;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  selectedCategory: string;
-  onCategoryChange: (category: string) => void;
-  categories?: CategoryOption[];
   isFetchingOsm: boolean;
   cities?: CityOption[];
   selectedCityId?: string | null;
-  activeCityName?: string;
-  onSelectCity?: (city: CityOption | null) => void;
+  mapBounds?: BoundingBox | null;
+  onSelectCity: (city: CityOption | null) => void;
+  onAddCity: (city: CityOption) => void;
+  canAddCity?: boolean;
   onSelectPlace: (placeId: string) => void;
+  onGoToPlace: (place: PlaceItem) => void;
   onSelectDiscoveredPlace?: (osmPlace: OsmSearchResult) => void;
   onMapMove: (bounds: BoundingBox) => void;
 }
@@ -49,17 +34,18 @@ export default function MapExplorerCard({
   places,
   allPlaces = [],
   selectedCenter,
+  selectedBounds,
   searchQuery,
   onSearchChange,
-  selectedCategory,
-  onCategoryChange,
-  categories = CATEGORIES,
   isFetchingOsm,
   cities,
   selectedCityId,
-  activeCityName,
+  mapBounds,
   onSelectCity,
+  onAddCity,
+  canAddCity = false,
   onSelectPlace,
+  onGoToPlace,
   onSelectDiscoveredPlace,
   onMapMove,
 }: MapExplorerCardProps) {
@@ -92,7 +78,7 @@ export default function MapExplorerCard({
         </div>
 
         {/* 1. European Cities Selector */}
-        {cities && cities.length > 0 && onSelectCity && (
+        {cities && cities.length > 0 && (
           <div className="mt-3.5">
             <CitySelector
               cities={cities}
@@ -102,36 +88,24 @@ export default function MapExplorerCard({
           </div>
         )}
 
-        {/* 2. Search & Category Filters */}
+        {/* 2. Search */}
         <div className="mt-3.5 flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center">
           <PlaceSearchAutocomplete
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
             localPlaces={allPlaces}
-            cityName={activeCityName}
-            onSelectLocalPlace={(place) => onSelectPlace(place.id)}
+            bounds={mapBounds}
+            cities={cities ?? []}
+            onSelectCity={onSelectCity}
+            onAddCity={onAddCity}
+            canAddCity={canAddCity}
+            onSelectLocalPlace={onGoToPlace}
             onSelectOsmPlace={(osm) => {
               if (onSelectDiscoveredPlace) {
                 onSelectDiscoveredPlace(osm);
               }
             }}
           />
-
-          <div className="flex flex-wrap gap-1.5">
-            {categories.map((category) => (
-              <Button
-                key={category.value}
-                size="sm"
-                variant={
-                  selectedCategory === category.value ? "default" : "outline"
-                }
-                onClick={() => onCategoryChange(category.value)}
-                className="h-7 rounded-full px-3 text-xs"
-              >
-                {category.label}
-              </Button>
-            ))}
-          </div>
         </div>
       </CardHeader>
 
@@ -141,6 +115,7 @@ export default function MapExplorerCard({
           center={[41.147, -8.615]}
           zoom={14}
           selectedCenter={selectedCenter}
+          selectedBounds={selectedBounds}
           onSelectPlace={onSelectPlace}
           onMapMove={onMapMove}
         />

@@ -7,8 +7,6 @@ interface UsePlaceFilteringProps {
   places: readonly PlaceItem[];
   osmPlaces: readonly PlaceItem[];
   selectedCityId: string | null;
-  selectedCategory: string;
-  searchQuery: string;
   currentPage: number;
   pageSize: number;
   mapBounds?: GeoBoundingBox | null;
@@ -18,8 +16,6 @@ export function usePlaceFiltering({
   places,
   osmPlaces,
   selectedCityId,
-  selectedCategory,
-  searchQuery,
   currentPage,
   pageSize,
   mapBounds,
@@ -46,32 +42,15 @@ export function usePlaceFiltering({
     return merged;
   }, [places, osmPlaces]);
 
-  // 2. Filter by city, category and search query
-  const matchingPlaces = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    return allPlaces.filter((place) => {
-      const matchesCity = !selectedCityId || place.cityId === selectedCityId;
-      if (!matchesCity) {
-        return false;
-      }
-
-      const matchesCategory =
-        selectedCategory === "ALL" || place.category === selectedCategory;
-      if (!matchesCategory) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return (
-        place.name.toLowerCase().includes(normalizedQuery) ||
-        place.address.toLowerCase().includes(normalizedQuery)
-      );
-    });
-  }, [allPlaces, selectedCityId, selectedCategory, searchQuery]);
+  // 2. Filter by city. Places found on OpenStreetMap have no city: they stay, the viewport limits them.
+  const matchingPlaces = useMemo(
+    () =>
+      allPlaces.filter(
+        (place) =>
+          !selectedCityId || !place.cityId || place.cityId === selectedCityId
+      ),
+    [allPlaces, selectedCityId]
+  );
 
   // 3. Filter by map viewport bounds and sort by rating descending
   const filteredPlaces = useMemo(() => {

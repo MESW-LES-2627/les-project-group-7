@@ -19,15 +19,26 @@ const allowNominatimRequest = createMinIntervalLimiter(1000);
 export async function GET(req: Request): Promise<NextResponse> {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.trim();
-  const city = searchParams.get("city")?.trim();
+  // The map area to search in: all four sides or none.
+  const [south, west, north, east] = ["south", "west", "north", "east"].map(
+    (side) => Number(searchParams.get(side) || NaN) // "" must not become 0
+  );
+  const area = [south, west, north, east].every(Number.isFinite)
+    ? { south, west, north, east }
+    : null;
   const limit = Math.min(parseInt(searchParams.get("limit") || "5", 10), 10);
 
   if (!q || q.length < 2) {
     return NextResponse.json([]);
   }
 
-  const queryCombined = city ? `${q}, ${city}` : q;
-  const cacheKey = `${queryCombined.toLowerCase()}:${limit}`;
+  // Rounded to ~1 km so that a small pan still hits the cache.
+  const areaKey = area
+    ? [area.south, area.west, area.north, area.east]
+        .map((n) => n.toFixed(2))
+        .join(",")
+    : "";
+  const cacheKey = `${q.toLowerCase()}:${areaKey}:${limit}`;
 
   // 1. Check in-memory LRU cache
   const cached = searchCache.get(cacheKey);
@@ -44,9 +55,12 @@ export async function GET(req: Request): Promise<NextResponse> {
   }
 
   try {
+    const viewbox = area
+      ? `&viewbox=${area.west},${area.north},${area.east},${area.south}`
+      : "";
     const endpoint = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      queryCombined
-    )}&format=json&addressdetails=1&limit=${limit}`;
+      q
+    )}&format=json&addressdetails=1&limit=${limit}${viewbox}`;
 
     const res = await fetch(endpoint, {
       headers: {

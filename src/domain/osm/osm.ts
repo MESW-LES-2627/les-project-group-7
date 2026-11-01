@@ -123,6 +123,9 @@ export interface NominatimRawItem {
   display_name: string;
   class?: string;
   type?: string;
+  addresstype?: string;
+  /** [south, north, west, east] as text. */
+  boundingbox?: string[];
   address?: {
     attraction?: string;
     road?: string;
@@ -240,6 +243,12 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
 
   const category = mapNominatimCategory(item.class, item.type);
 
+  const isCity =
+    !!item.address?.country &&
+    ["city", "town", "municipality"].includes(item.addresstype ?? "");
+  const [south, north, west, east] = (item.boundingbox ?? []).map(Number);
+  const hasBox = [south, north, west, east].every(Number.isFinite);
+
   return {
     osmId: item.osm_id.toString(),
     name: primaryName,
@@ -248,5 +257,7 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
     latitude: Number(latNum.toFixed(6)),
     longitude: Number(lonNum.toFixed(6)),
     type: item.type || item.class || "spot",
+    ...(hasBox && { boundingBox: { south, west, north, east } }),
+    ...(isCity && { isCity, country: item.address?.country }),
   };
 }

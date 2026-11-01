@@ -27,6 +27,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 - **Definition:** The geographical boundary containing places and serving as the destination for a trip.
 - **Key Attributes:** `id`, `name`, `country`, `latitude`, `longitude`.
+- **Invariants & Policies:** A logged-in user can add a city found in the OpenStreetMap search to the catalog; a city with the same name and country is not added twice.
 
 ### PlaceCategory
 

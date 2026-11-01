@@ -276,7 +276,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Context:** The initial split into two repositories (a React SPA and an Express.js backend) added needless operational friction: duplicated TypeScript interfaces, CORS problems in development and duplicated Docker containers.
 - **Decision:** Unify the stack in **Next.js 15 with the App Router**:
   - _Frontend:_ React Server Components (RSC) for the initial render and static pages. Client Components (`"use client"`) for the interactive Leaflet map and modals.
-  - _Backend:_ native Next.js Route Handlers (`src/app/api/`) for the REST endpoints (for example `/api/places` and `/api/reviews`).
+  - _Backend:_ native Next.js Route Handlers (`src/app/api/`) for the REST endpoints (for example `/api/places` and `/api/reviews`). Accounts: pages `/register` and `/login`, `POST /api/register`, the library's `/api/auth/*` routes, and a top bar (`SiteHeader`) that reads the session on the server. `POST /api/cities` adds a city to the catalog and needs a logged-in user.
   - _Persistence:_ Prisma Client, generated and instantiated as a shared singleton (`src/lib/prisma.ts`).
 - **Consequences:**
   - _Positive:_ one process and one port (`3000`). Prisma types and pure domain modules (`src/domain/`) are shared directly between frontend and backend.
@@ -309,15 +309,15 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-004: Search outside the catalog with Nominatim
 
-- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). The search box runs on submit only, and the server enforces the limit of 1 request per second (per server instance, see below).
+- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). The search box searches the catalog on every key and OpenStreetMap when typing pauses for 1 second (or on Search or Enter), and the server enforces the limit of 1 request per second (per server instance, see below).
 - **Context:** Text search over the PostgreSQL catalog cannot find a place that is not in our database. The MVP search (city, filters, sort) runs on the catalog only. The public Nominatim service has a strict usage policy: it forbids autocomplete (search as you type), allows at most 1 request per second for the whole application, asks for caching and requires a User-Agent that identifies the application.
 - **Decision:** Use the OpenStreetMap geocoding service (**Nominatim API**) through a dedicated backend endpoint (`/api/osm/search`), within the policy:
-  - Search runs only when the user submits (Enter), never while typing.
+  - The catalog is searched on every key press (no external call). OpenStreetMap is searched when typing pauses for 1 second and at least 3 characters were typed, or at once on the Search button or Enter, never on every key press. This is a reading of the policy, not a guarantee that Nominatim accepts it: if requests are refused, go back to submit only.
   - At most 1 request per second in total (the endpoint answers HTTP 429 with `Retry-After: 1` to the extra requests, and answers from the cache do not count), results cached on our side (15 min TTL), a defensive timeout of 3 seconds and an identifying `User-Agent`. The counter is in the memory of one server instance, so on Vercel, where several instances can run, the limit is per instance. That is enough for the expected traffic, and a shared counter (for example in the database) would be needed to make it exact.
   - Results are shown in two groups: _Local catalog_ and _Found on OpenStreetMap_.
 - **Consequences:**
   - _Positive:_ any public place in the world can be found and shown on the map.
-  - _Trade-offs:_ it adds a Geocoding service to the external systems and depends on the network outside the catalog. A place found this way is saved to the catalog when it is first reviewed (see ADR-002).
+  - _Trade-offs:_ it adds a Geocoding service to the external systems and depends on the network outside the catalog. A place found this way is saved to the catalog when it is first reviewed (see ADR-002). A result that is a city or town can be added to the catalog by a logged-in user (`POST /api/cities`, one row per name and country, no limit yet on how many a user adds).
 
 ### ADR-005: Honest symbolic places and a Ranking DataTable
 
