@@ -86,10 +86,11 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Business rules**
 
-- The password is stored only as a salted hash, never as plain text, and never returned by any endpoint.
+- The password is stored only as a salted hash (scrypt, by the authentication library), never as plain text, and never returned by any endpoint.
 - Username and e-mail are unique; the e-mail is compared in lower case.
-- Password minimum length is 8 characters. Username 3 to 30 characters.
+- Password minimum length is 8 characters (the library also limits it to 128). Username 3 to 30 characters, with letters, numbers, underscores and dots only, stored in lower case (the library's defaults).
 - The checks run on the server. The form checks are only a convenience.
+- Only the site's own pages may register: the body must be JSON and the `Origin` must be this site. Registration is limited to 20 well-formed attempts per 10 minutes per address (a form with a typo does not count). Unit tested.
 
 **Out of scope**
 
@@ -97,15 +98,18 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Notes**
 
-- Open question for the team: which library handles sessions (Auth.js or a small own implementation). Decide in the first issue.
-- `User.passwordHash` already exists in the schema.
+- Decision: authentication uses Better Auth (ADR-009 in [design.md](design.md)). The library keeps the password hash in its own `Account` table and the sessions in `Session`, so this story needs a migration for its tables and new `User` columns. `User.passwordHash` becomes optional and is dropped later, after the seed and the reviews endpoint stop writing it (see US-B2-01).
+- The form posts to `POST /api/register`, the only way to create an account. Success answers 201 with the session cookie, invalid input answers 400 and a taken username or e-mail answers 409, both with `{ errors: { username?, email?, password? } }`. A body that is not JSON answers 415, a request from another site 403, and too many attempts 429 with `Retry-After`.
+- Known issue: e-mails are only checked for their format and are not verified, and there is no password reset. Both are out of scope above. A mistyped e-mail or a forgotten password cannot be recovered.
 
 **Issues**
 
 1. **Registration API** · covers AC1, AC2, AC3 · depends on: none
-   - Validation and unit tests for the rules above (username, e-mail, password)
-   - Password hashing helper
-   - `POST` endpoint that creates the user and starts a session
+   - Add Better Auth (`better-auth`, exact version) with the Prisma adapter, e-mail and password and the `username` plugin: `src/lib/auth.ts` and the route `src/app/api/auth/[...all]/route.ts`. The library's own sign-up path and its username probe are switched off (`disabledPaths`)
+   - Prisma migration for the library's tables (`Session`, `Account`, `Verification`, `RateLimit`) and the new `User` columns, filling them for the users that already exist; `User.passwordHash` becomes optional
+   - Environment variables `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` in `.env.example` and in each Vercel project
+   - Validation of username, e-mail and password with one message per field, and unit tests
+   - `POST /api/register`: JSON and same-origin only, validate, count the attempt (20 per 10 minutes per address), check every taken field, sign the user up through the library and start the session
 2. **Registration page** · covers AC1, AC2, AC3 · depends on: Registration API
    - Form with field errors from the API
 
@@ -138,18 +142,22 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Notes**
 
-- The current demo user bar must go away. The seed users have a fake hash (`hash_demo_12345`), so they cannot log in. The seed must create them with a real hash (see US-B2-01).
+- The current demo user bar must go away. The seed users have a fake hash (`hash_demo_12345`) and no library account, so they cannot log in. The seed must create them through the library (see US-B2-01).
+- Sessions are kept in the database, last 7 days and can be revoked (ADR-009). Sign-in attempts are rate limited by the library in every environment (3 by e-mail per 10 seconds), with the counters stored in the database.
+- The browser client of the library (`src/lib/auth-client.ts`, `createAuthClient` with the username plugin) is created in the login issue, where it is first used. Registration does not use it: the library's own sign-up path is closed.
 - The reviews endpoint today takes the user id from the request body, and creates the demo users on the fly. Both must change.
 
 **Issues**
 
 1. **Session and write-endpoint guard** · covers AC4, AC5 · depends on: Registration API
-   - Session creation and reading on the server
-   - Helper that returns the current user or 401
-   - Move the reviews endpoint to the session user and remove the on-the-fly demo user creation
+   - Helper that returns the current user or 401, from `auth.api.getSession({ headers })` (the library reads and checks the session)
+   - Refuse write requests whose `Origin` is not this site, with `isAllowedOrigin` (`src/domain/identity/origin.ts`)
+   - Move the reviews endpoint to the session user and remove the on-the-fly demo user creation, including the `name` line added for the new required column
    - Unit tests for the ownership rule
 2. **Login and logout API and UI** · covers AC1, AC2, AC3 · depends on: Session and write-endpoint guard
-   - Login and logout endpoints
+   - Create `src/lib/auth-client.ts` (`createAuthClient` with the username plugin) where it is first used
+   - Login with e-mail or username: the form picks the library call by the presence of "@", and shows the same error for any wrong credentials
+   - Logout with the library's sign-out
    - Login page, username in the header, log out button
    - Replace the demo user bar
 
@@ -219,7 +227,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Business rules**
 
 - Each place's `averageRating`, `reviewCount` and `priceLevel` are calculated from its reviews with the same functions the app uses.
-- Seed passwords are hashed with the same helper as registration.
+- Seed users are created through the library's password hashing (and its `Account` row), so they can log in like any user. The demo users already in the dev and prod databases get a credential account too, not only new rows.
 - No user reviews the same place twice (the rule of US-C1-01), so the seed needs at least as many demo users as the most-reviewed place has reviews.
 
 **Out of scope**
@@ -236,6 +244,10 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Seed with real hashes and rerunnable** · covers AC3, AC4 · depends on: Registration API
+   - Create the demo users with the library's password hashing and an `Account` row, and set the required `name` and `displayUsername`
+   - Give the demo users already in the databases a credential account (dev now, prod with the team's approval)
+   - Make the seed rerunnable and document the demo password in the README
+   - Drop `User.passwordHash` in a new migration, after the seed and the reviews endpoint (US-A1-02) no longer write it
 2. **Enough reviews for every city** · covers AC1, AC2 · depends on: Import the three MVP cities
 3. **Demo users and reviews without duplicates** · covers AC2 · depends on: none
    - More demo users, each reviewing a place at most once

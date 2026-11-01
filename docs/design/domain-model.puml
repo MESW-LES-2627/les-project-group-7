@@ -40,6 +40,8 @@ class User #F5F5F5 {
 note bottom of User
   A user with role ADMIN is also the
   moderator of place suggestions.
+  Passwords and sessions are kept by the
+  authentication library, not in the model.
 end note
 
 enum PriceLevel <<enumeration>> #FFFFFF {

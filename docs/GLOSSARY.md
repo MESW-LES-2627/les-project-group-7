@@ -238,3 +238,24 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 - **Policy:** a business rule that links one aggregate to another: "whenever this event happens, do this command" (purple).
 - **Aggregate:** a cluster of objects that change together, with one root. The aggregates are User, Trip, Place, Review, Saved places, List, Published itinerary, Reminder and Place suggestion.
 - **Read model / query:** something the user sees that is not an event, for example _top-rated places_.
+
+---
+
+## 10. Identity & Access (ADR-009)
+
+### User
+
+- **Definition:** A person with an account.
+- **Key Attributes:** `id`, `username` (3 to 30 characters, letters, numbers, underscores and dots; stored in lower case and unique), `displayUsername` (what the person typed, shown in the app), `email` (stored in lower case and unique), `role` (`USER` | `ADMIN`), `registeredAt`. The table also has `name` (always the username) and `emailVerified` (always false in the MVP), which the authentication library needs.
+- **Rules:** a user can only change their own data. A `role` cannot be set by the user.
+
+### Registration
+
+- **Definition:** The command that creates an account and logs the person in (`POST /api/register`). Its event is _User registered_.
+- **Rules:** the password has 8 to 128 characters and is never trimmed; the e-mail must look like an e-mail (it is not verified); every wrong field gets its own message; a taken username or e-mail is named, and all taken fields are reported together; only the site's own pages may call it (JSON body, same `Origin`); at most 20 well-formed attempts per 10 minutes per address.
+- **Out of scope:** e-mail verification, password reset, social login, two-factor authentication.
+
+### Account and Session
+
+- **Definition:** The authentication library keeps two kinds of rows that are not part of the domain model. An _Account_ holds the password of a user as a salted scrypt hash (`providerId` `credential`). A _Session_ is a login: a random token valid for 7 days, stored in the database, sent to the browser in an `HttpOnly` cookie, and ended by logging out.
+- **Rules:** the current user is the one the session belongs to, and the guard of every write endpoint reads it from the session, never from the request body. Signing in is limited to 3 attempts by e-mail per 10 seconds. A wrong password and an unknown user get the same answer.

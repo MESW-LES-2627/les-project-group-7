@@ -33,7 +33,7 @@ component "Web App\n(browser UI, map)" as web #D6ECFA
 package "Backend" as backend {
   interface "REST API" as api
 
-  component "Identity\n(users, auth, roles)" as identity
+  component "Identity\n(users, auth, roles)\nBetter Auth library" as identity
   component "Place Catalog\n(places, import,\nopening hours, visited, rating,\ntop-rated)" as catalog
   component "Reviews\n(post, edit, delete,\nprice level)" as reviews
   component "Saved Places\n(wishlist, bookmarks, lists)" as saved
@@ -80,8 +80,8 @@ reminders --> notif : send reminder
 backend --> db : reads / writes
 
 note right of web
-  Every component authenticates
-  its calls through Identity.
+  Every write action authenticates
+  through Identity (reading is public).
   One Next.js app: React UI plus
   server-side modules. PostgreSQL
   through Prisma.
