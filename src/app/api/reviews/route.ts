@@ -65,8 +65,7 @@ export async function GET(request: Request) {
  * 4. Recalculates arithmetic average rating and review counts.
  */
 export async function POST(request: Request) {
-  // Step 0: Only a logged-in user, from this site's own pages, may write. This comes first, so an
-  // anonymous request reads no body and touches no table.
+  // Step 0: Only a logged-in user, from this site's own pages, may write.
   const guard = await requireUser(request);
   if (!guard.ok) return guard.response;
   const authorId = guard.user.id;
