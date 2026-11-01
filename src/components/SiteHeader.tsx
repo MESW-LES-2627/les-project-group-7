@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Compass } from "lucide-react";
 import { auth } from "@/lib/auth";
 import LogoutButton from "@/components/LogoutButton";
+import ThemeToggle from "@/components/ThemeToggle";
 
 /**
  * Top bar on every page. Logged out: links to the login and registration pages.
@@ -29,6 +30,7 @@ export default async function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {session ? (
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-slate-700">
