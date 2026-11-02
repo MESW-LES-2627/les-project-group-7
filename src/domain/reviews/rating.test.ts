@@ -5,6 +5,9 @@ import {
   calculateAverageCostPoints,
   isPriceLevel,
   PRICE_LEVELS,
+  RATING_SCORE_C,
+  RATING_SCORE_M,
+  ratingScore,
 } from "./rating";
 
 describe("Rating calculations", () => {
@@ -85,5 +88,63 @@ describe("PriceLevel domain constants and type guard", () => {
     expect(isPriceLevel(null)).toBe(false);
     expect(isPriceLevel(undefined)).toBe(false);
     expect(isPriceLevel(123)).toBe(false);
+  });
+});
+
+describe("Rating score (weighted rating, ADR-008)", () => {
+  it("uses the constants of the ADR", () => {
+    expect(RATING_SCORE_M).toBe(3);
+    expect(RATING_SCORE_C).toBe(4.0);
+  });
+
+  it("gives 4.25 to 1 review of 5", () => {
+    expect(ratingScore(5, 1)).toBe(4.25);
+  });
+
+  it("gives 4.5 to 3 reviews of 5", () => {
+    expect(ratingScore(5, 3)).toBe(4.5);
+  });
+
+  it("gives 4.75 to 50 reviews averaging 4.8", () => {
+    expect(ratingScore(4.8, 50)).toBe(4.75);
+  });
+
+  it("ranks 50 reviews averaging 4.8 above 1 review of 5", () => {
+    expect(ratingScore(4.8, 50)!).toBeGreaterThan(ratingScore(5, 1)!);
+  });
+
+  it("pulls a low average up towards 4.0 and keeps a few bad reviews low", () => {
+    expect(ratingScore(1, 1)).toBe(3.25);
+    expect(ratingScore(1, 50)).toBeLessThan(ratingScore(1, 1)!);
+  });
+
+  it("is the prior when the average equals it, whatever the count", () => {
+    expect(ratingScore(4, 1)).toBe(4);
+    expect(ratingScore(4, 200)).toBe(4);
+  });
+
+  it("approaches the plain average as the reviews grow", () => {
+    expect(ratingScore(4.8, 100000)).toBeCloseTo(4.8, 1);
+  });
+
+  it("has no score for a place without reviews", () => {
+    expect(ratingScore(null, 0)).toBeNull();
+    expect(ratingScore(undefined, undefined)).toBeNull();
+    expect(ratingScore(4.5, 0)).toBeNull();
+  });
+
+  it("has no score for an average outside 1..5 or a count that is not a number", () => {
+    expect(ratingScore(0, 3)).toBeNull();
+    expect(ratingScore(5.5, 3)).toBeNull();
+    expect(ratingScore(Number.NaN, 3)).toBeNull();
+    expect(ratingScore(4.5, Number.NaN)).toBeNull();
+    expect(ratingScore(4.5, -2)).toBeNull();
+  });
+
+  it("is rounded to 2 decimals", () => {
+    // 2 reviews averaging 4.3: (2/5)*4.3 + (3/5)*4 = 4.12
+    expect(ratingScore(4.3, 2)).toBe(4.12);
+    // 7 reviews averaging 3.7: (7/10)*3.7 + (3/10)*4 = 3.79
+    expect(ratingScore(3.7, 7)).toBe(3.79);
   });
 });

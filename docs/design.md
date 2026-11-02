@@ -372,6 +372,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ one review cannot outrank many, a place moves smoothly as it gets reviews, and the rule is one small pure function that is easy to unit test.
   - _Trade-offs:_ two constants (`m` and `C`) to explain. The order can differ from the order of the displayed averages, so the page shows the number of reviews next to the average. If the catalog gets many more reviews, `C` can become the real average of all reviews.
+  - _Revisit:_ `m = 3` and `C = 4.0` fit today's data, where most places have 0 to 2 reviews. When the seed or real use adds many more users and reviews, check them again: `m` should be about the number of reviews that a typical reviewed place has, and `C` the average of all the reviews of the catalog. Reviews that we write in the seed do not count for `C`, because we chose their ratings. Changing them means changing the constants in `src/domain/reviews/rating.ts`, the expected numbers in `rating.test.ts`, and the values and examples (1 review of 5 gives 4.25, and so on) in this ADR, [GLOSSARY.md](GLOSSARY.md), [mvp.md](mvp.md) and [user-stories.md](user-stories.md) (US-B6-01).
 
 ### ADR-009: Authentication with Better Auth
 
