@@ -3,15 +3,14 @@
 import { useState } from "react";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import type { ReviewItem } from "@/components/ReviewModal";
-import type { SessionUser } from "@/components/UserSessionBar";
 
 interface UsePlaceReviewsOptions {
-  currentUser: SessionUser;
+  currentUsername: string | null;
   onPlaceUpdated: (updatedPlace: PlaceItem, createdReview?: ReviewItem) => void;
 }
 
 export function usePlaceReviews({
-  currentUser,
+  currentUsername,
   onPlaceUpdated,
 }: UsePlaceReviewsOptions) {
   const [activeReviewPlace, setActiveReviewPlace] = useState<PlaceItem | null>(
@@ -72,7 +71,6 @@ export function usePlaceReviews({
           placeId: activeReviewPlace.id,
           rating,
           text: comment,
-          userId: currentUser.id,
           place: {
             name: activeReviewPlace.name,
             address: activeReviewPlace.address,
@@ -101,7 +99,7 @@ export function usePlaceReviews({
 
       if (createdReview) {
         setReviewsList((prev) => [
-          { ...createdReview, user: { username: currentUser.username } },
+          { ...createdReview, user: { username: currentUsername ?? "" } },
           ...prev,
         ]);
       }

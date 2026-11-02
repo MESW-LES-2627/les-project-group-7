@@ -4,10 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";
 import { Button } from "@/components/ui/button";
-import UserSessionBar, {
-  type SessionUser,
-  AVAILABLE_USERS,
-} from "./UserSessionBar";
 import MapExplorerCard from "./MapExplorerCard";
 import PlaceGrid from "./PlaceGrid";
 import PlaceDataTable from "./PlaceDataTable";
@@ -25,11 +21,11 @@ const PAGE_SIZE = 18;
 export default function PlaceExplorer({
   initialPlaces,
   initialCities = [],
-  initialUser = AVAILABLE_USERS[0],
+  currentUsername,
 }: {
   initialPlaces: PlaceItem[];
   initialCities?: CityOption[];
-  initialUser?: SessionUser;
+  currentUsername: string | null;
 }) {
   // ── 1. Catalog & OSM integration ───────────────────────────────────────────
   const [places, setPlaces] = useState<PlaceItem[]>(initialPlaces);
@@ -41,7 +37,6 @@ export default function PlaceExplorer({
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
-  const [currentUser, setCurrentUser] = useState<SessionUser>(initialUser);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -127,7 +122,7 @@ export default function PlaceExplorer({
     closeReviewModal,
     handleSubmitReview,
   } = usePlaceReviews({
-    currentUser,
+    currentUsername,
     onPlaceUpdated: handlePlaceUpdated,
   });
 
@@ -190,13 +185,6 @@ export default function PlaceExplorer({
 
   return (
     <div className="space-y-8">
-      {/* ── 1. User Session Bar ───────────────────────────────────────────── */}
-      <UserSessionBar
-        currentUser={currentUser}
-        availableUsers={AVAILABLE_USERS}
-        onSelectUser={setCurrentUser}
-      />
-
       {/* ── 2. Map Explorer & City Selector ──────────────────────────────── */}
       <MapExplorerCard
         places={mapPlaces}
@@ -273,7 +261,7 @@ export default function PlaceExplorer({
       {/* ── 4. Review Dialog ─────────────────────────────────────────────── */}
       <ReviewModal
         place={activeReviewPlace}
-        currentUser={currentUser}
+        currentUsername={currentUsername}
         reviews={reviewsList}
         isLoadingReviews={isLoadingReviews}
         isSubmitting={isSubmitting}

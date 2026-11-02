@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Star,
   User,
@@ -32,7 +33,6 @@ import {
 } from "@/components/ui/dialog";
 import type { PlaceItem } from "./PlaceExplorer";
 import { getCategoryConfig } from "@/domain/catalog/categories";
-import type { SessionUser } from "./UserSessionBar";
 
 export interface ReviewItem {
   id: string;
@@ -46,7 +46,7 @@ export interface ReviewItem {
 
 interface ReviewModalProps {
   place: PlaceItem | null;
-  currentUser: SessionUser;
+  currentUsername: string | null;
   reviews: ReviewItem[];
   isLoadingReviews: boolean;
   isSubmitting: boolean;
@@ -63,7 +63,7 @@ export function formatPrice(priceLevel: string | null | undefined): string {
 
 export default function ReviewModal({
   place,
-  currentUser,
+  currentUsername,
   reviews,
   isLoadingReviews,
   isSubmitting,
@@ -116,17 +116,17 @@ export default function ReviewModal({
         </DialogHeader>
 
         {/* Active user session */}
-        <Card className="mt-4 border-slate-200/80 bg-slate-50">
-          <CardContent className="flex items-center gap-2 p-2.5 text-xs text-slate-700">
-            <User className="h-4 w-4 text-indigo-600" />
-            <span>
-              Posting as:{" "}
-              <strong className="text-slate-900">
-                @{currentUser.username}
-              </strong>
-            </span>
-          </CardContent>
-        </Card>
+        {currentUsername && (
+          <Card className="mt-4 border-slate-200/80 bg-slate-50">
+            <CardContent className="flex items-center gap-2 p-2.5 text-xs text-slate-700">
+              <User className="h-4 w-4 text-indigo-600" />
+              <span>
+                Posting as:{" "}
+                <strong className="text-slate-900">@{currentUsername}</strong>
+              </span>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Feedback Alerts */}
         {submitSuccess && (
@@ -144,73 +144,84 @@ export default function ReviewModal({
         )}
 
         {/* Review Form */}
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <div>
-            <Label htmlFor="star-rating">Rating (1 to 5 stars)</Label>
-            <div className="flex items-center gap-1.5" id="star-rating">
-              {[1, 2, 3, 4, 5].map((starValue) => (
-                <Button
-                  type="button"
-                  key={starValue}
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setRating(starValue)}
-                  onMouseEnter={() => setHoverRating(starValue)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="h-9 w-9 text-slate-300 hover:text-amber-400"
-                  title={`${starValue} stars`}
-                >
-                  <Star
-                    className={`h-7 w-7 ${
-                      starValue <= (hoverRating || rating)
-                        ? "fill-amber-400 text-amber-400"
-                        : "text-slate-300"
-                    } transition-transform active:scale-90`}
-                  />
-                </Button>
-              ))}
-              <span className="ml-2 text-sm font-bold text-slate-700">
-                {rating} / 5
-              </span>
+        {currentUsername ? (
+          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <div>
+              <Label htmlFor="star-rating">Rating (1 to 5 stars)</Label>
+              <div className="flex items-center gap-1.5" id="star-rating">
+                {[1, 2, 3, 4, 5].map((starValue) => (
+                  <Button
+                    type="button"
+                    key={starValue}
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setRating(starValue)}
+                    onMouseEnter={() => setHoverRating(starValue)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="h-9 w-9 text-slate-300 hover:text-amber-400"
+                    title={`${starValue} stars`}
+                  >
+                    <Star
+                      className={`h-7 w-7 ${
+                        starValue <= (hoverRating || rating)
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-300"
+                      } transition-transform active:scale-90`}
+                    />
+                  </Button>
+                ))}
+                <span className="ml-2 text-sm font-bold text-slate-700">
+                  {rating} / 5
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="review-comment">Comment (optional)</Label>
-            <Textarea
-              id="review-comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={3}
-              placeholder="Share tips, favorite highlights, or best visiting hours..."
-            />
-          </div>
+            <div>
+              <Label htmlFor="review-comment">Comment (optional)</Label>
+              <Textarea
+                id="review-comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={3}
+                placeholder="Share tips, favorite highlights, or best visiting hours..."
+              />
+            </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              className="text-xs"
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onClose}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="gap-1.5 text-xs"
+              >
+                {isSubmitting ? (
+                  "Saving..."
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5" />
+                    Submit Review
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        ) : (
+          <p className="mt-5 text-xs text-slate-600">
+            <Link
+              href="/login"
+              className="font-medium text-indigo-600 hover:underline"
             >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="gap-1.5 text-xs"
-            >
-              {isSubmitting ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Send className="h-3.5 w-3.5" />
-                  Submit Review
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+              Log in to review
+            </Link>
+          </p>
+        )}
 
         {/* Historical Reviews */}
         <Separator className="mt-6" />

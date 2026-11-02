@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PlaceExplorer from "@/components/PlaceExplorer";
 
@@ -60,10 +62,25 @@ export default async function Home() {
     count: city._count.places,
   }));
 
+  // A database failure must not take down the page: treat the visitor as logged out.
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch((error) => {
+      console.error("getSession failed:", error);
+      return null;
+    });
+  const currentUsername = session
+    ? (session.user.displayUsername ?? session.user.username ?? null)
+    : null;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <main>
-        <PlaceExplorer initialPlaces={places} initialCities={cities} />
+        <PlaceExplorer
+          initialPlaces={places}
+          initialCities={cities}
+          currentUsername={currentUsername}
+        />
       </main>
     </div>
   );
