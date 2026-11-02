@@ -19,7 +19,6 @@ export function isPriceLevel(value: unknown): value is PriceLevel {
 
 /**
  * Calculates the arithmetic mean rating rounded to 1 decimal place.
- * Employs single-pass O(N) iteration with O(1) memory overhead.
  * Returns null if no valid ratings in range [1, 5] are provided.
  */
 export function calculateAverageRating(
@@ -61,9 +60,6 @@ export const RATING_SCORE_C = 4.0;
  * The number that ranks places (ADR-008, the weighted rating, a Bayesian average):
  * `(n / (n + m)) * average + (m / (n + m)) * C`, rounded to 2 decimals. One review cannot outrank
  * many: 1 review of 5 scores 4.25, and 50 reviews averaging 4.8 score 4.75.
- *
- * Returns null when there is nothing to score: no reviews, or an average that is missing or
- * outside 1..5. Such a place has no score and is ranked after every rated place.
  */
 export function ratingScore(
   average: number | null | undefined,
@@ -87,10 +83,9 @@ export function ratingScore(
 }
 
 /**
- * Calculates the statistical mode (most frequent value) of review price levels.
+ * Calculates the statistical mode of review price levels.
  * In case of a tie between equally frequent levels, the lower price level is
- * chosen (conservative estimate).
- * O(N) single-pass frequency count without intermediate array allocations.
+ * chosen.
  */
 export function calculatePriceLevelMode(
   levels?: readonly (string | null | undefined)[] | null
@@ -139,8 +134,7 @@ export function calculatePriceLevelMode(
 
 /**
  * Calculates the average cost points for a set of stops on a day.
- * Single-pass accumulator with O(1) memory overhead.
- * Safe type narrowing using `isPriceLevel` type guard (no `as PriceLevel` cast).
+ * Safe type narrowing using `isPriceLevel` type guard.
  */
 export function calculateAverageCostPoints(
   stops?: readonly { readonly priceLevel?: string | null }[] | null
