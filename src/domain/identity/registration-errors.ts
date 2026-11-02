@@ -74,6 +74,24 @@ export function registrationFailureFromCode(
   return FAILURES[code] ?? null;
 }
 
+/**
+ * The message above the form when a registration fails with no message for a field (a field error
+ * is shown under its field). A refused request (403) gets a text that is true on every address;
+ * otherwise the server's own message, or a generic one when there is none.
+ */
+export function registrationFormMessage(
+  status: number,
+  serverMessage: unknown
+): string {
+  if (status === 403) {
+    return "Request blocked: open the site at its official address and try again";
+  }
+  if (typeof serverMessage === "string" && serverMessage !== "") {
+    return serverMessage;
+  }
+  return "Registration failed, try again";
+}
+
 export function findTakenFields(
   existing: ReadonlyArray<{ username: string; email: string }>,
   wanted: { username: string; email: string }

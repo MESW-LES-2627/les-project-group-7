@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   registrationFailureFromCode,
   findTakenFields,
+  registrationFormMessage,
 } from "./registration-errors";
 
 describe("registrationFailureFromCode", () => {
@@ -107,5 +108,30 @@ describe("findTakenFields", () => {
         wanted
       )
     ).toEqual(expected);
+  });
+});
+
+describe("registrationFormMessage", () => {
+  it("tells a refused request (403) to use the official address, whatever the server said", () => {
+    const text = registrationFormMessage(403, "Invalid origin");
+    expect(text).toMatch(/official address/);
+    expect(text).not.toMatch(/localhost/);
+  });
+
+  it("shows the server's own message for the other failures", () => {
+    expect(
+      registrationFormMessage(429, "Too many attempts, try again later")
+    ).toBe("Too many attempts, try again later");
+    expect(
+      registrationFormMessage(415, "Content-Type must be application/json")
+    ).toBe("Content-Type must be application/json");
+  });
+
+  it("falls back to a generic message when the server sent none", () => {
+    for (const message of [undefined, null, "", 42, {}]) {
+      expect(registrationFormMessage(500, message)).toBe(
+        "Registration failed, try again"
+      );
+    }
   });
 });
