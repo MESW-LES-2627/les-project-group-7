@@ -1,8 +1,79 @@
 import { PrismaClient, PlaceCategory } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
+import { randomUUID } from "crypto";
+import { hashPassword } from "better-auth/crypto";
+import {
+  DEMO_USERS,
+  demoPassword,
+  type DemoUser,
+} from "../src/domain/identity/demo-users";
 
 const prisma = new PrismaClient();
+
+/**
+ * Creates the demo user, or fixes the one already in the database, and gives it a login: the
+ * authentication library (ADR-009) keeps the password in `Account`, hashed with its own function.
+ * The salt is new on every run, so a rerun also resets the password to the documented one.
+ */
+async function ensureDemoUser(user: DemoUser, password: string) {
+  const saved = await prisma.user.upsert({
+    where: { email: user.email },
+    update: { name: user.username, displayUsername: user.username },
+    create: {
+      id: user.id,
+      username: user.username,
+      displayUsername: user.username,
+      name: user.username,
+      email: user.email,
+      role: "USER",
+    },
+  });
+
+  const hash = await hashPassword(password);
+  const account = await prisma.account.findFirst({
+    where: { userId: saved.id, providerId: "credential" },
+  });
+  if (account) {
+    await prisma.account.update({
+      where: { id: account.id },
+      data: { password: hash },
+    });
+  } else {
+    await prisma.account.create({
+      data: {
+        id: randomUUID(),
+        accountId: saved.id,
+        providerId: "credential",
+        userId: saved.id,
+        password: hash,
+      },
+    });
+  }
+  return saved;
+}
+
+/**
+ * Replaces the sample reviews of the demo users on one place, so running the seed again does not
+ * duplicate them. Reviews written by other users are not touched.
+ */
+async function replaceDemoReviews(
+  placeId: string,
+  demoUserIds: string[],
+  reviews: {
+    userId: string;
+    rating: number;
+    priceLevel: string;
+    text: string;
+  }[]
+) {
+  await prisma.review.deleteMany({
+    where: { placeId, userId: { in: demoUserIds } },
+  });
+  await prisma.review.createMany({
+    data: reviews.map((review) => ({ ...review, placeId })),
+  });
+}
 
 interface RawPlace {
   osmId: string;
@@ -108,35 +179,16 @@ async function main() {
     `Cities created: ${porto.name}, ${lisboa.name}, ${madrid.name}, ${paris.name}, ${roma.name}, ${berlim.name}, ${londres.name}`
   );
 
-  // 2. Create Demo Users
-  const demoUser = await prisma.user.upsert({
-    where: { email: "demo@tripbook.pt" },
-    update: {},
-    create: {
-      id: "demo-user-1",
-      username: "viajante_porto",
-      name: "viajante_porto", // required by the authentication library; replaced by the seed of #19
-      email: "demo@tripbook.pt",
-      passwordHash: "hash_demo_12345",
-      role: "USER",
-    },
-  });
-
-  const demoUser2 = await prisma.user.upsert({
-    where: { email: "ana@tripbook.pt" },
-    update: {},
-    create: {
-      id: "demo-user-2",
-      username: "ana_exploradora",
-      name: "ana_exploradora", // required by the authentication library; replaced by the seed of #19
-      email: "ana@tripbook.pt",
-      passwordHash: "hash_demo_12345",
-      role: "USER",
-    },
-  });
+  // 2. Create Demo Users, with a password they can log in with (US-B2-01)
+  const password = demoPassword(process.env.DEMO_PASSWORD);
+  const [demoUser, demoUser2] = [
+    await ensureDemoUser(DEMO_USERS[0], password),
+    await ensureDemoUser(DEMO_USERS[1], password),
+  ];
+  const demoUserIds = [demoUser.id, demoUser2.id];
 
   console.log(
-    `Test users created: ${demoUser.username}, ${demoUser2.username}`
+    `Test users created: ${demoUser.username}, ${demoUser2.username} (they log in with the demo password)`
   );
 
   // 3. Import OpenStreetMap Places from JSON
@@ -588,8 +640,6 @@ async function main() {
         openingHours: ep.openingHours,
         priceLevel: ep.priceLevel,
         cityId: ep.cityId,
-        averageRating: ep.rating,
-        reviewCount: 1,
       },
       create: {
         osmId: ep.osmId,
@@ -608,15 +658,14 @@ async function main() {
       },
     });
 
-    await prisma.review.create({
-      data: {
+    await replaceDemoReviews(created.id, demoUserIds, [
+      {
         userId: demoUser.id,
-        placeId: created.id,
         rating: Math.round(ep.rating),
         priceLevel: ep.priceLevel,
         text: ep.comment,
       },
-    });
+    ]);
   }
 
   console.log(
@@ -1139,8 +1188,6 @@ async function main() {
         openingHours: pf.openingHours,
         priceLevel: pf.priceLevel,
         cityId: pf.cityId,
-        averageRating: avg,
-        reviewCount: count,
       },
       create: {
         osmId: pf.osmId,
@@ -1159,18 +1206,16 @@ async function main() {
       },
     });
 
-    for (let i = 0; i < pf.reviews.length; i++) {
-      const r = pf.reviews[i];
-      await prisma.review.create({
-        data: {
-          userId: i % 2 === 0 ? demoUser.id : demoUser2.id,
-          placeId: place.id,
-          rating: r.rating,
-          priceLevel: r.price,
-          text: r.text,
-        },
-      });
-    }
+    await replaceDemoReviews(
+      place.id,
+      demoUserIds,
+      pf.reviews.map((r, i) => ({
+        userId: i % 2 === 0 ? demoUser.id : demoUser2.id,
+        rating: r.rating,
+        priceLevel: r.price,
+        text: r.text,
+      }))
+    );
   }
 
   console.log("Seed completed successfully!");

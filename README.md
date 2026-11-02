@@ -104,6 +104,8 @@ npm run seed
 
 `npm run import:osm` additionally imports Porto places from OpenStreetMap (optional).
 
+**Demo users.** The seed creates two users that can log in like any other: `viajante_porto` and `ana_exploradora`, both with the password `tripbook-demo`. To use another password, run the seed with `DEMO_PASSWORD` set (8 to 128 characters), for example `DEMO_PASSWORD=another-password npm run seed`. The seed can be run again at any time: it does not duplicate anything, it puts the demo password back and it replaces only the sample reviews of the two demo users, so reviews written by other users are kept.
+
 ### 2. Running Tests
 
 Run unit tests for domain services (pure functions):
