@@ -54,8 +54,9 @@ async function ensureDemoUser(user: DemoUser, password: string) {
 }
 
 /**
- * Replaces the sample reviews of the demo users on one place, so running the seed again does not
- * duplicate them. Reviews written by other users are not touched.
+ * Replaces the sample reviews that this seed wrote on one place, so running it again does not
+ * duplicate them. A review is "ours" when it has the same place, a demo user and the same text.
+ * Any other review stays, also one that someone wrote in the app while logged in as a demo user.
  */
 async function replaceDemoReviews(
   placeId: string,
@@ -68,7 +69,11 @@ async function replaceDemoReviews(
   }[]
 ) {
   await prisma.review.deleteMany({
-    where: { placeId, userId: { in: demoUserIds } },
+    where: {
+      placeId,
+      userId: { in: demoUserIds },
+      text: { in: reviews.map((review) => review.text) },
+    },
   });
   await prisma.review.createMany({
     data: reviews.map((review) => ({ ...review, placeId })),
