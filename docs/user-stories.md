@@ -144,7 +144,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 - The current demo user bar must go away. The seed users have a fake hash (`hash_demo_12345`) and no library account, so they cannot log in. The seed must create them through the library (see US-B2-01).
 - Sessions are kept in the database, last 7 days and can be revoked (ADR-009). Sign-in attempts are rate limited by the library in every environment (3 by e-mail per 10 seconds), with the counters stored in the database.
-- The browser client of the library (`src/lib/auth-client.ts`, `createAuthClient` with the username plugin) is created in the login issue, where it is first used. Registration does not use it: the library's own sign-up path is closed.
+- There is no browser client of the library (`createAuthClient`): the login form and the log out button call the library's endpoints with `fetch`. Registration does not use the library's endpoints: its own sign-up path is closed.
 - The reviews endpoint today takes the user id from the request body, and creates the demo users on the fly. Both must change.
 
 **Issues**
@@ -155,7 +155,6 @@ This file is the draft that the GitHub issues are created from. Once the issues 
    - Move the reviews endpoint to the session user and remove the on-the-fly demo user creation, including the `name` line added for the new required column
    - Unit tests for the ownership rule
 2. **Login and logout API and UI** · covers AC1, AC2, AC3 · depends on: Session and write-endpoint guard
-   - Create `src/lib/auth-client.ts` (`createAuthClient` with the username plugin) where it is first used
    - Login with e-mail or username: the form picks the library call by the presence of "@", and shows the same error for any wrong credentials
    - Logout with the library's sign-out
    - Login page, username in the header, log out button

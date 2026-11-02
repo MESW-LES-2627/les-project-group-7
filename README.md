@@ -67,11 +67,14 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
     │   ├── api/health/     # GET /api/health
+    │   ├── register/       # Registration page
+    │   ├── login/          # Login page
+    │   ├── layout.tsx      # Page shell: top bar (SiteHeader) and theme
     │   └── page.tsx        # Main tracer bullet UI
-    ├── components/         # MapComponent, MapWrapper, PlaceExplorer, ui/ (Shadcn)
+    ├── components/         # Map and place explorer (PlaceExplorer, ReviewModal, ...), SiteHeader, LogoutButton, ThemeToggle, ui/ (Shadcn)
     ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog, identity)
     ├── hooks/              # React hooks (place filtering, place reviews)
-    ├── lib/                # Prisma client singleton, Better Auth setup (auth.ts), registration rate limit & cn utility
+    ├── lib/                # Prisma client singleton, Better Auth setup (auth.ts), the write-endpoint guard (guard.ts), registration rate limit & cn utility
     └── types/              # Shared TypeScript types
 ```
 
@@ -149,7 +152,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Key Features in Tracer Bullet
 
 - **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
-- **Accounts:** Registration (`/register`, `POST /api/register`), login by username or e-mail (`/login`) and logout, with Better Auth behind them. The top bar shows the logged-in username. The review form shows the logged-in username and asks logged-out visitors to log in. The reviews endpoint moves to the session in #14.
+- **Accounts:** Registration (`/register`, `POST /api/register`), login by username or e-mail (`/login`) and logout, with Better Auth behind them. The top bar shows the logged-in username. The review form shows the logged-in username and asks logged-out visitors to log in. Posting a review needs a logged-in user, and the author is always the user of the session (the reviews endpoint ignores any `userId` sent by the client).
+- **Dark mode:** The site opens in dark mode. The sun/moon button in the top bar switches the theme, and the choice is remembered in the browser. It has no user story of its own.
 - **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. Not built yet: price level on reviews and its recalculation, showing visited places after a page reload, and editing or deleting a review.
 - **OpenStreetMap Places:** Interactive Leaflet map with places loaded into PostgreSQL by the seed and import scripts, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
 - **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.

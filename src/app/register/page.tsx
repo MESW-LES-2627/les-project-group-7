@@ -20,6 +20,7 @@ import {
   type RegistrationErrors,
   type RegistrationField,
 } from "@/domain/identity/registration";
+import { registrationFormMessage } from "@/domain/identity/registration-errors";
 
 const FIELDS: {
   name: RegistrationField;
@@ -88,9 +89,7 @@ export default function RegisterPage() {
       }
       const data = await res.json().catch(() => ({}));
       if (data.errors) setErrors(data.errors);
-      else if (res.status === 403)
-        setFormError("Request blocked: open the site at http://localhost:3000");
-      else setFormError(data.error ?? "Registration failed, try again");
+      else setFormError(registrationFormMessage(res.status, data.error));
     } catch {
       setFormError("Could not reach the server, try again");
     }
