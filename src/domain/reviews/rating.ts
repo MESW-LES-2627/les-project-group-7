@@ -49,7 +49,8 @@ export function calculateAverageRating(
 
 /**
  * Weight of the prior in the rating score (ADR-008): a place needs about this many reviews before
- * its own average counts as much as the prior.
+ * its own average counts as much as the prior. Revisit it, and C, when the catalog gets many more
+ * reviews (see "Revisit" in ADR-008).
  */
 export const RATING_SCORE_M = 3;
 
