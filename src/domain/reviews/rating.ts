@@ -49,6 +49,44 @@ export function calculateAverageRating(
 }
 
 /**
+ * Weight of the prior in the rating score (ADR-008): a place needs about this many reviews before
+ * its own average counts as much as the prior.
+ */
+export const RATING_SCORE_M = 3;
+
+/** The prior of the rating score (ADR-008): the rating that a place with no reviews is assumed to have. */
+export const RATING_SCORE_C = 4.0;
+
+/**
+ * The number that ranks places (ADR-008, the weighted rating, a Bayesian average):
+ * `(n / (n + m)) * average + (m / (n + m)) * C`, rounded to 2 decimals. One review cannot outrank
+ * many: 1 review of 5 scores 4.25, and 50 reviews averaging 4.8 score 4.75.
+ *
+ * Returns null when there is nothing to score: no reviews, or an average that is missing or
+ * outside 1..5. Such a place has no score and is ranked after every rated place.
+ */
+export function ratingScore(
+  average: number | null | undefined,
+  count: number | null | undefined
+): number | null {
+  if (
+    average == null ||
+    count == null ||
+    !Number.isFinite(average) ||
+    !Number.isFinite(count) ||
+    count < 1 ||
+    average < 1 ||
+    average > 5
+  ) {
+    return null;
+  }
+
+  const weight = count / (count + RATING_SCORE_M);
+  const score = weight * average + (1 - weight) * RATING_SCORE_C;
+  return Number(score.toFixed(2));
+}
+
+/**
  * Calculates the statistical mode (most frequent value) of review price levels.
  * In case of a tie between equally frequent levels, the lower price level is
  * chosen (conservative estimate).
