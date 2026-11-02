@@ -1,4 +1,5 @@
-import { Compass } from "lucide-react";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PlaceExplorer from "@/components/PlaceExplorer";
 
@@ -61,17 +62,25 @@ export default async function Home() {
     count: city._count.places,
   }));
 
+  // A database failure must not take down the page: treat the visitor as logged out.
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch((error) => {
+      console.error("getSession failed:", error);
+      return null;
+    });
+  const currentUsername = session
+    ? (session.user.displayUsername ?? session.user.username ?? null)
+    : null;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-10 text-center">
-        <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
-          <Compass className="h-4 w-4" />
-          Tripbook
-        </div>
-      </header>
-
       <main>
-        <PlaceExplorer initialPlaces={places} initialCities={cities} />
+        <PlaceExplorer
+          initialPlaces={places}
+          initialCities={cities}
+          currentUsername={currentUsername}
+        />
       </main>
     </div>
   );

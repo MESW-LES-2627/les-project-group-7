@@ -26,7 +26,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
     >
       {/* Backdrop */}
       <div
-        className="backdrop-blur-xs fixed inset-0 bg-slate-950/50"
+        className="backdrop-blur-xs fixed inset-0 bg-black/60"
         onClick={() => onOpenChange?.(false)}
         aria-hidden="true"
       />
