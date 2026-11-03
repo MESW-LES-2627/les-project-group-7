@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * The card above the ranking: the city buttons, the search box, the category filter and the
+ * map. It only shows what it is given and reports changes; the state belongs to PlaceExplorer.
+ */
+
 import { MapPin, Loader2 } from "lucide-react";
 import MapWrapper from "./MapWrapper";
 import type { BoundingBox, MapPlace } from "./MapComponent";

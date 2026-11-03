@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Loads the Leaflet map (MapComponent) only in the browser, because Leaflet needs `window`,
+ * and shows a placeholder while it loads.
+ */
+
 import dynamic from "next/dynamic";
 import type { MapPlace, BoundingBox } from "./MapComponent";
 

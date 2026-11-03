@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * The main screen of the home page. It keeps the state of the explorer (the catalog, the
+ * selected city, the search text, the category, the visible map area and the page) and puts
+ * together the map card, the ranking (table or cards) and the review dialog. It also asks
+ * OpenStreetMap for the places of the visible map area, which are shown as discovered.
+ */
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";

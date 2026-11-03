@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * The ranking as cards: the same places as PlaceDataTable (category banner, name, price, rating,
+ * map and rate buttons) with the same page controls.
+ */
+
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

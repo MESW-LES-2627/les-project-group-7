@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * The log out button of the top bar. It calls the library's sign-out and refreshes the page,
+ * so the top bar shows the log in links again. If the call fails the button says so and can be retried.
+ */
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
