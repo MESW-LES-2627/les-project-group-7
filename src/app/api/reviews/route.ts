@@ -3,6 +3,7 @@ import { PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/guard";
 import { calculateAverageRating } from "@/domain/reviews/rating";
+import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
 
 /**
  * User-Defined Type Guard verifying if an unknown value is a valid Prisma PlaceCategory.
@@ -86,9 +87,23 @@ export async function POST(request: Request) {
     }
 
     // Step 2: On-the-fly ingestion of an OpenStreetMap place (if it is not in the database yet)
-    const existingPlace = await prisma.place.findUnique({
+    let targetPlaceId: string = placeId;
+    let existingPlace = await prisma.place.findUnique({
       where: { id: placeId },
     });
+
+    // A place found by the search or on the map can already be in the catalog, imported with the
+    // same OpenStreetMap id: the review goes to that place, not to a second copy of it
+    if (!existingPlace && typeof placeId === "string") {
+      const osmId = osmIdFromDiscoveredPlaceId(placeId);
+      const sameOsmPlace = osmId
+        ? await prisma.place.findUnique({ where: { osmId } })
+        : null;
+      if (sameOsmPlace) {
+        existingPlace = sameOsmPlace;
+        targetPlaceId = sameOsmPlace.id;
+      }
+    }
 
     if (!existingPlace && body.place) {
       let city = await prisma.city.findFirst({
@@ -114,9 +129,7 @@ export async function POST(request: Request) {
       await prisma.place.create({
         data: {
           id: placeId,
-          osmId: placeId.startsWith("osm-")
-            ? placeId.replace("osm-", "")
-            : body.place.osmId || undefined,
+          osmId: osmIdFromDiscoveredPlaceId(placeId) ?? undefined,
           name:
             typeof body.place.name === "string"
               ? body.place.name
@@ -148,7 +161,7 @@ export async function POST(request: Request) {
     const newReview = await prisma.review.create({
       data: {
         userId: authorId,
-        placeId,
+        placeId: targetPlaceId,
         rating: Math.round(rating),
         text: text || "",
       },
@@ -167,7 +180,7 @@ export async function POST(request: Request) {
       where: {
         userId_placeId: {
           userId: authorId,
-          placeId,
+          placeId: targetPlaceId,
         },
       },
       update: {
@@ -175,13 +188,13 @@ export async function POST(request: Request) {
       },
       create: {
         userId: authorId,
-        placeId,
+        placeId: targetPlaceId,
       },
     });
 
     // Step 5: Domain policy — recalculate the arithmetic mean of the ratings
     const allReviews = await prisma.review.findMany({
-      where: { placeId },
+      where: { placeId: targetPlaceId },
       select: { rating: true },
     });
 
@@ -193,7 +206,7 @@ export async function POST(request: Request) {
 
     // Step 6: Update the Place with the new average and count
     const updatedPlace = await prisma.place.update({
-      where: { id: placeId },
+      where: { id: targetPlaceId },
       data: {
         averageRating: newAvg,
         reviewCount: allReviews.length,
