@@ -45,9 +45,6 @@ model User {
   id           String       @id @default(uuid())
   username     String       @unique   // stored in lower case; displayUsername keeps what the person typed
   email        String       @unique   // stored in lower case
-  // Legacy: the password hash now lives in Account.password, kept by the authentication library
-  // (ADR-009). Optional until the seed and the reviews endpoint stop writing it; dropped later.
-  passwordHash String?
   role         Role         @default(USER)
   registeredAt DateTime     @default(now())
 
