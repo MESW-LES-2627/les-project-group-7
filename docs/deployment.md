@@ -97,10 +97,27 @@ Done on 31 Oct 2026 for the Better Auth migration (ADR-009).
 
 ## One-off data cleanups
 
-The seed only adds and updates: it never deletes places or cities. When the seed data loses
-rows, the rows that are already in a database stay until someone removes them with a statement like
-the ones below. Run them by hand with the direct connection string, on dev first and on prod only
-with the team's agreement, and test them on a copy first (see the section above).
+The seed and the import only add and update: they never delete, and they leave the price level
+of a place with reviews alone. When the rules change, the rows that are already in a database
+keep their old values until someone fixes them with a statement like the ones below. Run them by
+hand with the direct connection string, on dev first and on prod only with the team's agreement,
+and test them on a copy first (see the section above).
+
+**Guessed price levels and fake opening hours (US-B1-01, #17).** The old import gave every place a
+price level guessed from its category and the same opening hours (`Mo-Su 09:00-19:00`). Now a
+place is `FREE` only if OpenStreetMap says `fee=no`, and its hours are the ones OpenStreetMap has.
+Run this first, and then `npm run seed`, which sets `FREE` and the real hours again from the
+snapshot of Porto. Places with reviews keep their price level, which comes from the reviews.
+
+```sql
+BEGIN;
+UPDATE "Place" SET "priceLevel" = NULL
+WHERE source = 'IMPORTED' AND NOT EXISTS (SELECT 1 FROM "Review" r WHERE r."placeId" = "Place".id);
+UPDATE "Place" SET "openingHours" = NULL WHERE "openingHours" = 'Mo-Su 09:00-19:00';
+COMMIT;
+```
+
+Check before and after: `SELECT coalesce("priceLevel", 'unknown'), count(*) FROM "Place" GROUP BY 1;`
 
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
 with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
