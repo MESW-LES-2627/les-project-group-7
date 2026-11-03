@@ -12,6 +12,7 @@ import type { CityOption } from "./CitySelector";
 import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
 
+import { discoveredPlaceId } from "@/domain/osm/osm";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
 export type { PlaceItem };
@@ -130,7 +131,7 @@ export default function PlaceExplorer({
     (osm: OsmSearchResult) => {
       setSelectedMapCenter([osm.latitude, osm.longitude]);
       openReviewModal({
-        id: `osm-${osm.osmId}`,
+        id: discoveredPlaceId(osm.osmId),
         osmId: osm.osmId,
         name: osm.name,
         category: osm.category,

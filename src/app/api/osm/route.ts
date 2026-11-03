@@ -6,6 +6,8 @@ import {
   mapOsmCategory,
   mapOsmPriceLevel,
   formatOsmAddress,
+  formatOsmId,
+  discoveredPlaceId,
   getQuantizedKey,
   type OsmTags,
 } from "@/domain/osm/osm";
@@ -165,12 +167,17 @@ export async function GET(request: Request) {
             continue;
           }
 
+          const osmId = formatOsmId(element.type, element.id);
+          if (!osmId) {
+            continue;
+          }
+
           const name = tags.name;
           const address = formatOsmAddress(tags, "Porto");
 
           places.push({
-            id: `osm-${element.id}`,
-            osmId: element.id.toString(),
+            id: discoveredPlaceId(osmId),
+            osmId,
             name,
             description: tags.description ?? null,
             category: mapOsmCategory(tags),

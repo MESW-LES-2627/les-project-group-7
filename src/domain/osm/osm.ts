@@ -177,7 +177,8 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
   }
 
   const item = val as Partial<NominatimRawItem>;
-  if (!item.osm_id || !item.lat || !item.lon || !item.display_name) {
+  const osmId = formatOsmId(item.osm_type, item.osm_id);
+  if (!osmId || !item.lat || !item.lon || !item.display_name) {
     return null;
   }
 
@@ -203,7 +204,7 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
   const category = mapOsmCategory(nominatimTags(item));
 
   return {
-    osmId: item.osm_id.toString(),
+    osmId,
     name: primaryName,
     category,
     address: formattedAddress,
@@ -211,6 +212,41 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
     longitude: Number(lonNum.toFixed(6)),
     type: item.type || item.class || "spot",
   };
+}
+
+const OSM_TYPES = ["node", "way", "relation"];
+
+/**
+ * The id of a place in the catalog (`Place.osmId`): the OpenStreetMap type and number, for example
+ * `way/4242`. The number alone is not enough, because a node and a way can have the same number.
+ * The import, the search box and the live map all use this one format, so that a place found by
+ * any of them is the same place as the one that was imported. Null when the type or the number is
+ * not valid.
+ */
+export function formatOsmId(
+  type: string | null | undefined,
+  id: number | string | null | undefined
+): string | null {
+  const number = String(id ?? "");
+  if (!type || !OSM_TYPES.includes(type) || !/^[0-9]+$/.test(number)) {
+    return null;
+  }
+  return `${type}/${number}`;
+}
+
+/**
+ * The id that a place discovered on the map or in the search gets until it is saved (and then as
+ * its id in the catalog): `way/4242` becomes `osm-way-4242`. It has no slash, so it also works in
+ * an address.
+ */
+export function discoveredPlaceId(osmId: string): string {
+  return `osm-${osmId.replace("/", "-")}`;
+}
+
+/** The inverse of `discoveredPlaceId`: `osm-way-4242` gives `way/4242`, anything else gives null. */
+export function osmIdFromDiscoveredPlaceId(placeId: string): string | null {
+  const match = /^osm-(node|way|relation)-([0-9]+)$/.exec(placeId);
+  return match ? `${match[1]}/${match[2]}` : null;
 }
 
 /** The tags of a Nominatim item: its class and type (for example `tourism=museum`) and its extra tags. */
@@ -284,7 +320,8 @@ export function placeFromNominatim(
 
   const item = val as Partial<NominatimRawItem>;
   const name = item.name?.trim();
-  if (!name || typeof item.osm_id !== "number" || !item.osm_type) {
+  const osmId = formatOsmId(item.osm_type, item.osm_id);
+  if (!name || !osmId) {
     return null;
   }
 
@@ -306,7 +343,7 @@ export function placeFromNominatim(
   const kind = (item.type ?? "place").replace(/_/g, " ");
 
   return {
-    osmId: `${item.osm_type}/${item.osm_id}`,
+    osmId,
     name,
     description: `${name} (${kind}) in ${area.name}, listed on OpenStreetMap.`,
     category: mapOsmCategory(tags),
