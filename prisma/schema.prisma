@@ -87,7 +87,7 @@ model Place {
   address       String
   latitude      Float
   longitude     Float
-  openingHours  String?       // OSM opening_hours string or "unknown"
+  openingHours  String?       // OSM opening_hours string; null when OpenStreetMap has none (unknown)
   priceLevel    String?       // "FREE" | "€" | "€€" | "€€€" (FREE if OSM fee=no, else the mode of the reviews)
   averageRating Float?        // 1.0 .. 5.0
   reviewCount   Int           @default(0)
