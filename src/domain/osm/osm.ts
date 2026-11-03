@@ -5,7 +5,10 @@
  *
  * Domain Policies:
  * - Category Mapping: Ordered priority (Museum > Restaurant > Cafe > Bar > Park > Monument > Other).
- * - Fee to PriceLevel: `fee=no` tags map directly to `FREE` (0 cost points). Commercial nodes without explicit tags remain null for user reviews.
+ *   One mapping for everything that enters the catalog: the import script, the search box and the live map.
+ * - Fee to PriceLevel: `fee=no` tags map directly to `FREE` (0 cost points). Every other place has no price
+ *   level (null) until a review gives one: a price level is never guessed.
+ * - Opening hours: only what OpenStreetMap says (`opening_hours`); null when it says nothing.
  * - Quantized Cache Key: Rounding bbox coordinates to ~100m grid for deterministic LRU cache hits.
  */
 
@@ -20,6 +23,8 @@ export interface OsmTags {
   historic?: string;
   leisure?: string;
   fee?: string;
+  opening_hours?: string;
+  building?: string;
   description?: string;
   "addr:street"?: string;
   "addr:housenumber"?: string;
@@ -36,7 +41,7 @@ export function mapOsmCategory(tags?: OsmTags | null): PlaceCategory {
     return PlaceCategory.OTHER;
   }
 
-  if (tags.tourism === "museum") {
+  if (tags.tourism === "museum" || tags.tourism === "gallery") {
     return PlaceCategory.MUSEUM;
   }
 
@@ -44,7 +49,7 @@ export function mapOsmCategory(tags?: OsmTags | null): PlaceCategory {
     return PlaceCategory.RESTAURANT;
   }
 
-  if (tags.amenity === "cafe") {
+  if (tags.amenity === "cafe" || tags.amenity === "coffee_shop") {
     return PlaceCategory.CAFE;
   }
 
@@ -57,10 +62,11 @@ export function mapOsmCategory(tags?: OsmTags | null): PlaceCategory {
   }
 
   if (
-    tags.historic === "monument" ||
-    tags.historic === "memorial" ||
+    tags.historic ||
     tags.tourism === "attraction" ||
-    tags.tourism === "viewpoint"
+    tags.tourism === "viewpoint" ||
+    tags.building === "church" ||
+    tags.building === "cathedral"
   ) {
     return PlaceCategory.MONUMENT;
   }
@@ -69,18 +75,20 @@ export function mapOsmCategory(tags?: OsmTags | null): PlaceCategory {
 }
 
 /**
- * Maps OSM pricing / fee tags to our canonical PriceLevel.
+ * `FREE` only when OpenStreetMap says `fee=no` (or `fee=0`). Every other place has no price level
+ * (null, "unknown") until a review gives one: the price is never guessed from the category.
  */
-export function mapOsmPriceLevel(tags?: OsmTags | null): PriceLevel {
-  if (!tags) {
-    return "€";
-  }
+export function mapOsmPriceLevel(tags?: OsmTags | null): PriceLevel | null {
+  return tags?.fee === "no" || tags?.fee === "0" ? "FREE" : null;
+}
 
-  if (tags.fee === "no" || tags.fee === "0") {
-    return "FREE";
-  }
-
-  return "€";
+/**
+ * The opening hours as OpenStreetMap writes them, or null when it has none (unknown: the app
+ * cannot warn about closed places, and never invents hours).
+ */
+export function openingHoursFromTags(tags?: OsmTags | null): string | null {
+  const hours = tags?.opening_hours?.trim();
+  return hours ? hours : null;
 }
 
 /**
@@ -118,17 +126,23 @@ export function getQuantizedKey(
 export interface NominatimRawItem {
   place_id: number;
   osm_id: number;
+  osm_type?: string;
   lat: string;
   lon: string;
+  name?: string;
   display_name: string;
   class?: string;
   type?: string;
+  extratags?: Record<string, string>;
   address?: {
     attraction?: string;
     road?: string;
+    house_number?: string;
+    postcode?: string;
     suburb?: string;
     city?: string;
     town?: string;
+    municipality?: string;
     country?: string;
     [key: string]: string | undefined;
   };
@@ -151,58 +165,6 @@ export function isNominatimResponse(val: unknown): val is NominatimRawItem[] {
       "lon" in item &&
       "display_name" in item
   );
-}
-
-/**
- * Maps Nominatim class/type taxonomy to the canonical PlaceCategory enum.
- */
-function mapNominatimCategory(
-  osmClass?: string,
-  osmType?: string
-): PlaceCategory {
-  if (
-    osmClass === "historic" ||
-    osmType === "monument" ||
-    osmType === "memorial" ||
-    osmType === "attraction"
-  ) {
-    return PlaceCategory.MONUMENT;
-  }
-
-  if (
-    osmClass === "tourism" &&
-    (osmType === "museum" || osmType === "gallery")
-  ) {
-    return PlaceCategory.MUSEUM;
-  }
-
-  if (
-    osmClass === "tourism" &&
-    (osmType === "attraction" || osmType === "viewpoint")
-  ) {
-    return PlaceCategory.MONUMENT;
-  }
-
-  if (osmClass === "amenity" && osmType === "restaurant") {
-    return PlaceCategory.RESTAURANT;
-  }
-
-  if (
-    osmClass === "amenity" &&
-    (osmType === "cafe" || osmType === "coffee_shop")
-  ) {
-    return PlaceCategory.CAFE;
-  }
-
-  if (osmClass === "amenity" && (osmType === "bar" || osmType === "pub")) {
-    return PlaceCategory.BAR;
-  }
-
-  if (osmClass === "leisure" && (osmType === "park" || osmType === "garden")) {
-    return PlaceCategory.PARK;
-  }
-
-  return PlaceCategory.OTHER;
 }
 
 /**
@@ -238,7 +200,7 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
       ? addressParts.join(", ")
       : item.display_name.split(",").slice(0, 3).join(", ");
 
-  const category = mapNominatimCategory(item.class, item.type);
+  const category = mapOsmCategory(nominatimTags(item));
 
   return {
     osmId: item.osm_id.toString(),
@@ -248,5 +210,110 @@ export function parseNominatimResult(val: unknown): OsmSearchResult | null {
     latitude: Number(latNum.toFixed(6)),
     longitude: Number(lonNum.toFixed(6)),
     type: item.type || item.class || "spot",
+  };
+}
+
+/** The tags of a Nominatim item: its class and type (for example `tourism=museum`) and its extra tags. */
+function nominatimTags(item: Partial<NominatimRawItem>): OsmTags {
+  const tags: OsmTags = { ...item.extratags };
+  if (item.class && item.type) {
+    tags[item.class] = item.type;
+  }
+  return tags;
+}
+
+/** A street address from the address details of a Nominatim item, ending with the city. */
+export function formatNominatimAddress(
+  address: NominatimRawItem["address"],
+  defaultCity: string
+): string {
+  if (!address) {
+    return defaultCity;
+  }
+
+  const parts: string[] = [];
+  if (address.road) {
+    parts.push(
+      address.house_number
+        ? `${address.road} ${address.house_number}`
+        : address.road
+    );
+  }
+  if (address.postcode) {
+    parts.push(address.postcode);
+  }
+  parts.push(
+    address.city || address.town || address.municipality || defaultCity
+  );
+  return parts.join(", ");
+}
+
+export interface CityArea {
+  name: string;
+  minLat: number;
+  maxLat: number;
+  minLon: number;
+  maxLon: number;
+}
+
+/** A place ready to be saved by the import (US-B1-01). */
+export interface ImportedPlace {
+  osmId: string;
+  name: string;
+  description: string;
+  category: PlaceCategory;
+  address: string;
+  latitude: number;
+  longitude: number;
+  openingHours: string | null;
+  priceLevel: PriceLevel | null;
+}
+
+/**
+ * Turns one Nominatim result (asked with `extratags=1` and `addressdetails=1`) into a place of
+ * the catalog, or null when it must not be saved: it has no name, no usable coordinates, no
+ * OpenStreetMap id, or it lies outside the area of the city.
+ */
+export function placeFromNominatim(
+  val: unknown,
+  area: CityArea
+): ImportedPlace | null {
+  if (typeof val !== "object" || val === null) {
+    return null;
+  }
+
+  const item = val as Partial<NominatimRawItem>;
+  const name = item.name?.trim();
+  if (!name || typeof item.osm_id !== "number" || !item.osm_type) {
+    return null;
+  }
+
+  const latitude = parseFloat(item.lat ?? "");
+  const longitude = parseFloat(item.lon ?? "");
+  if (isNaN(latitude) || isNaN(longitude)) {
+    return null;
+  }
+  if (
+    latitude < area.minLat ||
+    latitude > area.maxLat ||
+    longitude < area.minLon ||
+    longitude > area.maxLon
+  ) {
+    return null;
+  }
+
+  const tags = nominatimTags(item);
+  const kind = (item.type ?? "place").replace(/_/g, " ");
+
+  return {
+    osmId: `${item.osm_type}/${item.osm_id}`,
+    name,
+    description: `${name} (${kind}) in ${area.name}, listed on OpenStreetMap.`,
+    category: mapOsmCategory(tags),
+    address: formatNominatimAddress(item.address, area.name),
+    latitude,
+    longitude,
+    openingHours: openingHoursFromTags(tags),
+    priceLevel: mapOsmPriceLevel(tags),
   };
 }
