@@ -9,7 +9,6 @@
  * - Fee to PriceLevel: `fee=no` tags map directly to `FREE` (0 cost points). Every other place has no price
  *   level (null) until a review gives one: a price level is never guessed.
  * - Opening hours: only what OpenStreetMap says (`opening_hours`); null when it says nothing.
- * - Quantized Cache Key: Rounding bbox coordinates to ~100m grid for deterministic LRU cache hits.
  */
 
 import { PlaceCategory } from "@prisma/client";
@@ -236,8 +235,7 @@ export function formatOsmId(
 
 /**
  * The id that a place discovered on the map or in the search gets until it is saved (and then as
- * its id in the catalog): `way/4242` becomes `osm-way-4242`. It has no slash, so it also works in
- * an address.
+ * its id in the catalog).
  */
 export function discoveredPlaceId(osmId: string): string {
   return `osm-${osmId.replace("/", "-")}`;
