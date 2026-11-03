@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import type { PlaceItem } from "./PlaceExplorer";
 import { getCategoryConfig } from "@/domain/catalog/categories";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 
 export interface ReviewItem {
   id: string;
@@ -54,11 +55,6 @@ interface ReviewModalProps {
   errorMessage: string | null;
   onClose: () => void;
   onSubmit: (rating: number, comment: string) => void;
-}
-
-export function formatPrice(priceLevel: string | null | undefined): string {
-  if (!priceLevel || priceLevel === "FREE") return "Free";
-  return priceLevel;
 }
 
 export default function ReviewModal({
@@ -106,7 +102,7 @@ export default function ReviewModal({
               {categoryConfig.label}
             </span>
             <Badge variant="outline" className="text-[11px]">
-              {formatPrice(place.priceLevel)}
+              {formatPriceLevel(place.priceLevel)}
             </Badge>
           </div>
           <DialogTitle className="mt-1 text-base">{place.name}</DialogTitle>

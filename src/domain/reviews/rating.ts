@@ -18,6 +18,17 @@ export function isPriceLevel(value: unknown): value is PriceLevel {
 }
 
 /**
+ * The text shown for a price level. A place without one is "Price unknown": it is never shown as
+ * free or as a price that nobody gave (the price comes from OpenStreetMap's `fee=no` or from reviews).
+ */
+export function formatPriceLevel(level: string | null | undefined): string {
+  if (!isPriceLevel(level)) {
+    return "Price unknown";
+  }
+  return level === "FREE" ? "Free" : level;
+}
+
+/**
  * Calculates the arithmetic mean rating rounded to 1 decimal place.
  * Returns null if no valid ratings in range [1, 5] are provided.
  */
