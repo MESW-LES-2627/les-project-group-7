@@ -25,13 +25,14 @@ import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { clusterPlaces } from "@/domain/catalog/clustering";
 import { type GeoBoundingBox } from "@/domain/catalog/geo";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 import MapClusterMarker from "./MapClusterMarker";
 
 export interface MapPlace {
   id: string;
   name: string;
   category: string;
-  priceLevel: string;
+  priceLevel: string | null;
   rating: number | null;
   latitude: number;
   longitude: number;
@@ -261,7 +262,7 @@ export default function MapComponent({
                   </span>
                   <span>•</span>
                   <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px]">
-                    {place.priceLevel}
+                    {formatPriceLevel(place.priceLevel)}
                   </span>
                   <span>•</span>
                   <span className="text-slate-500">{place.category}</span>

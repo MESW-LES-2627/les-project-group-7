@@ -137,7 +137,7 @@ export default function PlaceExplorer({
         address: osm.address,
         latitude: osm.latitude,
         longitude: osm.longitude,
-        priceLevel: "€",
+        priceLevel: null,
         averageRating: null,
         reviewCount: 0,
         isDiscovered: true,

@@ -4,7 +4,7 @@ import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { PlaceItem } from "./PlaceExplorer";
-import { formatPrice } from "./ReviewModal";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 
@@ -122,7 +122,7 @@ export default function PlaceDataTable({
                           variant="secondary"
                           className="font-mono text-xs shadow-none"
                         >
-                          {formatPrice(place.priceLevel)}
+                          {formatPriceLevel(place.priceLevel)}
                         </Badge>
                       </td>
 

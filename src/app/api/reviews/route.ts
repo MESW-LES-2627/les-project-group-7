@@ -137,7 +137,7 @@ export async function POST(request: Request) {
           priceLevel:
             typeof body.place.priceLevel === "string"
               ? body.place.priceLevel
-              : "€",
+              : null,
           cityId: city.id,
           source: "LAZY_OSM",
         },
