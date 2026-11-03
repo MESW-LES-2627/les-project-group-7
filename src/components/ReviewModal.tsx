@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The dialog to rate a place: its details, "Posting as @username" (or a link to log in when
+ * nobody is logged in), the rating and comment form, and the reviews already written. The data and
+ * the sending are handled by the usePlaceReviews hook.
+ */
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {

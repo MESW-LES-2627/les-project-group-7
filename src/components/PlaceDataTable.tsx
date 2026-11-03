@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The ranking as a table: one row per place with its rank, name and address, category, price
+ * and rating, a button to show it on the map, a button to rate it, and the page controls. It only
+ * shows the page of places it is given.
+ */
+
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

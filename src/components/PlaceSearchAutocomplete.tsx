@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The search box. Typing filters the catalog at once (up to 4 places). Pressing Enter also
+ * asks OpenStreetMap (Nominatim), never while typing, as ADR-004 requires. The results are shown in
+ * two groups: the local catalog and OpenStreetMap.
+ */
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Loader2, Star, MapPin, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";

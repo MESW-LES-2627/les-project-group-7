@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * The row of city buttons: "All Cities" plus one per city with its number of places.
+ * Choosing one tells the explorer which city to show (null means all).
+ */
+
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
