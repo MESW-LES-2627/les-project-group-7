@@ -27,7 +27,7 @@ export interface CachedPoi {
   address: string;
   latitude: number;
   longitude: number;
-  priceLevel: PriceLevel;
+  priceLevel: PriceLevel | null;
 }
 
 // ── In-Memory LRU Cache with TTL ─────────────────────────────────────────────
