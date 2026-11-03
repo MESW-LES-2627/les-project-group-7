@@ -95,6 +95,27 @@ every migration that changes or fills existing tables.
 
 Done on 31 Oct 2026 for the Better Auth migration (ADR-009).
 
+## One-off data cleanups
+
+The seed only adds and updates: it never deletes places or cities. When the seed data loses
+rows, the rows that are already in a database stay until someone removes them with a statement like
+the ones below. Run them by hand with the direct connection string, on dev first and on prod only
+with the team's agreement, and test them on a copy first (see the section above).
+
+**Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
+with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
+them. This removes the cities and their 16 places; the reviews, visits, saved places and itinerary
+stops of those places go with them. It stops with an error if a trip uses one of the cities.
+
+```sql
+BEGIN;
+DELETE FROM "Place" WHERE "cityId" IN ('city-lisboa', 'city-madrid', 'city-roma', 'city-londres');
+DELETE FROM "City" WHERE id IN ('city-lisboa', 'city-madrid', 'city-roma', 'city-londres');
+COMMIT;
+```
+
+Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
+
 ## Known problems and rules
 
 - **Migrations are incremental.** Never edit or squash a migration that was already applied
