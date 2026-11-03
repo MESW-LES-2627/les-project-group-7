@@ -14,11 +14,41 @@ export interface DemoUser {
   email: string;
 }
 
-/** The ids stay `demo-user-N`: the reviews already in the dev and prod databases point at them. */
-export const DEMO_USERS: readonly DemoUser[] = [
-  { id: "demo-user-1", username: "viajante_porto", email: "demo@tripbook.pt" },
-  { id: "demo-user-2", username: "ana_exploradora", email: "ana@tripbook.pt" },
+/**
+ * 20 users, enough for the most-reviewed place of the seed (US-B2-01: nobody reviews a place
+ * twice). The first two keep their ids because the reviews already in the dev and prod databases
+ * point at them. The e-mail is `<username>@tripbook.pt`, except for those two.
+ */
+const NAMES = [
+  "viajante_porto",
+  "ana_exploradora",
+  "rui_gastronomo",
+  "marta_lisboa",
+  "pedro_andarilho",
+  "ines_fotografa",
+  "tiago_mochila",
+  "carla_viajante",
+  "bruno_cultura",
+  "sofia_cafes",
+  "miguel_trilhos",
+  "helena_museus",
+  "joana_miradouros",
+  "andre_petiscos",
+  "beatriz_arte",
+  "diogo_rotas",
+  "filipa_jardins",
+  "goncalo_mapas",
+  "teresa_bairros",
+  "nuno_noites",
 ];
+
+const FIRST_TWO_EMAILS = ["demo@tripbook.pt", "ana@tripbook.pt"];
+
+export const DEMO_USERS: readonly DemoUser[] = NAMES.map((username, i) => ({
+  id: `demo-user-${i + 1}`,
+  username,
+  email: FIRST_TWO_EMAILS[i] ?? `${username}@tripbook.pt`,
+}));
 
 /** Documented in the README. Set DEMO_PASSWORD to use another one (for example on prod). */
 export const DEFAULT_DEMO_PASSWORD = "tripbook-demo";

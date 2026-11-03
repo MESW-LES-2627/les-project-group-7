@@ -2,6 +2,8 @@ import { PrismaClient, PlaceCategory } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
 import { randomUUID } from "crypto";
+import { calculateAverageRating } from "../src/domain/reviews/rating";
+import { pickReviewers } from "../src/domain/reviews/reviewers";
 import { hashPassword } from "better-auth/crypto";
 import {
   DEMO_USERS,
@@ -57,16 +59,15 @@ async function ensureDemoUser(user: DemoUser, password: string) {
  * Replaces the sample reviews that this seed wrote on one place, so running it again does not
  * duplicate them. A review is "ours" when it has the same place, a demo user and the same text.
  * Any other review stays, also one that someone wrote in the app while logged in as a demo user.
+ *
+ * Every review goes to a different demo user (nobody reviews a place twice, US-C1-01), and a user
+ * who already has another review on the place is skipped. `offset` varies who writes first.
  */
 async function replaceDemoReviews(
   placeId: string,
   demoUserIds: string[],
-  reviews: {
-    userId: string;
-    rating: number;
-    priceLevel: string;
-    text: string;
-  }[]
+  reviews: { rating: number; priceLevel: string; text: string }[],
+  offset: number
 ) {
   await prisma.review.deleteMany({
     where: {
@@ -75,9 +76,52 @@ async function replaceDemoReviews(
       text: { in: reviews.map((review) => review.text) },
     },
   });
-  await prisma.review.createMany({
-    data: reviews.map((review) => ({ ...review, placeId })),
+
+  const others = await prisma.review.findMany({
+    where: { placeId },
+    select: { userId: true },
   });
+  const reviewers = pickReviewers(
+    reviews.length,
+    demoUserIds,
+    new Set(others.map((review) => review.userId)),
+    offset
+  );
+
+  await prisma.review.createMany({
+    data: reviews.map((review, i) => ({
+      ...review,
+      userId: reviewers[i],
+      placeId,
+    })),
+  });
+}
+
+/**
+ * Recomputes the stored rating and review count of every place that has reviews, from its
+ * reviews and with the same function the app uses when a review is posted, so the ratings always
+ * match the sample reviews (US-B2-01).
+ */
+async function recalculateRatings() {
+  const places = await prisma.place.findMany({
+    where: { reviews: { some: {} } },
+    select: { id: true },
+  });
+
+  for (const { id } of places) {
+    const reviews = await prisma.review.findMany({
+      where: { placeId: id },
+      select: { rating: true },
+    });
+    await prisma.place.update({
+      where: { id },
+      data: {
+        averageRating: calculateAverageRating(reviews.map((r) => r.rating)),
+        reviewCount: reviews.length,
+      },
+    });
+  }
+  return places.length;
 }
 
 interface RawPlace {
@@ -186,14 +230,13 @@ async function main() {
 
   // 2. Create Demo Users, with a password they can log in with (US-B2-01)
   const password = demoPassword(process.env.DEMO_PASSWORD);
-  const [demoUser, demoUser2] = [
-    await ensureDemoUser(DEMO_USERS[0], password),
-    await ensureDemoUser(DEMO_USERS[1], password),
-  ];
-  const demoUserIds = [demoUser.id, demoUser2.id];
+  const demoUserIds: string[] = [];
+  for (const user of DEMO_USERS) {
+    demoUserIds.push((await ensureDemoUser(user, password)).id);
+  }
 
   console.log(
-    `Test users created: ${demoUser.username}, ${demoUser2.username} (they log in with the demo password)`
+    `${DEMO_USERS.length} demo users created (they log in with the demo password)`
   );
 
   // 3. Import OpenStreetMap Places from JSON
@@ -632,7 +675,7 @@ async function main() {
     },
   ];
 
-  for (const ep of europeanPlaces) {
+  for (const [placeIndex, ep] of europeanPlaces.entries()) {
     const created = await prisma.place.upsert({
       where: { osmId: ep.osmId },
       update: {
@@ -663,14 +706,18 @@ async function main() {
       },
     });
 
-    await replaceDemoReviews(created.id, demoUserIds, [
-      {
-        userId: demoUser.id,
-        rating: Math.round(ep.rating),
-        priceLevel: ep.priceLevel,
-        text: ep.comment,
-      },
-    ]);
+    await replaceDemoReviews(
+      created.id,
+      demoUserIds,
+      [
+        {
+          rating: Math.round(ep.rating),
+          priceLevel: ep.priceLevel,
+          text: ep.comment,
+        },
+      ],
+      placeIndex
+    );
   }
 
   console.log(
@@ -1176,7 +1223,7 @@ async function main() {
     },
   ];
 
-  for (const pf of portoFlagships) {
+  for (const [placeIndex, pf] of portoFlagships.entries()) {
     const sum = pf.reviews.reduce((acc, r) => acc + r.rating, 0);
     const avg = Number((sum / pf.reviews.length).toFixed(1));
     const count = pf.reviews.length;
@@ -1214,14 +1261,18 @@ async function main() {
     await replaceDemoReviews(
       place.id,
       demoUserIds,
-      pf.reviews.map((r, i) => ({
-        userId: i % 2 === 0 ? demoUser.id : demoUser2.id,
+      pf.reviews.map((r) => ({
         rating: r.rating,
         priceLevel: r.price,
         text: r.text,
-      }))
+      })),
+      placeIndex
     );
   }
+
+  // 5. The stored ratings must match the reviews
+  const rated = await recalculateRatings();
+  console.log(`Ratings recalculated for ${rated} places with reviews.`);
 
   console.log("Seed completed successfully!");
 }
