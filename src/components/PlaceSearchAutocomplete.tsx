@@ -11,6 +11,7 @@ import { Search, Loader2, Star, MapPin, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryConfig } from "@/domain/catalog/categories";
+import { placeMatchesSearch } from "@/domain/catalog/place-search";
 import { CategorySymbol } from "./CategorySymbol";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
@@ -48,11 +49,7 @@ export default function PlaceSearchAutocomplete({
   const matchingLocalPlaces =
     searchQuery.trim().length >= 2
       ? localPlaces
-          .filter(
-            (p) =>
-              p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              p.address.toLowerCase().includes(searchQuery.toLowerCase())
-          )
+          .filter((p) => placeMatchesSearch(p, searchQuery))
           .slice(0, 4)
       : [];
 

@@ -7,6 +7,7 @@ import {
   sortPlacesByRating,
   type PlaceFilters,
 } from "@/domain/catalog/filters";
+import { placeMatchesSearch } from "@/domain/catalog/place-search";
 
 interface UsePlaceFilteringProps {
   places: readonly PlaceItem[];
