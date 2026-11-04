@@ -35,6 +35,7 @@ interface MapExplorerCardProps {
   places: MapPlace[];
   allPlaces?: PlaceItem[];
   selectedCenter: [number, number] | null;
+  selectedCityCenter: [number, number] | null;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedCategory: string;
@@ -54,6 +55,7 @@ export default function MapExplorerCard({
   places,
   allPlaces = [],
   selectedCenter,
+  selectedCityCenter,
   searchQuery,
   onSearchChange,
   selectedCategory,
@@ -146,6 +148,7 @@ export default function MapExplorerCard({
           center={[41.147, -8.615]}
           zoom={14}
           selectedCenter={selectedCenter}
+          selectedCityCenter={selectedCityCenter}
           onSelectPlace={onSelectPlace}
           onMapMove={onMapMove}
         />

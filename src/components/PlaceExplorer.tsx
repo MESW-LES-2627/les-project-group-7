@@ -45,6 +45,9 @@ export default function PlaceExplorer({
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
+  const [selectedCityCenter, setSelectedCityCenter] = useState<
+    [number, number] | null
+  >(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -81,7 +84,9 @@ export default function PlaceExplorer({
       return;
     }
     setSelectedCityId(city.id);
-    setSelectedMapCenter([city.latitude, city.longitude]);
+    setSelectedCityCenter([city.latitude, city.longitude]);
+    // The old viewport is another city: list the whole city until the map arrives
+    setMapBounds(null);
   }, []);
 
   // Callback to sync catalog updates when a review is submitted
@@ -198,6 +203,7 @@ export default function PlaceExplorer({
         places={mapPlaces}
         allPlaces={allPlaces}
         selectedCenter={selectedMapCenter}
+        selectedCityCenter={selectedCityCenter}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
