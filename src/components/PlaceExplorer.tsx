@@ -11,6 +11,7 @@ import ReviewModal, { type ReviewItem } from "./ReviewModal";
 import type { CityOption } from "./CitySelector";
 import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
+import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
 
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
@@ -39,7 +40,7 @@ export default function PlaceExplorer({
   >(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [filters, setFilters] = useState<PlaceFilters>(NO_PLACE_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [mapBounds, setMapBounds] = useState<BoundingBox | null>(null);
@@ -54,7 +55,7 @@ export default function PlaceExplorer({
       places,
       osmPlaces,
       selectedCityId,
-      selectedCategory,
+      filters,
       searchQuery,
       currentPage,
       pageSize: PAGE_SIZE,
@@ -64,7 +65,7 @@ export default function PlaceExplorer({
   // Reset pagination on filter, city or viewport change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, searchQuery, selectedCityId, mapBounds]);
+  }, [filters, searchQuery, selectedCityId, mapBounds]);
 
   // Smoothly pan map to selected city
   const handleSelectCity = useCallback((city: CityOption | null) => {
@@ -192,8 +193,8 @@ export default function PlaceExplorer({
         selectedCenter={selectedMapCenter}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        filters={filters}
+        onFiltersChange={setFilters}
         isFetchingOsm={isFetchingOsm}
         cities={initialCities}
         selectedCityId={selectedCityId}

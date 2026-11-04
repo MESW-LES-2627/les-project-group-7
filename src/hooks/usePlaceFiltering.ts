@@ -2,12 +2,17 @@ import { useMemo } from "react";
 import type { PlaceItem } from "@/types/place";
 import type { MapPlace } from "@/components/MapComponent";
 import { isPointInsideBounds, type GeoBoundingBox } from "@/domain/catalog/geo";
+import {
+  filterPlaces,
+  sortPlacesByRating,
+  type PlaceFilters,
+} from "@/domain/catalog/filters";
 
 interface UsePlaceFilteringProps {
   places: readonly PlaceItem[];
   osmPlaces: readonly PlaceItem[];
   selectedCityId: string | null;
-  selectedCategory: string;
+  filters: PlaceFilters;
   searchQuery: string;
   currentPage: number;
   pageSize: number;
@@ -18,7 +23,7 @@ export function usePlaceFiltering({
   places,
   osmPlaces,
   selectedCityId,
-  selectedCategory,
+  filters,
   searchQuery,
   currentPage,
   pageSize,
@@ -46,19 +51,13 @@ export function usePlaceFiltering({
     return merged;
   }, [places, osmPlaces]);
 
-  // 2. Filter by city, category and search query
+  // 2. Filter by city, search query and domain filters
   const matchingPlaces = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return allPlaces.filter((place) => {
+    const cityAndSearchMatches = allPlaces.filter((place) => {
       const matchesCity = !selectedCityId || place.cityId === selectedCityId;
       if (!matchesCity) {
-        return false;
-      }
-
-      const matchesCategory =
-        selectedCategory === "ALL" || place.category === selectedCategory;
-      if (!matchesCategory) {
         return false;
       }
 
@@ -71,7 +70,9 @@ export function usePlaceFiltering({
         place.address.toLowerCase().includes(normalizedQuery)
       );
     });
-  }, [allPlaces, selectedCityId, selectedCategory, searchQuery]);
+
+    return filterPlaces(cityAndSearchMatches, filters);
+  }, [allPlaces, selectedCityId, filters, searchQuery]);
 
   // 3. Filter by map viewport bounds and sort by rating descending
   const filteredPlaces = useMemo(() => {
@@ -81,14 +82,7 @@ export function usePlaceFiltering({
         )
       : matchingPlaces;
 
-    return [...inViewport].sort((a, b) => {
-      const ratingA = a.averageRating ?? -1;
-      const ratingB = b.averageRating ?? -1;
-      if (ratingB !== ratingA) {
-        return ratingB - ratingA;
-      }
-      return (b.reviewCount ?? 0) - (a.reviewCount ?? 0);
-    });
+    return sortPlacesByRating(inViewport);
   }, [matchingPlaces, mapBounds]);
 
   // 4. Pagination calculations
