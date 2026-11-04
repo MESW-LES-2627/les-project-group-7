@@ -3,6 +3,12 @@
  * case and accents, and reading ß as ss. Pure functions, so the rule can be tested without the UI.
  */
 
+// TODO after PR #124 is merged:
+// - Duplicate code: city-search.ts has its own normalizeSearchText, without the ß rule. Keep one
+//   shared function, so the city search also reads ß as ss.
+// - Possible conflicts with PR #123: usePlaceFiltering.ts conflicts with this branch and
+//   PlaceExplorer.tsx conflicts with PR #124. Whichever merges later has to resolve them, and
+//   the place search must keep using placeMatchesSearch.
 function normalizeSearchText(text: string): string {
   return text
     .normalize("NFD")
