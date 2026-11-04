@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import type { ReviewItem } from "@/components/ReviewModal";
+import type { PriceLevel } from "@/domain/reviews/rating";
 
 interface UsePlaceReviewsOptions {
   currentUsername: string | null;
@@ -54,7 +55,11 @@ export function usePlaceReviews({
     setErrorMsg(null);
   };
 
-  const handleSubmitReview = async (rating: number, comment: string) => {
+  const handleSubmitReview = async (
+    rating: number,
+    comment: string,
+    priceLevel: PriceLevel
+  ) => {
     if (!activeReviewPlace) {
       return;
     }
@@ -71,6 +76,7 @@ export function usePlaceReviews({
           placeId: activeReviewPlace.id,
           rating,
           text: comment,
+          priceLevel,
           place: {
             name: activeReviewPlace.name,
             address: activeReviewPlace.address,
@@ -96,10 +102,15 @@ export function usePlaceReviews({
       const createdReview = (data as { review: ReviewItem }).review;
 
       onPlaceUpdated(updatedPlace, createdReview);
+      setActiveReviewPlace(updatedPlace);
 
       if (createdReview) {
         setReviewsList((prev) => [
-          { ...createdReview, user: { username: currentUsername ?? "" } },
+          {
+            ...createdReview,
+            priceLevel: createdReview.priceLevel ?? priceLevel,
+            user: { username: currentUsername ?? "" },
+          },
           ...prev,
         ]);
       }
