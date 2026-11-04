@@ -21,7 +21,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Import places
 
-- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts` (today only for Porto; the MVP cities are Porto, Paris and Berlin). The seed script `prisma/seed.ts` creates the cities, their places, the demo users and the sample reviews. Its event is _Places imported_.
+- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts`, one MVP city at a time (`npm run import:osm -- porto`, `paris` or `berlin`). A place is saved only if it has a name; its category comes from the OpenStreetMap tags (one mapping for the import, the search box and the live map, anything unknown is `OTHER`); its opening hours are the `opening_hours` tag, or unknown; its price level is `FREE` if the tag says `fee=no` and unknown otherwise, never guessed. If OpenStreetMap does not answer, nothing is saved. The seed script `prisma/seed.ts` creates the cities, their places, the demo users and the sample reviews. Its event is _Places imported_.
 
 ### City
 

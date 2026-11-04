@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * The ranking as cards: the same places as PlaceDataTable (category banner, name, price, rating,
+ * map and rate buttons) with the same page controls.
+ */
+
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +16,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import type { PlaceItem } from "./PlaceExplorer";
-import { formatPrice } from "./ReviewModal";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 
@@ -36,6 +41,14 @@ export default function PlaceGrid({
   onSelectMapCenter,
   onOpenReview,
 }: PlaceGridProps) {
+  if (paginatedPlaces.length === 0) {
+    return (
+      <p className="py-12 text-center text-sm text-slate-500">
+        No places found with the current filters.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -77,7 +90,7 @@ export default function PlaceGrid({
                       variant="secondary"
                       className="font-mono text-[11px] shadow-sm"
                     >
-                      {formatPrice(place.priceLevel)}
+                      {formatPriceLevel(place.priceLevel)}
                     </Badge>
                   </div>
                 </div>

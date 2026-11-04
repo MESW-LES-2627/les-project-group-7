@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+/**
+ * The main screen of the home page. It keeps the state of the explorer (the catalog, the
+ * selected city, the search text, the category, the visible map area and the page) and puts
+ * together the map card, the ranking (table or cards) and the review dialog. It also asks
+ * OpenStreetMap for the places of the visible map area, which are shown as discovered.
+ */
+
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";
 import { Button } from "@/components/ui/button";
@@ -13,6 +20,7 @@ import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
 import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
 
+import { discoveredPlaceId } from "@/domain/osm/osm";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
 export type { PlaceItem };
@@ -38,6 +46,10 @@ export default function PlaceExplorer({
   const [selectedMapCenter, setSelectedMapCenter] = useState<
     [number, number] | null
   >(null);
+  const [selectedCityCenter, setSelectedCityCenter] = useState<
+    [number, number] | null
+  >(null);
+  const [focusedPlace, setFocusedPlace] = useState<PlaceItem | null>(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<PlaceFilters>(NO_PLACE_FILTERS);
@@ -50,10 +62,16 @@ export default function PlaceExplorer({
   )?.name;
 
   // Multi-criteria filtering, spatial bounding box, pagination and pin projections
+  const osmPlacesWithFocused = useMemo(
+    () =>
+      focusedPlace?.isDiscovered ? [focusedPlace, ...osmPlaces] : osmPlaces,
+    [focusedPlace, osmPlaces]
+  );
+
   const { allPlaces, filteredPlaces, paginatedPlaces, mapPlaces, totalPages } =
     usePlaceFiltering({
       places,
-      osmPlaces,
+      osmPlaces: osmPlacesWithFocused,
       selectedCityId,
       filters,
       searchQuery,
@@ -69,17 +87,22 @@ export default function PlaceExplorer({
 
   // Smoothly pan map to selected city
   const handleSelectCity = useCallback((city: CityOption | null) => {
+    setFocusedPlace(null);
     if (!city) {
       setSelectedCityId(null);
       return;
     }
     setSelectedCityId(city.id);
-    setSelectedMapCenter([city.latitude, city.longitude]);
+    setSelectedCityCenter([city.latitude, city.longitude]);
+    // The old viewport is another city: list the whole city until the map arrives
+    setMapBounds(null);
   }, []);
 
   // Callback to sync catalog updates when a review is submitted
   const handlePlaceUpdated = useCallback(
     (updatedPlace: PlaceItem, _createdReview?: ReviewItem) => {
+      setFocusedPlace(null);
+
       const patch = {
         averageRating: updatedPlace.averageRating,
         reviewCount: updatedPlace.reviewCount,
@@ -127,25 +150,54 @@ export default function PlaceExplorer({
     onPlaceUpdated: handlePlaceUpdated,
   });
 
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    setFocusedPlace(null);
+  }, []);
+
+  const handleFocusPlace = useCallback((place: PlaceItem) => {
+    setFocusedPlace(place);
+    setSearchQuery(place.name);
+    setSelectedMapCenter([place.latitude, place.longitude]);
+  }, []);
+
   const handleSelectDiscoveredPlace = useCallback(
     (osm: OsmSearchResult) => {
-      setSelectedMapCenter([osm.latitude, osm.longitude]);
-      openReviewModal({
-        id: `osm-${osm.osmId}`,
+      handleFocusPlace({
+        id: discoveredPlaceId(osm.osmId),
         osmId: osm.osmId,
         name: osm.name,
         category: osm.category,
         address: osm.address,
         latitude: osm.latitude,
         longitude: osm.longitude,
-        priceLevel: "€",
+        priceLevel: null,
         averageRating: null,
         reviewCount: 0,
         isDiscovered: true,
       });
     },
-    [openReviewModal]
+    [handleFocusPlace]
   );
+
+  const mapPins = useMemo(() => {
+    if (!focusedPlace || mapPlaces.some((p) => p.id === focusedPlace.id)) {
+      return mapPlaces;
+    }
+    return [
+      ...mapPlaces,
+      {
+        id: focusedPlace.id,
+        name: focusedPlace.name,
+        category: focusedPlace.category,
+        priceLevel: focusedPlace.priceLevel ?? null,
+        rating: focusedPlace.averageRating,
+        latitude: focusedPlace.latitude,
+        longitude: focusedPlace.longitude,
+        isDiscovered: focusedPlace.isDiscovered,
+      },
+    ];
+  }, [mapPlaces, focusedPlace]);
 
   // Debounced bounding-box OSM fetcher & viewport tracker
   const handleMapMove = useCallback((bounds: BoundingBox) => {
@@ -188,11 +240,12 @@ export default function PlaceExplorer({
     <div className="space-y-8">
       {/* ── 2. Map Explorer & City Selector ──────────────────────────────── */}
       <MapExplorerCard
-        places={mapPlaces}
+        places={mapPins}
         allPlaces={allPlaces}
         selectedCenter={selectedMapCenter}
+        selectedCityCenter={selectedCityCenter}
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
         filters={filters}
         onFiltersChange={setFilters}
         isFetchingOsm={isFetchingOsm}
@@ -204,6 +257,7 @@ export default function PlaceExplorer({
           const place = allPlaces.find((item) => item.id === id);
           if (place) openReviewModal(place);
         }}
+        onFocusPlace={handleFocusPlace}
         onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
         onMapMove={handleMapMove}
       />

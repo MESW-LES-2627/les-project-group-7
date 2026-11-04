@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The search box. Typing filters the catalog at once (up to 4 places). Pressing Enter also
+ * asks OpenStreetMap (Nominatim), never while typing, as ADR-004 requires. The results are shown in
+ * two groups: the local catalog and OpenStreetMap.
+ */
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Loader2, Star, MapPin, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,6 +14,7 @@ import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 
 interface PlaceSearchAutocompleteProps {
   searchQuery: string;
@@ -157,12 +164,15 @@ export default function PlaceSearchAutocomplete({
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="truncate text-xs font-medium text-slate-800">
+                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                          <span className="min-w-0 max-w-full truncate text-xs font-medium text-slate-800">
                             {place.name}
                           </span>
-                          <Badge variant="secondary" className="text-[10px]">
-                            {place.priceLevel || "€"}
+                          <Badge
+                            variant="secondary"
+                            className="whitespace-nowrap text-[10px]"
+                          >
+                            {formatPriceLevel(place.priceLevel)}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-slate-400">
@@ -212,13 +222,13 @@ export default function PlaceSearchAutocomplete({
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="truncate text-xs font-medium text-slate-800">
+                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                          <span className="min-w-0 max-w-full truncate text-xs font-medium text-slate-800">
                             {osm.name}
                           </span>
                           <Badge
                             variant="outline"
-                            className="border-sky-200 bg-sky-50 text-[10px] text-sky-700"
+                            className="whitespace-nowrap border-sky-200 bg-sky-50 text-[10px] text-sky-700"
                           >
                             OSM Live
                           </Badge>
@@ -227,7 +237,7 @@ export default function PlaceSearchAutocomplete({
                           {osm.address}
                         </p>
                       </div>
-                      <span className="shrink-0 text-[11px] font-medium text-sky-600">
+                      <span className="hidden shrink-0 text-[11px] font-medium text-sky-600 sm:inline">
                         View on map →
                       </span>
                     </button>

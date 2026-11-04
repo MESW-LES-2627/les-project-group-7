@@ -1,10 +1,16 @@
 "use client";
 
+/**
+ * The ranking as a table: one row per place with its rank, name and address, category, price
+ * and rating, a button to show it on the map, a button to rate it, and the page controls. It only
+ * shows the page of places it is given.
+ */
+
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { PlaceItem } from "./PlaceExplorer";
-import { formatPrice } from "./ReviewModal";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 
@@ -122,7 +128,7 @@ export default function PlaceDataTable({
                           variant="secondary"
                           className="font-mono text-xs shadow-none"
                         >
-                          {formatPrice(place.priceLevel)}
+                          {formatPriceLevel(place.priceLevel)}
                         </Badge>
                       </td>
 
