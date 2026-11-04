@@ -41,6 +41,14 @@ export default function PlaceGrid({
   onSelectMapCenter,
   onOpenReview,
 }: PlaceGridProps) {
+  if (paginatedPlaces.length === 0) {
+    return (
+      <p className="py-12 text-center text-sm text-slate-500">
+        No places found with the current filters.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

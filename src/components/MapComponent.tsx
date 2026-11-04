@@ -125,18 +125,24 @@ function MapEventHandler({
   return null;
 }
 
+// A chosen place is seen up close; a chosen city is seen whole.
+const PLACE_ZOOM = 16;
+const CITY_ZOOM = 13;
+
 function MapFlyController({
   targetCenter,
+  zoom,
 }: {
   targetCenter?: [number, number] | null;
+  zoom: number;
 }) {
   const map = useMap();
 
   useEffect(() => {
     if (targetCenter) {
-      map.flyTo(targetCenter, 16, { duration: 0.8 });
+      map.flyTo(targetCenter, zoom, { duration: 0.8 });
     }
-  }, [targetCenter, map]);
+  }, [targetCenter, zoom, map]);
 
   return null;
 }
@@ -146,6 +152,7 @@ export default function MapComponent({
   center = [41.147, -8.615],
   zoom = 14,
   selectedCenter,
+  selectedCityCenter,
   onSelectPlace,
   onMapMove,
 }: {
@@ -153,6 +160,7 @@ export default function MapComponent({
   center?: [number, number];
   zoom?: number;
   selectedCenter?: [number, number] | null;
+  selectedCityCenter?: [number, number] | null;
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
 }) {
@@ -230,7 +238,8 @@ export default function MapComponent({
         />
 
         {/* Smooth Fly-To Controller */}
-        <MapFlyController targetCenter={selectedCenter} />
+        <MapFlyController targetCenter={selectedCenter} zoom={PLACE_ZOOM} />
+        <MapFlyController targetCenter={selectedCityCenter} zoom={CITY_ZOOM} />
 
         {/* 1. Render Clustered Badges */}
         {clusters.map((cluster) => (
