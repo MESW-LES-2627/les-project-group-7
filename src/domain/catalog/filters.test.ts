@@ -14,6 +14,7 @@ const places = [
     category: PlaceCategory.RESTAURANT,
     priceLevel: "€",
     averageRating: 4.5,
+    reviewCount: 10,
   },
   {
     id: "dear",
@@ -21,6 +22,7 @@ const places = [
     category: PlaceCategory.RESTAURANT,
     priceLevel: "€€€",
     averageRating: 3.9,
+    reviewCount: 10,
   },
   {
     id: "museum",
@@ -28,6 +30,7 @@ const places = [
     category: PlaceCategory.MUSEUM,
     priceLevel: "€",
     averageRating: 4,
+    reviewCount: 10,
   },
   {
     id: "new",
@@ -35,6 +38,7 @@ const places = [
     category: PlaceCategory.MUSEUM,
     priceLevel: null,
     averageRating: null,
+    reviewCount: 0,
   },
 ];
 
@@ -85,6 +89,30 @@ describe("sortPlacesByRating", () => {
       "museum",
       "dear",
       "new",
+    ]);
+  });
+
+  it("orders by Bayesian rating score so that one 5-star review does not beat many 4.8 reviews (ADR-008)", () => {
+    const candidates = [
+      {
+        id: "single-5",
+        name: "Single Five",
+        averageRating: 5.0,
+        reviewCount: 1,
+      },
+      {
+        id: "many-4.8",
+        name: "Many Four Point Eight",
+        averageRating: 4.8,
+        reviewCount: 50,
+      },
+      { id: "unrated", name: "Unrated", averageRating: null, reviewCount: 0 },
+    ];
+
+    expect(sortPlacesByRating(candidates).map((place) => place.id)).toEqual([
+      "many-4.8",
+      "single-5",
+      "unrated",
     ]);
   });
 
