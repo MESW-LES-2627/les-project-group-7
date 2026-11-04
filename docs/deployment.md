@@ -119,6 +119,20 @@ COMMIT;
 
 Check before and after: `SELECT coalesce("priceLevel", 'unknown'), count(*) FROM "Place" GROUP BY 1;`
 
+**Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
+with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
+them. This removes the cities and their 16 places; the reviews, visits, saved places and itinerary
+stops of those places go with them. It stops with an error if a trip uses one of the cities.
+
+```sql
+BEGIN;
+DELETE FROM "Place" WHERE "cityId" IN ('city-lisboa', 'city-madrid', 'city-roma', 'city-londres');
+DELETE FROM "City" WHERE id IN ('city-lisboa', 'city-madrid', 'city-roma', 'city-londres');
+COMMIT;
+```
+
+Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
+
 ## Known problems and rules
 
 - **Migrations are incremental.** Never edit or squash a migration that was already applied

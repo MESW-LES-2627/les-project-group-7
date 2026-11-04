@@ -107,7 +107,7 @@ npm run seed
 
 `npm run import:osm -- <city>` (`porto`, `paris` or `berlin`) additionally imports the places of one city from OpenStreetMap (optional). It saves them in the database and in `prisma/data/<city>-places.json`; `--dry-run` only shows what it would save. Nothing is saved unless OpenStreetMap answered every request.
 
-**Demo users.** The seed creates two users that can log in like any other: `viajante_porto` and `ana_exploradora`, both with the password `tripbook-demo`. To use another password, run the seed with `DEMO_PASSWORD` set (8 to 128 characters), for example `DEMO_PASSWORD=another-password npm run seed`. The seed can be run again at any time: it does not duplicate anything, it puts the demo password back and it replaces only the sample reviews that it wrote itself (same place, demo user and text), so every other review is kept, also one written while logged in as a demo user.
+**Demo users.** The seed creates 20 users that can log in like any other (`viajante_porto`, `ana_exploradora`, `rui_gastronomo` and so on; the list is in `prisma/data/demo-users.json`), all with the password `tripbook-demo`. Each sample review of a place is written by a different one of them, because nobody reviews a place twice. To use another password, run the seed with `DEMO_PASSWORD` set (8 to 128 characters), for example `DEMO_PASSWORD=another-password npm run seed`. The seed can be run again at any time: it does not duplicate anything, it puts the demo password back and it replaces only the sample reviews that it wrote itself (same place, demo user and text), so every other review is kept, also one written while logged in as a demo user.
 
 ### 2. Running Tests
 

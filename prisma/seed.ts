@@ -2,14 +2,35 @@ import { PrismaClient, PlaceCategory } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
 import { randomUUID } from "crypto";
+import { calculateAverageRating } from "../src/domain/reviews/rating";
 import { hashPassword } from "better-auth/crypto";
-import {
-  DEMO_USERS,
-  demoPassword,
-  type DemoUser,
-} from "../src/domain/identity/demo-users";
 
 const prisma = new PrismaClient();
+
+interface DemoUser {
+  id: string;
+  username: string;
+  email: string;
+}
+
+/** The demo users (US-B2-01) live in prisma/data/demo-users.json: this is fake data, not app code. */
+const DEMO_USERS: DemoUser[] = JSON.parse(
+  fs.readFileSync(
+    path.join(process.cwd(), "prisma/data/demo-users.json"),
+    "utf-8"
+  )
+);
+
+/** Documented in the README. Set DEMO_PASSWORD to use another one (for example on prod). */
+const DEFAULT_DEMO_PASSWORD = "tripbook-demo";
+
+function demoPassword() {
+  const password = process.env.DEMO_PASSWORD || DEFAULT_DEMO_PASSWORD;
+  if (password.length < 8 || password.length > 128) {
+    throw new Error("DEMO_PASSWORD must have 8 to 128 characters");
+  }
+  return password;
+}
 
 /**
  * Creates the demo user, or fixes the one already in the database, and gives it a login: the
@@ -57,16 +78,15 @@ async function ensureDemoUser(user: DemoUser, password: string) {
  * Replaces the sample reviews that this seed wrote on one place, so running it again does not
  * duplicate them. A review is "ours" when it has the same place, a demo user and the same text.
  * Any other review stays, also one that someone wrote in the app while logged in as a demo user.
+ *
+ * Every review goes to a different demo user (nobody reviews a place twice, US-C1-01). A user who
+ * already has another review on the place is skipped, and `offset` varies who writes first.
  */
 async function replaceDemoReviews(
   placeId: string,
   demoUserIds: string[],
-  reviews: {
-    userId: string;
-    rating: number;
-    priceLevel: string;
-    text: string;
-  }[]
+  reviews: { rating: number; priceLevel: string; text: string }[],
+  offset: number
 ) {
   await prisma.review.deleteMany({
     where: {
@@ -75,9 +95,58 @@ async function replaceDemoReviews(
       text: { in: reviews.map((review) => review.text) },
     },
   });
+
+  const taken = new Set(
+    (
+      await prisma.review.findMany({
+        where: { placeId },
+        select: { userId: true },
+      })
+    ).map((review) => review.userId)
+  );
+  const free = demoUserIds.filter((id) => !taken.has(id));
+  if (reviews.length > free.length) {
+    throw new Error(
+      `A place needs ${reviews.length} reviewers but only ${free.length} demo users can still review it: add users to prisma/data/demo-users.json`
+    );
+  }
+  const start = offset % free.length;
+  const reviewers = [...free.slice(start), ...free.slice(0, start)];
+
   await prisma.review.createMany({
-    data: reviews.map((review) => ({ ...review, placeId })),
+    data: reviews.map((review, i) => ({
+      ...review,
+      userId: reviewers[i],
+      placeId,
+    })),
   });
+}
+
+/**
+ * Recomputes the stored rating and review count of every place that has reviews, from its
+ * reviews and with the same function the app uses when a review is posted, so the ratings always
+ * match the sample reviews (US-B2-01).
+ */
+async function recalculateRatings() {
+  const places = await prisma.place.findMany({
+    where: { reviews: { some: {} } },
+    select: { id: true },
+  });
+
+  for (const { id } of places) {
+    const reviews = await prisma.review.findMany({
+      where: { placeId: id },
+      select: { rating: true },
+    });
+    await prisma.place.update({
+      where: { id },
+      data: {
+        averageRating: calculateAverageRating(reviews.map((r) => r.rating)),
+        reviewCount: reviews.length,
+      },
+    });
+  }
+  return places.length;
 }
 
 interface RawPlace {
@@ -108,30 +177,6 @@ async function main() {
     },
   });
 
-  const lisboa = await prisma.city.upsert({
-    where: { id: "city-lisboa" },
-    update: {},
-    create: {
-      id: "city-lisboa",
-      name: "Lisbon",
-      country: "Portugal",
-      latitude: 38.7223,
-      longitude: -9.1393,
-    },
-  });
-
-  const madrid = await prisma.city.upsert({
-    where: { id: "city-madrid" },
-    update: {},
-    create: {
-      id: "city-madrid",
-      name: "Madrid",
-      country: "Spain",
-      latitude: 40.4168,
-      longitude: -3.7038,
-    },
-  });
-
   const paris = await prisma.city.upsert({
     where: { id: "city-paris" },
     update: {},
@@ -141,18 +186,6 @@ async function main() {
       country: "France",
       latitude: 48.8566,
       longitude: 2.3522,
-    },
-  });
-
-  const roma = await prisma.city.upsert({
-    where: { id: "city-roma" },
-    update: {},
-    create: {
-      id: "city-roma",
-      name: "Rome",
-      country: "Italy",
-      latitude: 41.9028,
-      longitude: 12.4964,
     },
   });
 
@@ -168,32 +201,17 @@ async function main() {
     },
   });
 
-  const londres = await prisma.city.upsert({
-    where: { id: "city-londres" },
-    update: {},
-    create: {
-      id: "city-londres",
-      name: "London",
-      country: "United Kingdom",
-      latitude: 51.5074,
-      longitude: -0.1278,
-    },
-  });
-
-  console.log(
-    `Cities created: ${porto.name}, ${lisboa.name}, ${madrid.name}, ${paris.name}, ${roma.name}, ${berlim.name}, ${londres.name}`
-  );
+  console.log(`Cities created: ${porto.name}, ${paris.name}, ${berlim.name}`);
 
   // 2. Create Demo Users, with a password they can log in with (US-B2-01)
-  const password = demoPassword(process.env.DEMO_PASSWORD);
-  const [demoUser, demoUser2] = [
-    await ensureDemoUser(DEMO_USERS[0], password),
-    await ensureDemoUser(DEMO_USERS[1], password),
-  ];
-  const demoUserIds = [demoUser.id, demoUser2.id];
+  const password = demoPassword();
+  const demoUserIds: string[] = [];
+  for (const user of DEMO_USERS) {
+    demoUserIds.push((await ensureDemoUser(user, password)).id);
+  }
 
   console.log(
-    `Test users created: ${demoUser.username}, ${demoUser2.username} (they log in with the demo password)`
+    `${DEMO_USERS.length} demo users created (they log in with the demo password)`
   );
 
   // 3. Import OpenStreetMap Places from JSON
@@ -254,137 +272,8 @@ async function main() {
     );
   }
 
-  // 3b. Import European Flagship Landmarks (Lisboa, Madrid, Paris, Roma)
+  // 3b. Import flagship landmarks of Paris and Berlin
   const europeanPlaces = [
-    // Lisbon
-    {
-      osmId: "node/25299496",
-      name: "Torre de Belém",
-      description:
-        "Fortificação icónica do século XVI e Património Mundial da UNESCO na margem do Tejo.",
-      category: PlaceCategory.MONUMENT,
-      address: "Avenida Brasília, 1400-206 Lisboa",
-      latitude: 38.6916,
-      longitude: -9.216,
-      openingHours: "Tu-Su 10:00-17:30",
-      priceLevel: "€€",
-      cityId: lisboa.id,
-      rating: 5.0,
-      comment:
-        "A vista sobre o rio Tejo e a arquitetura manuelina são deslumbrantes.",
-    },
-    {
-      osmId: "node/25299497",
-      name: "Mosteiro dos Jerónimos",
-      description:
-        "Obra-prima do estilo manuelino e túmulo de Vasco da Gama e Luís de Camões.",
-      category: PlaceCategory.MONUMENT,
-      address: "Praça do Império, 1400-206 Lisboa",
-      latitude: 38.6979,
-      longitude: -9.2067,
-      openingHours: "Tu-Su 10:00-17:30",
-      priceLevel: "€€",
-      cityId: lisboa.id,
-      rating: 5.0,
-      comment:
-        "Claustros imperdíveis e um dos edifícios mais belos de Portugal.",
-    },
-    {
-      osmId: "node/25299498",
-      name: "Castelo de São Jorge",
-      description:
-        "Fortaleza histórica no topo da colina mais alta de Lisboa com vista panorâmica.",
-      category: PlaceCategory.MONUMENT,
-      address: "Rua de Santa Cruz do Castelo, 1100-129 Lisboa",
-      latitude: 38.7139,
-      longitude: -9.1335,
-      openingHours: "Mo-Su 09:00-21:00",
-      priceLevel: "€€",
-      cityId: lisboa.id,
-      rating: 4.0,
-      comment:
-        "Melhor pôr do sol de Lisboa, vale a subida pelas ruelas de Alfama.",
-    },
-    {
-      osmId: "node/25299500",
-      name: "Pastéis de Belém",
-      description:
-        "Antiga confeitaria tradicional famosa pelos originais pastéis de nata desde 1837.",
-      category: PlaceCategory.CAFE,
-      address: "Rua de Belém 84-92, 1300-085 Lisboa",
-      latitude: 38.6975,
-      longitude: -9.2032,
-      openingHours: "Mo-Su 08:00-21:00",
-      priceLevel: "€",
-      cityId: lisboa.id,
-      rating: 5.0,
-      comment:
-        "Servidos ainda mornos com canela e açúcar em pó. Fila anda rápido.",
-    },
-    // Madrid
-    {
-      osmId: "node/35299496",
-      name: "Museo Nacional del Prado",
-      description:
-        "Um dos museus de arte mais prestigiados do mundo, com obras de Velázquez e Goya.",
-      category: PlaceCategory.MUSEUM,
-      address: "Calle de Ruiz de Alarcón 23, 28014 Madrid",
-      latitude: 40.4138,
-      longitude: -3.6921,
-      openingHours: "Mo-Sa 10:00-20:00, Su 10:00-19:00",
-      priceLevel: "€€",
-      cityId: madrid.id,
-      rating: 5.0,
-      comment:
-        "As Meninas de Velázquez ao vivo são imperdíveis. Reserve pelo menos 3 horas.",
-    },
-    {
-      osmId: "node/35299497",
-      name: "Parque de El Retiro",
-      description:
-        "Parque histórico de 125 hectares com o Palácio de Cristal e lago com barcos a remos.",
-      category: PlaceCategory.PARK,
-      address: "Plaza de la Independencia 7, 28001 Madrid",
-      latitude: 40.4153,
-      longitude: -3.6845,
-      openingHours: "Mo-Su 06:00-22:00",
-      priceLevel: "FREE",
-      cityId: madrid.id,
-      rating: 5.0,
-      comment:
-        "Oásis verde no centro de Madrid, perfeito para descansar e passear de barco.",
-    },
-    {
-      osmId: "node/35299498",
-      name: "Palacio Real de Madrid",
-      description:
-        "Residência oficial da família real espanhola, o maior palácio real da Europa Ocidental.",
-      category: PlaceCategory.MONUMENT,
-      address: "Calle de Bailén, 28071 Madrid",
-      latitude: 40.418,
-      longitude: -3.7143,
-      openingHours: "Mo-Su 10:00-18:00",
-      priceLevel: "€€",
-      cityId: madrid.id,
-      rating: 4.0,
-      comment:
-        "Salões e jardins impressionantes com vista desafogada para o rio Manzanares.",
-    },
-    {
-      osmId: "node/35299500",
-      name: "Chocolatería San Ginés",
-      description:
-        "Histórica casa de chocolate com churros fundada em 1894 perto da Puerta del Sol.",
-      category: PlaceCategory.CAFE,
-      address: "Pasadizo de San Ginés 5, 28013 Madrid",
-      latitude: 40.4172,
-      longitude: -3.7071,
-      openingHours: "Mo-Su 24h",
-      priceLevel: "€",
-      cityId: madrid.id,
-      rating: 5.0,
-      comment: "Churros estaladiços com chocolate quente espesso tradicional.",
-    },
     // Paris
     {
       osmId: "node/45299496",
@@ -450,70 +339,6 @@ async function main() {
       comment:
         "Local perfeito para descansar nas cadeiras verdes ao lado da Fonte Médici.",
     },
-    // Rome
-    {
-      osmId: "node/55299496",
-      name: "Colosseo",
-      description:
-        "O maior anfiteatro do Império Romano construído no século I d.C.",
-      category: PlaceCategory.MONUMENT,
-      address: "Piazza del Colosseo 1, 00184 Roma",
-      latitude: 41.8902,
-      longitude: 12.4922,
-      openingHours: "Mo-Su 08:30-19:00",
-      priceLevel: "€€",
-      cityId: roma.id,
-      rating: 5.0,
-      comment:
-        "A grandeza e o estado de conservação deixam qualquer um sem palavras.",
-    },
-    {
-      osmId: "node/55299497",
-      name: "Fontana di Trevi",
-      description:
-        "A mais célebre fonte barroca de Roma, imortalizada no cinema de Fellini.",
-      category: PlaceCategory.MONUMENT,
-      address: "Piazza di Trevi, 00187 Roma",
-      latitude: 41.9009,
-      longitude: 12.4833,
-      openingHours: "Mo-Su 24h",
-      priceLevel: "FREE",
-      cityId: roma.id,
-      rating: 5.0,
-      comment:
-        "Atirar uma moeda de costas para garantir o regresso à Cidade Eterna.",
-    },
-    {
-      osmId: "node/55299498",
-      name: "Pantheon",
-      description:
-        "Antigo templo romano consagrado com a maior cúpula de betão não armado do mundo.",
-      category: PlaceCategory.MONUMENT,
-      address: "Piazza della Rotonda, 00186 Roma",
-      latitude: 41.8986,
-      longitude: 12.4769,
-      openingHours: "Mo-Su 09:00-19:00",
-      priceLevel: "€",
-      cityId: roma.id,
-      rating: 5.0,
-      comment: "O óculo no topo da cúpula com a luz natural a entrar é mágico.",
-    },
-    {
-      osmId: "node/55299500",
-      name: "Villa Borghese",
-      description:
-        "Vasto parque paisagístico romano com lagos, jardins e a Galleria Borghese.",
-      category: PlaceCategory.PARK,
-      address: "Piazzale Napoleone I, 00197 Roma",
-      latitude: 41.913,
-      longitude: 12.4922,
-      openingHours: "Mo-Su 24h",
-      priceLevel: "FREE",
-      cityId: roma.id,
-      rating: 5.0,
-      comment:
-        "Vista soberba sobre a Piazza del Popolo a partir do terraço do Pincio.",
-    },
     // Berlin
     {
       osmId: "node/65299496",
@@ -578,74 +403,9 @@ async function main() {
       comment:
         "Uma experiência comovente que ensina em detalhe a história da Guerra Fria.",
     },
-    // London
-    {
-      osmId: "node/75299496",
-      name: "Big Ben & Palácio de Westminster",
-      description:
-        "A célebre torre do relógio Elizabeth Tower e sede histórica do parlamento britânico.",
-      category: PlaceCategory.MONUMENT,
-      address: "London SW1A 0AA, United Kingdom",
-      latitude: 51.5007,
-      longitude: -0.1246,
-      openingHours: "Mo-Su 24h",
-      priceLevel: "FREE",
-      cityId: londres.id,
-      rating: 5.0,
-      comment:
-        "A vista a partir da Westminster Bridge ao entardecer é o postal perfeito de Londres.",
-    },
-    {
-      osmId: "node/75299497",
-      name: "Tower Bridge",
-      description:
-        "Ponte basculante e suspensa vitoriana sobre o rio Tamisa inaugurada em 1894.",
-      category: PlaceCategory.MONUMENT,
-      address: "Tower Bridge Rd, London SE1 2UP",
-      latitude: 51.5055,
-      longitude: -0.0754,
-      openingHours: "Mo-Su 09:30-18:00",
-      priceLevel: "€",
-      cityId: londres.id,
-      rating: 5.0,
-      comment:
-        "O chão de vidro na passarela superior proporciona uma perspetiva vertiginosa do trânsito.",
-    },
-    {
-      osmId: "node/75299498",
-      name: "British Museum",
-      description:
-        "Museu público de história, arte e cultura humana com mais de 8 milhões de obras.",
-      category: PlaceCategory.MUSEUM,
-      address: "Great Russell St, London WC1B 3DG",
-      latitude: 51.5194,
-      longitude: -0.127,
-      openingHours: "Mo-Su 10:00-17:00",
-      priceLevel: "FREE",
-      cityId: londres.id,
-      rating: 5.0,
-      comment:
-        "A Pedra de Roseta e o teto envidraçado do Great Court de Norman Foster são espetaculares.",
-    },
-    {
-      osmId: "node/75299499",
-      name: "Hyde Park",
-      description:
-        "Um dos quatro Parques Reais de Londres com 142 hectares, o lago Serpentine e Speakers' Corner.",
-      category: PlaceCategory.PARK,
-      address: "Hyde Park, London W2 2UH",
-      latitude: 51.5073,
-      longitude: -0.1657,
-      openingHours: "Mo-Su 05:00-24:00",
-      priceLevel: "FREE",
-      cityId: londres.id,
-      rating: 5.0,
-      comment:
-        "Passeio excelente para alugar uma espreguiçadeira perto do lago e relaxar.",
-    },
   ];
 
-  for (const ep of europeanPlaces) {
+  for (const [placeIndex, ep] of europeanPlaces.entries()) {
     const created = await prisma.place.upsert({
       where: { osmId: ep.osmId },
       update: {
@@ -676,18 +436,22 @@ async function main() {
       },
     });
 
-    await replaceDemoReviews(created.id, demoUserIds, [
-      {
-        userId: demoUser.id,
-        rating: Math.round(ep.rating),
-        priceLevel: ep.priceLevel,
-        text: ep.comment,
-      },
-    ]);
+    await replaceDemoReviews(
+      created.id,
+      demoUserIds,
+      [
+        {
+          rating: Math.round(ep.rating),
+          priceLevel: ep.priceLevel,
+          text: ep.comment,
+        },
+      ],
+      placeIndex
+    );
   }
 
   console.log(
-    `${europeanPlaces.length} European flagship places imported for Lisboa, Madrid, Paris, Roma, Berlim, Londres!`
+    `${europeanPlaces.length} flagship places imported for Paris and Berlin!`
   );
 
   // 4. Insert Flagship Porto Places with Multiple Dummy Reviews
@@ -1189,7 +953,7 @@ async function main() {
     },
   ];
 
-  for (const pf of portoFlagships) {
+  for (const [placeIndex, pf] of portoFlagships.entries()) {
     const sum = pf.reviews.reduce((acc, r) => acc + r.rating, 0);
     const avg = Number((sum / pf.reviews.length).toFixed(1));
     const count = pf.reviews.length;
@@ -1227,14 +991,18 @@ async function main() {
     await replaceDemoReviews(
       place.id,
       demoUserIds,
-      pf.reviews.map((r, i) => ({
-        userId: i % 2 === 0 ? demoUser.id : demoUser2.id,
+      pf.reviews.map((r) => ({
         rating: r.rating,
         priceLevel: r.price,
         text: r.text,
-      }))
+      })),
+      placeIndex
     );
   }
+
+  // 5. The stored ratings must match the reviews
+  const rated = await recalculateRatings();
+  console.log(`Ratings recalculated for ${rated} places with reviews.`);
 
   console.log("Seed completed successfully!");
 }
