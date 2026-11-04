@@ -65,4 +65,38 @@ describe("clusterPlaces", () => {
     expect(result.clusters.length).toBe(0);
     expect(result.singlePins.length).toBe(3);
   });
+
+  describe("with two places about 550 m apart", () => {
+    const nearby: MapPlace[] = [
+      { ...dummyPlaces[0], id: "a", latitude: 41.15, longitude: -8.61 },
+      { ...dummyPlaces[0], id: "b", latitude: 41.155, longitude: -8.61 },
+    ];
+
+    it("groups them when zoomed out and splits them when zooming in, before street level", () => {
+      expect(clusterPlaces(nearby, 12).clusters.length).toBe(1);
+
+      const zoomedIn = clusterPlaces(nearby, 15);
+      expect(zoomedIn.clusters.length).toBe(0);
+      expect(zoomedIn.singlePins.map((p) => p.id)).toEqual(["a", "b"]);
+    });
+
+    it("puts the cluster in the middle of its places and counts them", () => {
+      const [cluster] = clusterPlaces(nearby, 12).clusters;
+
+      expect(cluster.count).toBe(2);
+      expect(cluster.latitude).toBeCloseTo(41.1525);
+      expect(cluster.longitude).toBeCloseTo(-8.61);
+    });
+  });
+
+  it("keeps every place exactly once, as a pin or inside a cluster", () => {
+    for (const zoom of [10, 13, 15, 16]) {
+      const { singlePins, clusters } = clusterPlaces(dummyPlaces, zoom);
+      const ids = [
+        ...singlePins.map((p) => p.id),
+        ...clusters.flatMap((c) => c.places.map((p) => p.id)),
+      ];
+      expect(ids.sort()).toEqual(["p1", "p2", "p3"]);
+    }
+  });
 });
