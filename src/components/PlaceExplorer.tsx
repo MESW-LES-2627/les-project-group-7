@@ -18,6 +18,7 @@ import ReviewModal, { type ReviewItem } from "./ReviewModal";
 import type { CityOption } from "./CitySelector";
 import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
+import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
 
 import { discoveredPlaceId } from "@/domain/osm/osm";
 import type { PlaceItem } from "@/types/place";
@@ -51,7 +52,7 @@ export default function PlaceExplorer({
   const [focusedPlace, setFocusedPlace] = useState<PlaceItem | null>(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [filters, setFilters] = useState<PlaceFilters>(NO_PLACE_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [mapBounds, setMapBounds] = useState<BoundingBox | null>(null);
@@ -72,7 +73,7 @@ export default function PlaceExplorer({
       places,
       osmPlaces: osmPlacesWithFocused,
       selectedCityId,
-      selectedCategory,
+      filters,
       searchQuery,
       currentPage,
       pageSize: PAGE_SIZE,
@@ -82,7 +83,7 @@ export default function PlaceExplorer({
   // Reset pagination on filter, city or viewport change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, searchQuery, selectedCityId, mapBounds]);
+  }, [filters, searchQuery, selectedCityId, mapBounds]);
 
   // Smoothly pan map to selected city
   const handleSelectCity = useCallback((city: CityOption | null) => {
@@ -105,6 +106,7 @@ export default function PlaceExplorer({
       const patch = {
         averageRating: updatedPlace.averageRating,
         reviewCount: updatedPlace.reviewCount,
+        priceLevel: updatedPlace.priceLevel,
         isVisited: true,
       };
 
@@ -125,6 +127,7 @@ export default function PlaceExplorer({
                 ...osm,
                 averageRating: updatedPlace.averageRating,
                 reviewCount: updatedPlace.reviewCount,
+                priceLevel: updatedPlace.priceLevel,
               }
             : osm
         )
@@ -245,8 +248,8 @@ export default function PlaceExplorer({
         selectedCityCenter={selectedCityCenter}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        filters={filters}
+        onFiltersChange={setFilters}
         isFetchingOsm={isFetchingOsm}
         cities={initialCities}
         selectedCityId={selectedCityId}

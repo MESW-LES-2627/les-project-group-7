@@ -10,11 +10,15 @@ import MapWrapper from "./MapWrapper";
 import type { BoundingBox, MapPlace } from "./MapComponent";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import CitySelector, { type CityOption } from "./CitySelector";
 import PlaceSearchAutocomplete from "./PlaceSearchAutocomplete";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
+import { PRICE_LEVELS, isPriceLevel } from "@/domain/reviews/rating";
+import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
+import type { PlaceCategory } from "@prisma/client";
 
 export interface CategoryOption {
   label: string;
@@ -29,6 +33,7 @@ export const CATEGORIES: CategoryOption[] = [
   { label: "Museums", value: "MUSEUM" },
   { label: "Cafes", value: "CAFE" },
   { label: "Bars", value: "BAR" },
+  { label: "Other", value: "OTHER" },
 ];
 
 interface MapExplorerCardProps {
@@ -38,8 +43,8 @@ interface MapExplorerCardProps {
   selectedCityCenter: [number, number] | null;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  selectedCategory: string;
-  onCategoryChange: (category: string) => void;
+  filters: PlaceFilters;
+  onFiltersChange: (filters: PlaceFilters) => void;
   categories?: CategoryOption[];
   isFetchingOsm: boolean;
   cities?: CityOption[];
@@ -59,8 +64,8 @@ export default function MapExplorerCard({
   selectedCityCenter,
   searchQuery,
   onSearchChange,
-  selectedCategory,
-  onCategoryChange,
+  filters,
+  onFiltersChange,
   categories = CATEGORIES,
   isFetchingOsm,
   cities,
@@ -72,6 +77,7 @@ export default function MapExplorerCard({
   onSelectDiscoveredPlace,
   onMapMove,
 }: MapExplorerCardProps) {
+  const activeCategory = filters.category ?? "ALL";
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -126,20 +132,95 @@ export default function MapExplorerCard({
             }}
           />
 
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {categories.map((category) => (
               <Button
                 key={category.value}
                 size="sm"
                 variant={
-                  selectedCategory === category.value ? "default" : "outline"
+                  activeCategory === category.value ? "default" : "outline"
                 }
-                onClick={() => onCategoryChange(category.value)}
+                onClick={() => {
+                  const nextCategory =
+                    category.value === "ALL"
+                      ? null
+                      : (category.value as PlaceCategory);
+                  onFiltersChange({
+                    ...filters,
+                    category: nextCategory,
+                  });
+                }}
                 className="h-7 rounded-full px-3 text-xs"
               >
                 {category.label}
               </Button>
             ))}
+
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor="price-level-filter"
+                className="mb-0 text-xs font-medium text-slate-600"
+              >
+                Price
+              </Label>
+              <select
+                id="price-level-filter"
+                aria-label="Price level"
+                value={filters.priceLevel ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onFiltersChange({
+                    ...filters,
+                    priceLevel: isPriceLevel(val) ? val : null,
+                  });
+                }}
+                className="shadow-xs h-7 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="">Any</option>
+                {PRICE_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor="min-rating-filter"
+                className="mb-0 text-xs font-medium text-slate-600"
+              >
+                Rating
+              </Label>
+              <select
+                id="min-rating-filter"
+                aria-label="Minimum rating"
+                value={filters.minRating ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onFiltersChange({
+                    ...filters,
+                    minRating: val ? Number(val) : null,
+                  });
+                }}
+                className="shadow-xs h-7 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="">Any</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="4.5">4.5+</option>
+              </select>
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onFiltersChange(NO_PLACE_FILTERS)}
+              className="h-7 rounded-full px-3 text-xs text-slate-600 hover:text-slate-900"
+              aria-label="Clear filters"
+            >
+              Clear filters
+            </Button>
           </div>
         </div>
       </CardHeader>

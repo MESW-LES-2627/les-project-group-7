@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/guard";
-import { calculateAverageRating } from "@/domain/reviews/rating";
+import {
+  calculateAverageRating,
+  calculatePriceLevelMode,
+} from "@/domain/reviews/rating";
+import { validateReviewInput } from "@/domain/reviews/review-validation";
 import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
 
 /**
@@ -72,19 +76,32 @@ export async function POST(request: Request) {
   const authorId = guard.user.id;
 
   try {
-    const body = await request.json();
-    const { placeId, rating, text } = body;
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    // Step 1: Validate the review input
-    if (!placeId || typeof rating !== "number" || rating < 1 || rating > 5) {
+    // Step 1: Validate the review input (US-C1-01, #38)
+    const validation = validateReviewInput(body);
+    if (!validation.ok) {
+      const firstError =
+        validation.errors.rating ||
+        validation.errors.text ||
+        validation.errors.priceLevel ||
+        validation.errors.placeId ||
+        "Invalid review input";
       return NextResponse.json(
         {
-          error:
-            "Invalid review input. Rating must be an integer between 1 and 5.",
+          error: firstError,
+          errors: validation.errors,
         },
         { status: 400 }
       );
     }
+
+    const { placeId, rating, text, priceLevel } = validation.value;
 
     // Step 2: On-the-fly ingestion of an OpenStreetMap place (if it is not in the database yet)
     let targetPlaceId: string = placeId;
@@ -105,7 +122,12 @@ export async function POST(request: Request) {
       }
     }
 
-    if (!existingPlace && body.place) {
+    const rawPlace =
+      typeof body === "object" && body !== null && "place" in body
+        ? (body as { place?: Record<string, unknown> }).place
+        : undefined;
+
+    if (!existingPlace && rawPlace) {
       let city = await prisma.city.findFirst({
         where: { name: { contains: "Porto", mode: "insensitive" } },
       });
@@ -121,35 +143,31 @@ export async function POST(request: Request) {
         });
       }
 
-      const rawCategory = body.place.category;
+      const rawCategory = rawPlace.category;
       const category: PlaceCategory = isPlaceCategory(rawCategory)
         ? rawCategory
         : PlaceCategory.OTHER;
 
-      await prisma.place.create({
+      existingPlace = await prisma.place.create({
         data: {
           id: placeId,
           osmId: osmIdFromDiscoveredPlaceId(placeId) ?? undefined,
           name:
-            typeof body.place.name === "string"
-              ? body.place.name
+            typeof rawPlace.name === "string"
+              ? rawPlace.name
               : "Discovered Place",
           address:
-            typeof body.place.address === "string"
-              ? body.place.address
-              : "Porto",
+            typeof rawPlace.address === "string" ? rawPlace.address : "Porto",
           category,
           latitude:
-            typeof body.place.latitude === "number"
-              ? body.place.latitude
-              : 41.1496,
+            typeof rawPlace.latitude === "number" ? rawPlace.latitude : 41.1496,
           longitude:
-            typeof body.place.longitude === "number"
-              ? body.place.longitude
+            typeof rawPlace.longitude === "number"
+              ? rawPlace.longitude
               : -8.6109,
           priceLevel:
-            typeof body.place.priceLevel === "string"
-              ? body.place.priceLevel
+            typeof rawPlace.priceLevel === "string"
+              ? rawPlace.priceLevel
               : null,
           cityId: city.id,
           source: "LAZY_OSM",
@@ -157,13 +175,18 @@ export async function POST(request: Request) {
       });
     }
 
+    if (!existingPlace) {
+      return NextResponse.json({ error: "Place not found" }, { status: 404 });
+    }
+
     // Step 3: Create the Review record
     const newReview = await prisma.review.create({
       data: {
         userId: authorId,
         placeId: targetPlaceId,
-        rating: Math.round(rating),
-        text: text || "",
+        rating,
+        text,
+        priceLevel,
       },
       include: {
         user: {
@@ -192,24 +215,31 @@ export async function POST(request: Request) {
       },
     });
 
-    // Step 5: Domain policy — recalculate the arithmetic mean of the ratings
+    // Step 5: Domain policy — recalculate arithmetic average rating and modal price level
     const allReviews = await prisma.review.findMany({
       where: { placeId: targetPlaceId },
-      select: { rating: true },
+      select: { rating: true, priceLevel: true },
     });
 
     const ratingsList: number[] = [];
+    const priceLevelsList: (string | null)[] = [];
     for (let i = 0; i < allReviews.length; i++) {
       ratingsList.push(allReviews[i].rating);
+      priceLevelsList.push(allReviews[i].priceLevel);
     }
     const newAvg = calculateAverageRating(ratingsList);
+    const newPriceLevel =
+      calculatePriceLevelMode(priceLevelsList) ??
+      existingPlace.priceLevel ??
+      null;
 
-    // Step 6: Update the Place with the new average and count
+    // Step 6: Update the Place with the new average, count, and price level
     const updatedPlace = await prisma.place.update({
       where: { id: targetPlaceId },
       data: {
         averageRating: newAvg,
         reviewCount: allReviews.length,
+        priceLevel: newPriceLevel,
       },
     });
 
