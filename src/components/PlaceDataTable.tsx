@@ -6,6 +6,7 @@
  * shows the page of places it is given.
  */
 
+import Link from "next/link";
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +94,16 @@ export default function PlaceDataTable({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="line-clamp-1 font-semibold text-slate-900">
-                            {place.name}
+                            {!place.isDiscovered ? (
+                              <Link
+                                href={`/places/${place.id}`}
+                                className="hover:underline"
+                              >
+                                {place.name}
+                              </Link>
+                            ) : (
+                              place.name
+                            )}
                           </span>
                           {place.isDiscovered && (
                             <Badge

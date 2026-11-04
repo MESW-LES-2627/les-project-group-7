@@ -5,6 +5,7 @@
  * map and rate buttons) with the same page controls.
  */
 
+import Link from "next/link";
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,7 +98,16 @@ export default function PlaceGrid({
 
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="line-clamp-1 text-sm font-semibold text-slate-900">
-                    {place.name}
+                    {!place.isDiscovered ? (
+                      <Link
+                        href={`/places/${place.id}`}
+                        className="hover:underline"
+                      >
+                        {place.name}
+                      </Link>
+                    ) : (
+                      place.name
+                    )}
                   </CardTitle>
                   <CardDescription className="mt-1 line-clamp-2 text-xs text-slate-500">
                     {place.description || place.address}
