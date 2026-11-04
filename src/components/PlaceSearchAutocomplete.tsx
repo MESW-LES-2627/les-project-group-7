@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The search box. Typing filters the catalog at once (up to 4 places). Pressing Enter also
+ * asks OpenStreetMap (Nominatim), never while typing, as ADR-004 requires. The results are shown in
+ * two groups: the local catalog and OpenStreetMap.
+ */
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Loader2, Star, MapPin, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,6 +14,7 @@ import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 
 interface PlaceSearchAutocompleteProps {
   searchQuery: string;
@@ -162,7 +169,7 @@ export default function PlaceSearchAutocomplete({
                             {place.name}
                           </span>
                           <Badge variant="secondary" className="text-[10px]">
-                            {place.priceLevel || "€"}
+                            {formatPriceLevel(place.priceLevel)}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-slate-400">

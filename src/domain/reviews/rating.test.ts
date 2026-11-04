@@ -3,6 +3,7 @@ import {
   calculateAverageRating,
   calculatePriceLevelMode,
   calculateAverageCostPoints,
+  formatPriceLevel,
   isPriceLevel,
   PRICE_LEVELS,
   RATING_SCORE_C,
@@ -146,5 +147,21 @@ describe("Rating score (weighted rating, ADR-008)", () => {
     expect(ratingScore(4.3, 2)).toBe(4.12);
     // 7 reviews averaging 3.7: (7/10)*3.7 + (3/10)*4 = 3.79
     expect(ratingScore(3.7, 7)).toBe(3.79);
+  });
+});
+
+describe("formatPriceLevel", () => {
+  it("shows FREE as Free and the other levels as they are", () => {
+    expect(formatPriceLevel("FREE")).toBe("Free");
+    expect(formatPriceLevel("€")).toBe("€");
+    expect(formatPriceLevel("€€")).toBe("€€");
+    expect(formatPriceLevel("€€€")).toBe("€€€");
+  });
+
+  it("shows a place without a price level as unknown, never as Free", () => {
+    expect(formatPriceLevel(null)).toBe("Price unknown");
+    expect(formatPriceLevel(undefined)).toBe("Price unknown");
+    expect(formatPriceLevel("")).toBe("Price unknown");
+    expect(formatPriceLevel("cheap")).toBe("Price unknown");
   });
 });

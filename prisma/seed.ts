@@ -88,8 +88,8 @@ interface RawPlace {
   address: string;
   latitude: number;
   longitude: number;
-  openingHours: string;
-  priceLevel: string;
+  openingHours: string | null;
+  priceLevel: string | null;
 }
 
 async function main() {
@@ -202,6 +202,19 @@ async function main() {
     const rawData = fs.readFileSync(jsonPath, "utf-8");
     const placesData: RawPlace[] = JSON.parse(rawData);
 
+    // The price level of a place with reviews comes from its reviews: the snapshot does not touch it
+    const reviewed = new Set(
+      (
+        await prisma.place.findMany({
+          where: {
+            osmId: { in: placesData.map((p) => p.osmId) },
+            reviews: { some: {} },
+          },
+          select: { osmId: true },
+        })
+      ).map((place) => place.osmId)
+    );
+
     for (const p of placesData) {
       const placeCategory =
         (PlaceCategory as Record<string, PlaceCategory>)[p.category] ||
@@ -217,7 +230,7 @@ async function main() {
           latitude: p.latitude,
           longitude: p.longitude,
           openingHours: p.openingHours,
-          priceLevel: p.priceLevel,
+          ...(reviewed.has(p.osmId) ? {} : { priceLevel: p.priceLevel }),
           cityId: porto.id,
         },
         create: {

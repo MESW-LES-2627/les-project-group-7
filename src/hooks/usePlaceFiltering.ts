@@ -114,7 +114,7 @@ export function usePlaceFiltering({
           id: p.id,
           name: p.name,
           category: p.category,
-          priceLevel: p.priceLevel || "€",
+          priceLevel: p.priceLevel ?? null,
           rating: p.averageRating,
           latitude: p.latitude,
           longitude: p.longitude,

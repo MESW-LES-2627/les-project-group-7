@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * The main screen of the home page. It keeps the state of the explorer (the catalog, the
+ * selected city, the search text, the category, the visible map area and the page) and puts
+ * together the map card, the ranking (table or cards) and the review dialog. It also asks
+ * OpenStreetMap for the places of the visible map area, which are shown as discovered.
+ */
+
 import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";
@@ -12,6 +19,7 @@ import type { CityOption } from "./CitySelector";
 import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
 
+import { discoveredPlaceId } from "@/domain/osm/osm";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
 export type { PlaceItem };
@@ -130,14 +138,14 @@ export default function PlaceExplorer({
     (osm: OsmSearchResult) => {
       setSelectedMapCenter([osm.latitude, osm.longitude]);
       openReviewModal({
-        id: `osm-${osm.osmId}`,
+        id: discoveredPlaceId(osm.osmId),
         osmId: osm.osmId,
         name: osm.name,
         category: osm.category,
         address: osm.address,
         latitude: osm.latitude,
         longitude: osm.longitude,
-        priceLevel: "€",
+        priceLevel: null,
         averageRating: null,
         reviewCount: 0,
         isDiscovered: true,

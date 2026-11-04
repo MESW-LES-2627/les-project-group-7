@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The numbered badge that stands for several nearby places when the map is zoomed out
+ * (the clusters come from src/domain/catalog/clustering). Clicking it zooms in. The icon is cached
+ * per number.
+ */
+
 import { Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { MapCluster } from "@/domain/catalog/clustering";
