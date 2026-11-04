@@ -21,6 +21,11 @@ describe("filterCitiesByName", () => {
     expect(names("pôrto")).toEqual(["Porto"]);
   });
 
+  it("reads ß as ss", () => {
+    const german = [{ name: "Weißenfels" }];
+    expect(filterCitiesByName(german, "weissen")).toEqual(german);
+  });
+
   it("ignores spaces around the query", () => {
     expect(names("  porto ")).toEqual(["Porto"]);
   });
