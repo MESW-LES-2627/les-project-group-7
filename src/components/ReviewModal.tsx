@@ -39,11 +39,17 @@ import {
 } from "@/components/ui/dialog";
 import type { PlaceItem } from "./PlaceExplorer";
 import { getCategoryConfig } from "@/domain/catalog/categories";
-import { formatPriceLevel } from "@/domain/reviews/rating";
+import {
+  PRICE_LEVELS,
+  type PriceLevel,
+  formatPriceLevel,
+  isPriceLevel,
+} from "@/domain/reviews/rating";
 
 export interface ReviewItem {
   id: string;
   rating: number;
+  priceLevel?: string | null;
   text: string;
   createdAt: string;
   user: {
@@ -60,7 +66,7 @@ interface ReviewModalProps {
   submitSuccess: string | null;
   errorMessage: string | null;
   onClose: () => void;
-  onSubmit: (rating: number, comment: string) => void;
+  onSubmit: (rating: number, comment: string, priceLevel: PriceLevel) => void;
 }
 
 export default function ReviewModal({
@@ -76,12 +82,14 @@ export default function ReviewModal({
 }: ReviewModalProps) {
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
+  const [priceLevel, setPriceLevel] = useState<PriceLevel>("€");
   const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (place) {
       setRating(5);
       setHoverRating(0);
+      setPriceLevel(isPriceLevel(place.priceLevel) ? place.priceLevel : "€");
       setComment("");
     }
   }, [place]);
@@ -92,7 +100,11 @@ export default function ReviewModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(rating, comment.trim());
+    const trimmed = comment.trim();
+    if (!trimmed) {
+      return;
+    }
+    onSubmit(rating, trimmed, priceLevel);
   };
 
   const categoryConfig = getCategoryConfig(place.category);
@@ -179,13 +191,47 @@ export default function ReviewModal({
             </div>
 
             <div>
-              <Label htmlFor="review-comment">Comment (optional)</Label>
+              <Label>Price level</Label>
+              <div
+                role="radiogroup"
+                aria-label="Price level"
+                className="mt-1.5 flex flex-wrap gap-2"
+              >
+                {PRICE_LEVELS.map((lvl) => {
+                  const isSelected = priceLevel === lvl;
+                  return (
+                    <Button
+                      key={lvl}
+                      type="button"
+                      size="sm"
+                      variant={isSelected ? "default" : "outline"}
+                      className={
+                        isSelected
+                          ? "h-8 px-3 text-xs font-semibold"
+                          : "h-8 px-3 text-xs text-slate-600 hover:text-slate-900"
+                      }
+                      aria-checked={isSelected}
+                      role="radio"
+                      onClick={() => setPriceLevel(lvl)}
+                    >
+                      {formatPriceLevel(lvl)}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="review-comment">
+                Review text <span className="text-rose-500">*</span>
+              </Label>
               <Textarea
                 id="review-comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
                 placeholder="Share tips, favorite highlights, or best visiting hours..."
+                required
               />
             </div>
 
@@ -200,7 +246,7 @@ export default function ReviewModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !comment.trim()}
                 className="gap-1.5 text-xs"
               >
                 {isSubmitting ? (
@@ -248,10 +294,20 @@ export default function ReviewModal({
                       <span className="font-semibold text-slate-800">
                         @{review.user?.username || "anonymous"}
                       </span>
-                      <span className="inline-flex items-center gap-0.5 font-bold text-amber-600">
-                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                        {review.rating}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {review.priceLevel && (
+                          <Badge
+                            variant="outline"
+                            className="px-1.5 py-0 text-[10px] font-normal text-slate-600"
+                          >
+                            {formatPriceLevel(review.priceLevel)}
+                          </Badge>
+                        )}
+                        <span className="inline-flex items-center gap-0.5 font-bold text-amber-600">
+                          <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                          {review.rating}
+                        </span>
+                      </div>
                     </div>
                     {review.text && (
                       <p className="mt-1 text-slate-600">{review.text}</p>

@@ -90,6 +90,7 @@ export default function PlaceExplorer({
       const patch = {
         averageRating: updatedPlace.averageRating,
         reviewCount: updatedPlace.reviewCount,
+        priceLevel: updatedPlace.priceLevel,
         isVisited: true,
       };
 
@@ -110,6 +111,7 @@ export default function PlaceExplorer({
                 ...osm,
                 averageRating: updatedPlace.averageRating,
                 reviewCount: updatedPlace.reviewCount,
+                priceLevel: updatedPlace.priceLevel,
               }
             : osm
         )
