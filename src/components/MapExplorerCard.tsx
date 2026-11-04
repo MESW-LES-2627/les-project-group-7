@@ -47,6 +47,7 @@ interface MapExplorerCardProps {
   activeCityName?: string;
   onSelectCity?: (city: CityOption | null) => void;
   onSelectPlace: (placeId: string) => void;
+  onFocusPlace: (place: PlaceItem) => void;
   onSelectDiscoveredPlace?: (osmPlace: OsmSearchResult) => void;
   onMapMove: (bounds: BoundingBox) => void;
 }
@@ -67,6 +68,7 @@ export default function MapExplorerCard({
   activeCityName,
   onSelectCity,
   onSelectPlace,
+  onFocusPlace,
   onSelectDiscoveredPlace,
   onMapMove,
 }: MapExplorerCardProps) {
@@ -110,13 +112,13 @@ export default function MapExplorerCard({
         )}
 
         {/* 2. Search & Category Filters */}
-        <div className="mt-3.5 flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center">
+        <div className="mt-3.5 flex flex-col items-stretch gap-2.5 lg:flex-row lg:items-center">
           <PlaceSearchAutocomplete
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
             localPlaces={allPlaces}
             cityName={activeCityName}
-            onSelectLocalPlace={(place) => onSelectPlace(place.id)}
+            onSelectLocalPlace={onFocusPlace}
             onSelectOsmPlace={(osm) => {
               if (onSelectDiscoveredPlace) {
                 onSelectDiscoveredPlace(osm);

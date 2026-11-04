@@ -7,7 +7,7 @@
  * OpenStreetMap for the places of the visible map area, which are shown as discovered.
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { LayoutList, LayoutGrid, Trophy } from "lucide-react";
 import type { BoundingBox } from "./MapComponent";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ export default function PlaceExplorer({
   const [selectedCityCenter, setSelectedCityCenter] = useState<
     [number, number] | null
   >(null);
+  const [focusedPlace, setFocusedPlace] = useState<PlaceItem | null>(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -60,10 +61,16 @@ export default function PlaceExplorer({
   )?.name;
 
   // Multi-criteria filtering, spatial bounding box, pagination and pin projections
+  const osmPlacesWithFocused = useMemo(
+    () =>
+      focusedPlace?.isDiscovered ? [focusedPlace, ...osmPlaces] : osmPlaces,
+    [focusedPlace, osmPlaces]
+  );
+
   const { allPlaces, filteredPlaces, paginatedPlaces, mapPlaces, totalPages } =
     usePlaceFiltering({
       places,
-      osmPlaces,
+      osmPlaces: osmPlacesWithFocused,
       selectedCityId,
       selectedCategory,
       searchQuery,
@@ -79,6 +86,7 @@ export default function PlaceExplorer({
 
   // Smoothly pan map to selected city
   const handleSelectCity = useCallback((city: CityOption | null) => {
+    setFocusedPlace(null);
     if (!city) {
       setSelectedCityId(null);
       return;
@@ -92,6 +100,8 @@ export default function PlaceExplorer({
   // Callback to sync catalog updates when a review is submitted
   const handlePlaceUpdated = useCallback(
     (updatedPlace: PlaceItem, _createdReview?: ReviewItem) => {
+      setFocusedPlace(null);
+
       const patch = {
         averageRating: updatedPlace.averageRating,
         reviewCount: updatedPlace.reviewCount,
@@ -139,10 +149,20 @@ export default function PlaceExplorer({
     onPlaceUpdated: handlePlaceUpdated,
   });
 
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    setFocusedPlace(null);
+  }, []);
+
+  const handleFocusPlace = useCallback((place: PlaceItem) => {
+    setFocusedPlace(place);
+    setSearchQuery(place.name);
+    setSelectedMapCenter([place.latitude, place.longitude]);
+  }, []);
+
   const handleSelectDiscoveredPlace = useCallback(
     (osm: OsmSearchResult) => {
-      setSelectedMapCenter([osm.latitude, osm.longitude]);
-      openReviewModal({
+      handleFocusPlace({
         id: discoveredPlaceId(osm.osmId),
         osmId: osm.osmId,
         name: osm.name,
@@ -156,8 +176,27 @@ export default function PlaceExplorer({
         isDiscovered: true,
       });
     },
-    [openReviewModal]
+    [handleFocusPlace]
   );
+
+  const mapPins = useMemo(() => {
+    if (!focusedPlace || mapPlaces.some((p) => p.id === focusedPlace.id)) {
+      return mapPlaces;
+    }
+    return [
+      ...mapPlaces,
+      {
+        id: focusedPlace.id,
+        name: focusedPlace.name,
+        category: focusedPlace.category,
+        priceLevel: focusedPlace.priceLevel ?? null,
+        rating: focusedPlace.averageRating,
+        latitude: focusedPlace.latitude,
+        longitude: focusedPlace.longitude,
+        isDiscovered: focusedPlace.isDiscovered,
+      },
+    ];
+  }, [mapPlaces, focusedPlace]);
 
   // Debounced bounding-box OSM fetcher & viewport tracker
   const handleMapMove = useCallback((bounds: BoundingBox) => {
@@ -200,12 +239,12 @@ export default function PlaceExplorer({
     <div className="space-y-8">
       {/* ── 2. Map Explorer & City Selector ──────────────────────────────── */}
       <MapExplorerCard
-        places={mapPlaces}
+        places={mapPins}
         allPlaces={allPlaces}
         selectedCenter={selectedMapCenter}
         selectedCityCenter={selectedCityCenter}
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
         isFetchingOsm={isFetchingOsm}
@@ -217,6 +256,7 @@ export default function PlaceExplorer({
           const place = allPlaces.find((item) => item.id === id);
           if (place) openReviewModal(place);
         }}
+        onFocusPlace={handleFocusPlace}
         onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
         onMapMove={handleMapMove}
       />
