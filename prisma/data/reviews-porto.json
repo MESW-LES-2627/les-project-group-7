@@ -1,0 +1,2398 @@
+[
+  {
+    "osmId": "way/13621449",
+    "name": "Serralves Park",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "O parque é maravilhoso e o Treetop Walk oferece uma perspetiva única sobre a copa das árvores."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Arquitetura e natureza em perfeita harmonia. Exposições sempre imperdíveis."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Excelente espaço para passear ao ar livre no Porto. Jardins impecavelmente cuidados."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A Casa de Serralves em Art Déco é fabulosa. Vale cada minuto da visita!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Espaço tranquilo para fugir à azáfama da cidade. Muito bem sinalizado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um dos melhores museus de arte contemporânea da Europa, recomendo a todos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "As esculturas espalhadas pela floresta criam uma atmosfera mágica."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Excelente café e esplanada com vista relaxante para o lago."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Meh",
+        "username": "viajante_porto"
+      }
+    ]
+  },
+  {
+    "osmId": "way/213579267",
+    "name": "Café Santiago",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A melhor francesinha do Porto! Molho com picante no ponto e batatas caseiras."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Atendimento tradicional, rápido e a francesinha Santiago da praxe nunca desilude."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Recomendo vivamente a Santiago com ovo e batata. Cerveja bem tirada!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Serviço ao balcão muito rápido e funcionários muito simpáticos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "O queijo derretido e a qualidade dos enchidos fazem toda a diferença."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Costuma ter fila à porta, mas o serviço é eficiente e a qualidade é excelente."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A paragem obrigatória para quem visita o Porto pela primeira vez."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Preço justo para uma dose generosa e cheia de sabor autêntico."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excelente refeição rápida e saborosa no centro da cidade."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2319986841",
+    "name": "Ponte Luiz I",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Atravessar o tabuleiro superior ao entardecer é a melhor experiência do Porto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Vista deslumbrante sobre a Ribeira e as caves de Gaia."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Monumento histórico imponente e imperdível em qualquer visita à cidade."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Fotografias espetaculares tanto de dia como iluminada à noite."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "O símbolo máximo da cidade Invicta. Passeio pedonal obrigatório."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ver o metro a passar no tabuleiro superior é uma imagem icónica."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Pode estar cheia de turistas nos dias de sol, mas a vista compensa tudo."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Sensação incrível de atravessar o rio Douro a pé nas alturas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Muito vento em dias frios, mas a perspetiva panorâmica é única."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1159533444",
+    "name": "Estação de São Bento",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Os painéis de azulejos de Jorge Colaço contam a história de Portugal de forma genial."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Uma das estações mais bonitas do mundo. Entrada gratuita e localização central."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A luz natural que entra pelas janelas sobre os azulejos azuis é fascinante."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Sempre movimentada, excelente ponto de partida para explorar o centro histórico."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Paragem rápida mas que deixa qualquer viajante impressionado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Perto da Avenida dos Aliados e da Rua das Flores."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Património arquitetónico fabuloso e preservado com muito brio."
+      }
+    ]
+  },
+  {
+    "osmId": "relation/3046626",
+    "name": "Mercado do Bolhão",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A renovação manteve a alma das vendedeiras do Bolhão e trouxe modernidade fantástica."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Excelente para petiscar presunto, queijos e vinho da região."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bancas limpas, organizadas e com produtos agrícolas de primeira qualidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Ambiente muito vibrante no coração da cidade com gastronomia autêntica."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Os restaurantes no piso superior oferecem refeições deliciosas a preços justos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Muito concorrido aos sábados de manhã, ótimo para sentir a vida do Porto."
+      }
+    ]
+  },
+  {
+    "osmId": "node/12514092225",
+    "name": "Lello & Irmao Bookstore",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A escadaria carmesim e o vitral do teto são de tirar a respiração."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Espetacular, embora com muitos turistas. O voucher desconta na compra de livros."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Recomendo marcar horário pela manhã para evitar o pico de visitantes."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vale a visita pela arquitetura única no mundo."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Edição de clássicos da literatura com capas deslumbrantes."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um pedaço vivo da história literária de Portugal."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Experiência marcante para qualquer amante de livros e arte."
+      }
+    ]
+  },
+  {
+    "osmId": "way/247168260",
+    "name": "Clérigos Tower",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Subida exigente de 240 degraus, mas a panorâmica sobre a Foz e o Douro compensa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Marco inconfundível na linha do horizonte da cidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Museu interessante na base da igreja. Recomendo comprar bilhete online."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Campanário histórico com um carrilhão fabuloso."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "A melhor vista aérea do centro da cidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Visita guiada informativa sobre o barroco portuense."
+      }
+    ]
+  },
+  {
+    "osmId": "way/365042798",
+    "name": "Café Majestic",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Ambiente histórico fascinante dos anos 20 com música de piano ao vivo."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Café e rabanada tradicional de excelente sabor num cenário clássico."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Preços elevados e fila comum, mas é uma paragem clássica na cidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Decoração Art Nouveau esplêndida, serviço clássico atencioso."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Vale mais pelo interior e fotografias do que pela refeição em si."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Experiência nostálgica no coração pedonal de Santa Catarina."
+      }
+    ]
+  },
+  {
+    "osmId": "way/98836111",
+    "name": "Jardim do Morro",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "O melhor pôr do sol do norte do país! Música ambiente e ambiente jovem."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A vista da Ribeira iluminada ao cair da noite é verdadeiramente mágica."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Fácil acesso pelo metro da Linha Amarela e espaço relvado convidativo."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Excelente spot para beber um copo e relaxar ao fim da tarde."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ponto de encontro vibrante de locais e viajantes de todo o mundo."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Pode ficar com bastante gente ao pôr do sol, chegue 30 minutos antes."
+      }
+    ]
+  },
+  {
+    "osmId": "way/603359226",
+    "name": "Casa da Música",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vale mesmo a pena. A zona à volta é ótima para passear."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vá cedo e vai adorar. Fácil de chegar e de apreciar. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vale mesmo a pena. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vale mesmo a pena. Boas fotografias de todos os ângulos. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um sítio que não se esquece. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Casa da Música não desiludiu. Boas fotografias de todos os ângulos. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um dos pontos altos da cidade. Boas fotografias de todos os ângulos. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um dos pontos altos da cidade. A sinalização é clara. Voltaria."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Lindíssimo e cheio de história. A zona à volta é ótima para passear. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Casa da Música não desiludiu. A zona à volta é ótima para passear."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Casa da Música não desiludiu. Boas fotografias de todos os ângulos. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um sítio que não se esquece. Os detalhes de perto são lindos. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Casa da Música não desiludiu. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Lindíssimo e cheio de história. Os detalhes de perto são lindos. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vale mesmo a pena. A sinalização é clara."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vale mesmo a pena. Boas fotografias de todos os ângulos. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vale mesmo a pena. Boas fotografias de todos os ângulos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Lindíssimo e cheio de história. Fácil de chegar e de apreciar."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2478836067",
+    "name": "Palácio da Bolsa",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Uma coleção maravilhosa. Cada sala tem uma surpresa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Passei lá meio dia com gosto. Vale a pena levar o audioguia. Uma boa memória."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Compensa com desconto no bilhete. Vá cedo para evitar os grupos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Interessante mas grande demais para uma visita. Algumas salas estavam fechadas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom museu, um pouco cansativo. O percurso entre salas é confuso. Razoável."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Exposições excelentes. Ótimo para famílias e para especialistas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Passei lá meio dia com gosto. Explicações claras em vários idiomas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Inspirador do início ao fim. Há espaço para ver com calma. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Inspirador do início ao fim. Vale a pena levar o audioguia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Algumas salas ótimas, outras nem tanto. Algumas salas estavam fechadas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Exposições excelentes. Ótimo para famílias e para especialistas. Voltaria."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma coleção maravilhosa. Há espaço para ver com calma."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Passei lá meio dia com gosto. Explicações claras em vários idiomas. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Palácio da Bolsa é obrigatório para quem gosta de arte e história. Explicações claras em vários idiomas. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Exposições excelentes. Vale a pena levar o audioguia."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Inspirador do início ao fim. Ótimo para famílias e para especialistas. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Palácio da Bolsa é obrigatório para quem gosta de arte e história. Há espaço para ver com calma."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Passei lá meio dia com gosto. O próprio edifício é lindo. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Passei lá meio dia com gosto. Cada sala tem uma surpresa. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Exposições excelentes. O próprio edifício é lindo. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Passei lá meio dia com gosto. Ótimo para famílias e para especialistas. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Exposições excelentes. O próprio edifício é lindo. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Passei lá meio dia com gosto. Há espaço para ver com calma."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Passei lá meio dia com gosto. Vale a pena levar o audioguia. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Muito bem organizado. Ótimo para famílias e para especialistas. Cinco estrelas."
+      }
+    ]
+  },
+  {
+    "osmId": "way/239012587",
+    "name": "Cais da Ribeira",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. Os detalhes de perto são lindos. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. A sinalização é clara."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lindíssimo e cheio de história. Os detalhes de perto são lindos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Cais da Ribeira não desiludiu. Sente-se a história à nossa volta. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lindíssimo e cheio de história. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Um sítio que não se esquece. Os detalhes de perto são lindos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vale mesmo a pena. A sinalização é clara."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Vale uma paragem rápida. Demasiada gente para apreciar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lindíssimo e cheio de história. Os detalhes de perto são lindos. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vá cedo e vai adorar. A zona à volta é ótima para passear. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Um sítio que não se esquece. A sinalização é clara. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. Fácil de chegar e de apreciar. Digam aos amigos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Bonito, mas cheio de gente. A fila demorou mais do que a visita."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Vá cedo e vai adorar. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Vá cedo e vai adorar. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vale mesmo a pena. Os detalhes de perto são lindos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. Boas fotografias de todos os ângulos. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Cais da Ribeira não desiludiu. Os detalhes de perto são lindos. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. Os detalhes de perto são lindos. Recomendo!"
+      }
+    ]
+  },
+  {
+    "osmId": "way/210681249",
+    "name": "Church of São Francisco",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um sítio que não se esquece. A zona à volta é ótima para passear."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Lindíssimo e cheio de história. Os detalhes de perto são lindos. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Interessante, um pouco sobrevalorizado. Serve se já estiver por perto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bonito, mas cheio de gente. A informação no local podia ser melhor."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Vale mesmo a pena. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um sítio que não se esquece. Os detalhes de perto são lindos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um sítio que não se esquece. Fácil de chegar e de apreciar. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Church of São Francisco não desiludiu. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Vale mesmo a pena. Fácil de chegar e de apreciar. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Lindíssimo e cheio de história. A zona à volta é ótima para passear. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Interessante, um pouco sobrevalorizado. Gostei mais da vista do que do espaço. Talvez uma vez."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Vá cedo e vai adorar. Boas fotografias de todos os ângulos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Visita razoável. Serve se já estiver por perto. Podia ser melhor."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos pontos altos da cidade. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um sítio que não se esquece. A sinalização é clara. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Church of São Francisco não desiludiu. Fácil de chegar e de apreciar. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos pontos altos da cidade. A sinalização é clara."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vá cedo e vai adorar. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos pontos altos da cidade. Sente-se a história à nossa volta. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Vale mesmo a pena. Fácil de chegar e de apreciar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Lindíssimo e cheio de história. A zona à volta é ótima para passear."
+      }
+    ]
+  },
+  {
+    "osmId": "way/244599647",
+    "name": "Jardins do Palácio de Cristal",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lugar lindo para descansar. Muitos bancos e sítios com sombra."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Lugar lindo para descansar. Bom para a corrida da manhã."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lugar lindo para descansar. Perfeito para crianças e cães."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lugar lindo para descansar. Perfeito para crianças e cães. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. As flores na primavera são lindas. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Jardins do Palácio de Cristal é perfeito para uma tarde calma. Perfeito para crianças e cães."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Muitos bancos e sítios com sombra. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. Perfeito para crianças e cães."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Jardins do Palácio de Cristal é perfeito para uma tarde calma. Limpo e bem cuidado. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Perfeito para crianças e cães. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Perfeito para crianças e cães. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lugar lindo para descansar. Boas vistas e cantos tranquilos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Simpático, nada de especial. Enche ao fim de semana. Três estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Perfeito para crianças e cães."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Limpo e bem cuidado. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Jardins do Palácio de Cristal é perfeito para uma tarde calma. Limpo e bem cuidado. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Limpo e bem cuidado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Bom para a corrida da manhã. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Jardins do Palácio de Cristal é perfeito para uma tarde calma. Muitos bancos e sítios com sombra."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. Muitos bancos e sítios com sombra."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Limpo e bem cuidado. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Uma fuga verde da cidade. As flores na primavera são lindas. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lugar lindo para descansar. As flores na primavera são lindas. Uma boa memória."
+      }
+    ]
+  },
+  {
+    "osmId": "node/8261781140",
+    "name": "Fonte da Moura",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lindíssimo e cheio de história. A zona à volta é ótima para passear."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vá cedo e vai adorar. A sinalização é clara."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Vá cedo e vai adorar. A zona à volta é ótima para passear. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vale mesmo a pena. A sinalização é clara."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Vale mesmo a pena. Os detalhes de perto são lindos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vale mesmo a pena. Fácil de chegar e de apreciar. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Vá cedo e vai adorar. Sente-se a história à nossa volta. Uma boa memória."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Vale uma paragem rápida. A fila demorou mais do que a visita. Razoável."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lindíssimo e cheio de história. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Fonte da Moura não desiludiu. Sente-se a história à nossa volta."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Bonito, mas cheio de gente. A fila demorou mais do que a visita."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lindíssimo e cheio de história. Boas fotografias de todos os ângulos. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Um dos pontos altos da cidade. Sente-se a história à nossa volta."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4860839959",
+    "name": "Garden Porto",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Doses generosas e preços justos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Ambiente agradável à noite. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Ambiente agradável à noite. Digam aos amigos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom para o preço. A ementa é curta mas serve."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boa comida, serviço lento. As sobremesas deixaram a desejar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Ambiente agradável à noite."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom para o preço. Preço justo, não é uma pechincha."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom para o preço. Preço justo, não é uma pechincha. Razoável."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Alguns pratos melhores do que outros. Esperámos um pouco pela conta."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Doses generosas e preços justos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Simpático, nada de especial. A ementa é curta mas serve."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2904182461",
+    "name": "Tasca do Nuno",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Doses generosas e preços justos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. Doses generosas e preços justos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Doses generosas e preços justos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. A sobremesa foi a melhor parte. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Doses generosas e preços justos. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Doses generosas e preços justos. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. Doses generosas e preços justos. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Doses generosas e preços justos. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Doses generosas e preços justos. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Ingredientes frescos e cozinha cuidada. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Tasca do Nuno foi uma boa descoberta. A sobremesa foi a melhor parte. Uma boa memória."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Simpático, nada de especial. As sobremesas deixaram a desejar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. O pessoal foi simpático e rápido. Digam aos amigos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Alguns pratos melhores do que outros. A ementa é curta mas serve."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. A sobremesa foi a melhor parte."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6366118027",
+    "name": "Domo Domo",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. A sobremesa foi a melhor parte. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Ingredientes frescos e cozinha cuidada."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. Ingredientes frescos e cozinha cuidada. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Domo Domo foi uma boa descoberta. Ambiente agradável à noite. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Ambiente agradável à noite."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Domo Domo foi uma boa descoberta. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. Ambiente agradável à noite."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Domo Domo foi uma boa descoberta. O pessoal foi simpático e rápido. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Domo Domo foi uma boa descoberta. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Ingredientes frescos e cozinha cuidada. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. A sobremesa foi a melhor parte. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Ingredientes frescos e cozinha cuidada. Valeu cada minuto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Boa comida, serviço lento. As sobremesas deixaram a desejar."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2893297377",
+    "name": "Metro Brunch",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Reserve antes, enche depressa. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Mediano mas agradável. As sobremesas deixaram a desejar. Razoável."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Metro Brunch foi uma boa descoberta. Doses generosas e preços justos. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. A sobremesa foi a melhor parte. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Metro Brunch foi uma boa descoberta. Ingredientes frescos e cozinha cuidada."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Comida fria. O empregado foi mal-educado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. Doses generosas e preços justos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Ambiente agradável à noite."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Refeição razoável. Preço justo, não é uma pechincha. Podia ser melhor."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Doses generosas e preços justos. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom para o preço. Esperámos um pouco pela conta."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Refeição desiludida. A conta tinha erros. Evitar em horas de ponta."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Simpático, nada de especial. As sobremesas deixaram a desejar."
+      }
+    ]
+  },
+  {
+    "osmId": "node/11401395720",
+    "name": "Bruto",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Refeição desiludida. Esperámos mais de uma hora pela comida."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Simpático, nada de especial. A ementa é curta mas serve."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Reserve antes, enche depressa. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Alguns pratos melhores do que outros. A ementa é curta mas serve. Nada mau."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. A sobremesa foi a melhor parte. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Vou voltar de certeza. Ambiente agradável à noite."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Não voltaria. Preços de turista para comida mediana. Não compensa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Doses generosas e preços justos. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Refeição razoável. Algum barulho nas horas de ponta. Depende do dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Refeição razoável. Preço justo, não é uma pechincha. Talvez uma vez."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Refeição excelente. Ambiente agradável à noite."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2730484782",
+    "name": "Migalhas",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Migalhas foi uma boa descoberta. O pessoal foi simpático e rápido. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Alguns pratos melhores do que outros. Esperámos um pouco pela conta. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Alguns pratos melhores do que outros. Preço justo, não é uma pechincha."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para o preço. As sobremesas deixaram a desejar. Podia ser melhor."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boa comida, serviço lento. As doses podiam ser maiores. Podia ser melhor."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Serviço fraco. Preços de turista para comida mediana."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Ingredientes frescos e cozinha cuidada. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Refeição excelente. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Ambiente agradável à noite."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boa comida, serviço lento. Preço justo, não é uma pechincha. Depende do dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Refeição excelente. Ambiente agradável à noite."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3694532877",
+    "name": "Bicho Papão",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "€€€",
+        "text": "Não voltaria. Preços de turista para comida mediana. Não compensa."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€€",
+        "text": "Uma desilusão. Preços de turista para comida mediana. Não é para mim."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Alguns pratos melhores do que outros. Preço justo, não é uma pechincha. Podia ser melhor."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Refeição razoável. A ementa é curta mas serve. Depende do dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Bom para o preço. A ementa é curta mas serve. Sentimentos mistos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Boa comida, serviço lento. Esperámos um pouco pela conta. Sentimentos mistos."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€€",
+        "text": "Refeição desiludida. A conta tinha erros. Não compensa."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Bom para o preço. Esperámos um pouco pela conta. Depende do dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Boa receção e comida ótima. Ingredientes frescos e cozinha cuidada. Muito recomendado."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Uma desilusão. A sala estava barulhenta e suja. Passem à frente."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2914523559",
+    "name": "Cutlery",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boa comida, serviço lento. As sobremesas deixaram a desejar."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Mediano mas agradável. A ementa é curta mas serve."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€",
+        "text": "Uma desilusão. A sala estava barulhenta e suja. Visita desiludida."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Comida fria. Esperámos mais de uma hora pela comida. Visita desiludida."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Uma desilusão. Os pratos não sabiam a nada. Nunca mais."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Não vale o preço. A sala estava barulhenta e suja."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Comida fria. O empregado foi mal-educado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Refeição excelente. Ingredientes frescos e cozinha cuidada."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Simpático, nada de especial. As sobremesas deixaram a desejar. Depende do dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boa comida, serviço lento. A ementa é curta mas serve."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Ingredientes frescos e cozinha cuidada. Uma boa memória."
+      }
+    ]
+  },
+  {
+    "osmId": "node/11417636856",
+    "name": "Umami",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Umami foi uma boa descoberta. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. O pessoal foi simpático e rápido. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. O pessoal foi simpático e rápido. Digam aos amigos."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Comida fria. Preços de turista para comida mediana. Não recomendo."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Umami foi uma boa descoberta. Doses generosas e preços justos. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. O pessoal foi simpático e rápido. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. Doses generosas e preços justos. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. O pessoal foi simpático e rápido. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Ambiente agradável à noite."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2904182462",
+    "name": "Chafariz da Trindade",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Serve para uma pausa rápida. Algum barulho ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Chafariz da Trindade é a minha paragem preferida. Bom wifi para trabalhar. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Esplanada agradável ao sol. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Preços justos para a qualidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Chafariz da Trindade é a minha paragem preferida. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um café adorável. Preços justos para a qualidade. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Perfeito para ler. Calmo de manhã, animado ao almoço. Muito recomendado."
+      }
+    ]
+  },
+  {
+    "osmId": "node/9747215914",
+    "name": "Tendinha da Teindade",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Serve para uma pausa rápida. Os doces variam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Café razoável. Difícil arranjar mesa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Tendinha da Teindade é a minha paragem preferida. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Esplanada agradável ao sol. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Tendinha da Teindade é a minha paragem preferida. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Perfeito para ler. Esplanada agradável ao sol. Voltaria."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Sítio agradável, café mediano. Algum barulho ao almoço. Sentimentos mistos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Um café adorável. Calmo de manhã, animado ao almoço."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6550894119",
+    "name": "Hokkah",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Café razoável. Preços um pouco altos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Bom wifi para trabalhar. Voltaria."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Sítio agradável, café mediano. O serviço pode ser lento. Bom no geral."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Hokkah é a minha paragem preferida. Bom wifi para trabalhar. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Café razoável. Poucas opções vegetarianas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um café adorável. Preços justos para a qualidade. Voltaria."
+      }
+    ]
+  },
+  {
+    "osmId": "node/10171285823",
+    "name": "Pop Chaa",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Preços justos para a qualidade."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Sítio agradável, café mediano. O serviço pode ser lento."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Calmo de manhã, animado ao almoço. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Calmo de manhã, animado ao almoço. Muito recomendado."
+      }
+    ]
+  },
+  {
+    "osmId": "node/10171285832",
+    "name": "Cancela Velha",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um café adorável. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Cancela Velha é a minha paragem preferida. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Não compensa. O bolo estava seco. Não recomendo."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cancela Velha é a minha paragem preferida. Os bolos são feitos no dia. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Os bolos são feitos no dia. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Café razoável. O serviço pode ser lento. Talvez uma vez."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom no geral. Algum barulho ao almoço. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Café razoável. Algum barulho ao almoço. Bom no geral."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4908911469",
+    "name": "Jeronymo",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Serve para uma pausa rápida. Os doces variam."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Lento e pouco simpático. Há melhores a poucas ruas. Não compensa."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Lento e pouco simpático. Esperei demasiado por um café."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Jeronymo é a minha paragem preferida. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Pessoal simpático que nos reconhece. Não percam."
+      }
+    ]
+  },
+  {
+    "osmId": "node/12453706909",
+    "name": "Nightclub Casarão",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Boa escolha de cervejas locais. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Ficámos muito mais tempo do que previsto. Digam aos amigos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Ambiente normal. Muito cheio depois das dez."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. A música está no ponto. Uma boa memória."
+      }
+    ]
+  },
+  {
+    "osmId": "node/11401395722",
+    "name": "Trindade Bar",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Noite mediana. Difícil ser atendido ao balcão."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Uma noite divertida. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bar ótimo. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Uma noite divertida. Boa escolha de cervejas locais. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bebidas excelentes. Os barmen sabem fazer cocktails. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Uma noite divertida. Acolhedor dentro e agradável fora. Cinco estrelas."
+      }
+    ]
+  },
+  {
+    "osmId": "node/11449504472",
+    "name": "The Cork",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Adorei. Boa escolha de cervejas locais. Valeu cada minuto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bar razoável. Um pouco caro para o que é. Três estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Serve para uma bebida. Um pouco caro para o que é. Três estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bar ótimo. Acolhedor dentro e agradável fora. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bebidas excelentes. Bons preços para a zona. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Ambiente normal. Difícil ser atendido ao balcão. Nada mau."
+      }
+    ]
+  },
+  {
+    "osmId": "node/11449483717",
+    "name": "Francisca",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Adorei. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Acolhedor dentro e agradável fora. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Boa escolha de cervejas locais. Voltaria."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Francisca tem um ambiente excelente. Ficámos muito mais tempo do que previsto. Voltaria."
+      }
+    ]
+  },
+  {
+    "osmId": "node/5870352186",
+    "name": "A Fábrica da Picaria",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bar razoável. O serviço foi lento."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Ficámos muito mais tempo do que previsto. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6654714200",
+    "name": "Kiosk Bar",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. A música está no ponto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Adorei. Acolhedor dentro e agradável fora. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. A música está no ponto. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Bons preços para a zona. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Adorei. Bons preços para a zona."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1451662215",
+    "name": "Jardim Teófilo Braga",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. As flores na primavera são lindas. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Perfeito para crianças e cães. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Uma fuga verde da cidade. Limpo e bem cuidado. Voltaria."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Uma fuga verde da cidade. Muitos bancos e sítios com sombra."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Lugar lindo para descansar. Limpo e bem cuidado. Muito recomendado."
+      }
+    ]
+  },
+  {
+    "osmId": "way/215304932",
+    "name": "Jardim de João Chagas",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Tão sossegado. As flores na primavera são lindas. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lugar lindo para descansar. Bom para a corrida da manhã. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Uma fuga verde da cidade. Muitos bancos e sítios com sombra."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. As flores na primavera são lindas. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "way/107430879",
+    "name": "Jardim de Carrilho Videira",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. As flores na primavera são lindas. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Jardim de Carrilho Videira é perfeito para uma tarde calma. Bom para a corrida da manhã."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. Bom para a corrida da manhã. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Muitos bancos e sítios com sombra. Recomendo!"
+      }
+    ]
+  },
+  {
+    "osmId": "way/1452005414",
+    "name": "Parque Urbano Doutor Mário Soares",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Perfeito para crianças e cães. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. Bom para a corrida da manhã."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Parque Urbano Doutor Mário Soares é perfeito para uma tarde calma. Limpo e bem cuidado."
+      }
+    ]
+  },
+  {
+    "osmId": "relation/3251867",
+    "name": "Parque Municipal das Virtudes",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Parque Municipal das Virtudes é perfeito para uma tarde calma. Muitos bancos e sítios com sombra. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. As flores na primavera são lindas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Ótimo para passear ou fazer piquenique. Muitos bancos e sítios com sombra."
+      }
+    ]
+  },
+  {
+    "osmId": "node/12639664083",
+    "name": "Experience Trindade",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Muito bem organizado. Há espaço para ver com calma."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Exposições excelentes. Explicações claras em vários idiomas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Uma coleção maravilhosa. Ótimo para famílias e para especialistas."
+      }
+    ]
+  },
+  {
+    "osmId": "node/13463910703",
+    "name": "Vintage Cameras Porto Museum & Shop",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Visita desiludida. Os funcionários não ajudaram."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Não é para mim. Metade do que queria ver estava fechado."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Caro e cheio de gente. Os funcionários não ajudaram."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2892472764",
+    "name": "Museu Municipal de Numismática",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Confuso e cansativo. A loja é melhor do que a exposição. Não recomendo."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Não é para mim. Fila lá fora, calor lá dentro. Não compensa."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6540216045",
+    "name": "Banco de Materiais",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Muito bem organizado. Cada sala tem uma surpresa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Uma coleção maravilhosa. Há espaço para ver com calma."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2319986838",
+    "name": "Miradouro da Muralha Fernandina",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Desiludido. Longas esperas e pouco para ver."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Demasiado cheio. Não voltaria. Não recomendo."
+      }
+    ]
+  },
+  {
+    "osmId": "way/210461448",
+    "name": "Porto Cathedral",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Demasiado cheio. Não voltaria. Evitar em horas de ponta."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Visita apressada e desconfortável. Caro para o que oferece."
+      }
+    ]
+  },
+  {
+    "osmId": "way/211737428",
+    "name": "Capela dos Alfaiates",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Um sítio que não se esquece. Os detalhes de perto são lindos. Muito recomendado."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6661617235",
+    "name": "Museu dos Clérigos",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Algumas salas ótimas, outras nem tanto. Legendas difíceis de ler em alguns sítios. Sentimentos mistos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Uma coleção maravilhosa. O próprio edifício é lindo."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6680293304",
+    "name": "Liga dos Combatentes - Núcleo Museológico do Porto",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Uma coleção maravilhosa. Há espaço para ver com calma. Recomendo!"
+      }
+    ]
+  }
+]
