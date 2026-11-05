@@ -12,7 +12,7 @@ deliverable below is stored in this repository and linked from here.
 | UML component diagram                | Done   | [Component diagram](#3-component-diagram)                                    |
 | Architecture Decision Records (ADRs) | Done   | [ADRs](#4-architecture-decision-records-adrs)                                |
 | Domain glossary (ubiquitous language) | Done  | [GLOSSARY.md](GLOSSARY.md)                                                   |
-| Change scenario, coupling and cohesion analysis, design decision | Done | [change-scenario.md](design/change-scenario.md) and [ADR-010](#adr-010-one-function-recomputes-the-stored-values-of-a-place) |
+| Change scenarios, coupling and cohesion analysis, design decisions | Scenario 1 done | [Change scenarios](#5-change-scenarios) |
 | Deployment (Vercel and Neon)          | Done   | [ADR-007](#adr-007-deployment-on-vercel-and-neon) and [deployment.md](deployment.md) |
 
 ---
@@ -424,10 +424,22 @@ truth. Domain policies are on the EventStorming board and in section 1.
 ### ADR-010: One function recomputes the stored values of a place
 
 - **Status:** Accepted on 5 Nov 2026. It is built with US-C2-01 (edit and delete a review), planned for Iteration 2.
-- **Context:** A place stores three values that are derived from its reviews: `averageRating`, `reviewCount` and `priceLevel`. The rules are pure functions in `src/domain/reviews/rating.ts`, but the sequence that applies them (load the reviews, apply the rules, write the three values) is written in the post handler and in the seed, and the visit policy only in the post handler. The rules changed five times in four days, and the seed missed the visit policy because it was copied, not shared. Edit and delete (US-C2-01) would add two more copies. The full analysis is in [change-scenario.md](design/change-scenario.md).
+- **Context:** A place stores three values that are derived from its reviews: `averageRating`, `reviewCount` and `priceLevel`. The rules are pure functions in `src/domain/reviews/rating.ts`, but the sequence that applies them (load the reviews, apply the rules, write the three values) is written in the post handler and in the seed, and the visit policy only in the post handler. The rules changed five times in four days, and the seed missed the visit policy because it was copied, not shared. Edit and delete (US-C2-01) would add two more copies. The full analysis is in [change-scenario-1.md](design/change-scenario-1.md).
 - **Decision:** One function, `refreshPlaceStats(db, placeId)` in `src/lib/place-stats.ts`, recomputes the three values, and `markPlaceVisited(db, userId, placeId)` next to it holds the visit policy. The post, edit and delete handlers and the seed call them and pass their database client. The formulas stay pure in `src/domain/reviews/rating.ts`. The migration of #37 stays as written: it is frozen.
 - **Alternatives considered:** copying the steps into each handler (cheapest now, functional coupling between four writers with the most volatile rules); computing the values in the database with a trigger or a view (a volatile rule moves into SQL, away from the tested code); not storing the values and computing them on every read (every list and ranking aggregates thousands of reviews).
 - **Consequences:**
   - _Positive:_ functional coupling becomes contract coupling (a caller only says which place changed), a rule change touches one place, the Place policies leave the review handler as the component diagram says, and the seed cannot miss a policy again.
   - _Trade-offs:_ one more module and one more level of indirection, and the function is tested with a database or a fake client, not as a pure function. Two simultaneous requests can still compute from a stale list of reviews; the new module allows one transaction in one place.
   - _Revisit:_ when the stored values grow (for example the rating score is stored), or when `rating.ts` keeps growing with unrelated rules and must be split.
+
+---
+
+## 5. Change scenarios
+
+A change scenario is a plausible future change. Each one is documented with a coupling analysis (strength,
+distance, volatility), a cohesion analysis and an explicit design decision. One scenario is added at the end of
+each iteration, and its decision is recorded as an ADR in section 4.
+
+| Scenario | Written at | Analysis | Decision |
+| -------- | ---------- | -------- | -------- |
+| 1. Edit and delete a review (US-C2-01) | End of Iteration 1 | [change-scenario-1.md](design/change-scenario-1.md) | [ADR-010](#adr-010-one-function-recomputes-the-stored-values-of-a-place) |

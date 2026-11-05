@@ -1,6 +1,6 @@
-# Change scenario: edit and delete a review
+# Change scenario 1: edit and delete a review
 
-Group 7 · MESW DOO 2026-27 · End of Iteration 1
+Group 7 · MESW DOO 2026-27 · Change scenario of the end of Iteration 1 (6 Nov 2026)
 
 This page documents one plausible future change, analyses the coupling and the cohesion of the code that
 the change would touch, and records the design decision that follows. The decision is
@@ -120,9 +120,9 @@ contain a copy.
 
 Before and after:
 
-![Before the decision](change-scenario-before.png)
+![Before the decision](change-scenario-1-before.png)
 
-![After the decision](change-scenario-after.png)
+![After the decision](change-scenario-1-after.png)
 
 ### Why this is better balanced, not only more decoupled
 

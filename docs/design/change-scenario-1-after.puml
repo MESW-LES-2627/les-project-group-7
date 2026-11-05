@@ -1,5 +1,5 @@
-@startuml change-scenario-before
-title Change scenario "edit and delete a review" - before the decision (copy the steps)
+@startuml change-scenario-1-after
+title Change scenario "edit and delete a review" - after the decision (one function)
 skinparam shadowing false
 skinparam componentStyle uml2
 skinparam ArrowColor #555555
@@ -7,29 +7,30 @@ skinparam component {
   BackgroundColor #FFF8E1
   BorderColor #666666
   BackgroundColor<<planned>> #EEEEEE
+  BackgroundColor<<new>> #DDF3DD
 }
 
 legend right
   |<#FFF8E1> Exists today |
   |<#EEEEEE> Planned (US-C2-01, Iteration 2) |
-  Each caller loads the reviews, applies the rules of
-  src/domain/reviews/rating.ts and writes the three stored
-  values of the place. That sequence is written once per caller.
+  |<#DDF3DD> New with the decision (ADR-010) |
+  The sequence "load the reviews, apply the rules, write the
+  three values" is written once. The callers only say which
+  place changed.
 endlegend
 
 component "POST /api/reviews\n(post a review)" as post
 component "PATCH /api/reviews/[id]\n(edit a review)" as patch <<planned>>
 component "DELETE /api/reviews/[id]\n(delete a review)" as del <<planned>>
 component "prisma/seed.ts\n(demo data)" as seed
+component "src/lib/place-stats.ts\nrefreshPlaceStats(db, placeId)\nmarkPlaceVisited(db, userId, placeId)" as stats <<new>>
 component "src/domain/reviews/rating.ts\n(average, price level rules)" as rating
 database "Place\naverageRating, reviewCount,\npriceLevel" as place #E8E8E8
 
-post ..> rating
-patch ..> rating
-del ..> rating
-seed ..> rating
-post --> place : writes the 3 values
-patch --> place : writes the 3 values
-del --> place : writes the 3 values
-seed --> place : writes the 3 values
+post ..> stats : placeId
+patch ..> stats : placeId
+del ..> stats : placeId
+seed ..> stats : placeId
+stats ..> rating : applies the rules
+stats --> place : writes the 3 values
 @enduml
