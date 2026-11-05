@@ -9,7 +9,12 @@ import { isPriceLevel } from "./rating";
  * and not in the middle of a seed run.
  */
 
-const CITIES = ["porto", "paris", "berlin"];
+// city, and how many places must have sample reviews
+const CITIES: [string, number][] = [
+  ["porto", 50],
+  ["paris", 100],
+  ["berlin", 100],
+];
 
 function readJson<T>(file: string): T {
   return JSON.parse(
@@ -48,7 +53,7 @@ describe("demo users", () => {
   });
 });
 
-describe.each(CITIES)("demo data of %s", (city) => {
+describe.each(CITIES)("demo data of %s", (city, minReviewed) => {
   const places = readJson<Place[]>(`${city}-places.json`);
   const samples = readJson<Sample[]>(`reviews-${city}.json`);
   const byOsmId = new Map(places.map((place) => [place.osmId, place]));
@@ -64,8 +69,8 @@ describe.each(CITIES)("demo data of %s", (city) => {
     }
   });
 
-  it("has sample reviews for at least 50 places, each on a place of the snapshot, once", () => {
-    expect(samples.length).toBeGreaterThanOrEqual(50);
+  it("has sample reviews for enough places, each on a place of the snapshot, once", () => {
+    expect(samples.length).toBeGreaterThanOrEqual(minReviewed);
     const ids = samples.map((sample) => sample.osmId);
     expect(new Set(ids).size).toBe(ids.length);
     for (const sample of samples) {

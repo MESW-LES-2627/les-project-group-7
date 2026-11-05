@@ -2113,5 +2113,2120 @@
         "text": "One of the places I will remember. The surroundings are lovely for a long walk. Five stars from me."
       }
     ]
+  },
+  {
+    "osmId": "node/3570845459",
+    "name": "Piazza Venezia",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "One of the best dinners of the trip. Lovely atmosphere in the evening. Tell your friends."
+      }
+    ]
+  },
+  {
+    "osmId": "node/9704351302",
+    "name": "Van Tanh Do",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "One of the best dinners of the trip. The dessert was the best part."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Decent meal. The menu is short but fine. Fair enough."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Van Tanh Do was a great find. The dessert was the best part. Tell your friends."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Some dishes were better than others. The desserts were a letdown. Fair enough."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good food, slow service. The desserts were a letdown."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good food, slow service. The portions could be bigger."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Will definitely come back. Lovely atmosphere in the evening."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good food, slow service. The menu is short but fine. Maybe once."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Delicious from start to finish. Generous portions and fair prices. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Van Tanh Do was a great find. Generous portions and fair prices."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Excellent meal. Book ahead, it fills up fast."
+      }
+    ]
+  },
+  {
+    "osmId": "node/12974145567",
+    "name": "Treptower Club Restaurant",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Treptower Club Restaurant was a great find. Book ahead, it fills up fast. Would visit again."
+      }
+    ]
+  },
+  {
+    "osmId": "node/8626109348",
+    "name": "Hewrî Café & Restaurant",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Hewrî Café & Restaurant was a great find. The dessert was the best part."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "One of the best dinners of the trip. Lovely atmosphere in the evening."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Hewrî Café & Restaurant was a great find. Generous portions and fair prices. Recommended!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "One of the best dinners of the trip. Generous portions and fair prices. Tell your friends."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Delicious from start to finish. Generous portions and fair prices."
+      }
+    ]
+  },
+  {
+    "osmId": "way/11643310",
+    "name": "Patagona",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Good food, slow service. Fair value, not a bargain. Could be better."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Excellent meal. The dessert was the best part. Highly recommended."
+      }
+    ]
+  },
+  {
+    "osmId": "node/9797339519",
+    "name": "China-Restaurant Neu Wuzhou",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "China-Restaurant Neu Wuzhou was a great find. The dessert was the best part."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "One of the best dinners of the trip. Generous portions and fair prices."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Excellent meal. The staff were friendly and quick. Five stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Excellent meal. Lovely atmosphere in the evening."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "China-Restaurant Neu Wuzhou was a great find. The staff were friendly and quick. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Warm welcome and great food. Generous portions and fair prices."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1556420081",
+    "name": "Mexico City / La Rosa",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Will definitely come back. Book ahead, it fills up fast. Recommended!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Warm welcome and great food. Lovely atmosphere in the evening. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "One of the best dinners of the trip. Lovely atmosphere in the evening."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Delicious from start to finish. Book ahead, it fills up fast. Five stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Mexico City / La Rosa was a great find. Book ahead, it fills up fast. Recommended!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Delicious from start to finish. The staff were friendly and quick."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Will definitely come back. Book ahead, it fills up fast."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Warm welcome and great food. Book ahead, it fills up fast. Five stars from me."
+      }
+    ]
+  },
+  {
+    "osmId": "node/5032732331",
+    "name": "Babu2",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "OK for the price. The desserts were a letdown."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "One of the best dinners of the trip. Book ahead, it fills up fast."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Warm welcome and great food. Book ahead, it fills up fast."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Delicious from start to finish. The staff were friendly and quick."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Excellent meal. The dessert was the best part."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "One of the best dinners of the trip. The staff were friendly and quick. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "One of the best dinners of the trip. The dessert was the best part. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Babu2 was a great find. Book ahead, it fills up fast. Do not miss it."
+      }
+    ]
+  },
+  {
+    "osmId": "node/833008999",
+    "name": "Pasta degli Angeli",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Poor service. The dishes tasted of nothing. Not for me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "OK for the price. A bit noisy at peak hours. Three stars from me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Average but pleasant. The menu is short but fine."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Decent meal. Fair value, not a bargain."
+      }
+    ]
+  },
+  {
+    "osmId": "way/440872112",
+    "name": "Vereinsgaststätte Feldtmannsburg",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Will definitely come back. The dessert was the best part."
+      }
+    ]
+  },
+  {
+    "osmId": "way/469583788",
+    "name": "Cafe XX",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Great coffee. The cakes are baked fresh. Five stars from me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Decent coffee. Few vegetarian choices. Could be better."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€€",
+        "text": "Dirty tables. Better places a few streets away. I expected better."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Pleasant but busy. The pastries are hit or miss."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Good spot to rest. Service can be slow. Okay overall."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A perfect place to read. Good wifi for working. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "The best pastries around. Fair prices for the quality. Would visit again."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "The best pastries around. Friendly staff who remember you."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Nice place, average coffee. Few vegetarian choices. Three stars from me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "OK for a quick break. Hard to find a free table. Could be better."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "A lovely cafe. The cakes are baked fresh. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A lovely cafe. Calm in the morning, lively at lunch. Would visit again."
+      }
+    ]
+  },
+  {
+    "osmId": "node/10117030454",
+    "name": "Berliner Kaffeerösterei",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "OK for a quick break. A bit noisy at lunch. Mixed feelings."
+      }
+    ]
+  },
+  {
+    "osmId": "node/269905044",
+    "name": "Schloss Britz",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Decent meal. The menu is short but fine."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Will definitely come back. Fresh ingredients and careful cooking. Five stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Schloss Britz was a great find. The dessert was the best part. Do not miss it."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Good food, slow service. The portions could be bigger."
+      }
+    ]
+  },
+  {
+    "osmId": "way/270880623",
+    "name": "Café Schöneweile",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Nice place, average coffee. Prices are slightly high. Mixed feelings."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Great coffee. Friendly staff who remember you. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A perfect place to read. The cakes are baked fresh. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Café Schöneweile is my favourite stop. Fair prices for the quality. Tell your friends."
+      }
+    ]
+  },
+  {
+    "osmId": "node/370455026",
+    "name": "Cafe Lisboa",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A perfect place to read. A nice terrace in the sun. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "The best pastries around. Fair prices for the quality. Do not miss it."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Cosy and friendly. Friendly staff who remember you."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cosy and friendly. Calm in the morning, lively at lunch."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "The best pastries around. Calm in the morning, lively at lunch. Do not miss it."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cafe Lisboa is my favourite stop. The cakes are baked fresh."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Great coffee. Friendly staff who remember you."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A perfect place to read. Fair prices for the quality."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A perfect place to read. A nice terrace in the sun. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great coffee. Good wifi for working."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Disappointed. The staff ignored us. Would not recommend."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cafe Lisboa is my favourite stop. Fair prices for the quality. Tell your friends."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Nice place, average coffee. A bit noisy at lunch."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cafe Lisboa is my favourite stop. Friendly staff who remember you. Recommended!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Cosy and friendly. Good wifi for working. Do not miss it."
+      }
+    ]
+  },
+  {
+    "osmId": "node/1453876137",
+    "name": "Turo Cafe u. Sportsbar",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "The best pastries around. The cakes are baked fresh. Tell your friends."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A perfect place to read. Fair prices for the quality."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "The best pastries around. Friendly staff who remember you. Do not miss it."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A perfect place to read. A nice terrace in the sun. Tell your friends."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A lovely cafe. Fair prices for the quality."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Nice place, average coffee. A bit noisy at lunch. Three stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A lovely cafe. A nice terrace in the sun. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Turo Cafe u. Sportsbar is my favourite stop. Friendly staff who remember you."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Overpriced coffee. Better places a few streets away."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Great coffee. Friendly staff who remember you. Would visit again."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Pleasant but busy. The pastries are hit or miss."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A perfect place to read. The cakes are baked fresh. Worth every minute."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Turo Cafe u. Sportsbar is my favourite stop. The cakes are baked fresh. Worth every minute."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "The best pastries around. Good wifi for working."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "OK for a quick break. Few vegetarian choices."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Great coffee. Fair prices for the quality."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Turo Cafe u. Sportsbar is my favourite stop. A nice terrace in the sun. Would visit again."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3027883913",
+    "name": "Chiba Sushi",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Warm welcome and great food. The dessert was the best part. Worth every minute."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4396258266",
+    "name": "Cafeteria",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Pleasant but busy. Few vegetarian choices. Okay overall."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A lovely cafe. Calm in the morning, lively at lunch."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1555241291",
+    "name": "Segafredo",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A lovely cafe. A nice terrace in the sun."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7428910087",
+    "name": "Cafe Bar eko",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "€",
+        "text": "Slow and unfriendly. Waited far too long for a coffee. Never again."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Overpriced coffee. The staff ignored us. Skip it."
+      }
+    ]
+  },
+  {
+    "osmId": "node/747528357",
+    "name": "Café maximal",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great coffee. Friendly staff who remember you. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A lovely cafe. Calm in the morning, lively at lunch. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "The best pastries around. Good wifi for working. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great coffee. Fair prices for the quality."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "A perfect place to read. Fair prices for the quality. Worth every minute."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good spot to rest. Prices are slightly high."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "A lovely cafe. Fair prices for the quality."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Cosy and friendly. Fair prices for the quality."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great coffee. The cakes are baked fresh. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cosy and friendly. Friendly staff who remember you. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Cosy and friendly. Calm in the morning, lively at lunch."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "The best pastries around. Friendly staff who remember you."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2939040146",
+    "name": "Cafe Lehmsofa",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great coffee. Fair prices for the quality. Tell your friends."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1232262950",
+    "name": "Charkiw-Park",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Plenty of benches and shady spots. Tell your friends."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Quiet on weekdays. Not much shade in summer."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. A good place for a morning run."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. A good place for a morning run. Would visit again."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Nice views and quiet corners. Do not miss it."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Not worth a detour. Closed paths with no explanation."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Nice views and quiet corners. Recommended!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Fine for a quick stop. Toilets are far from the entrance."
+      }
+    ]
+  },
+  {
+    "osmId": "node/2098280282",
+    "name": "Simon´s",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "OK atmosphere. A bit expensive for what it is."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good drinks, loud music. Service was slow."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excellent drinks. Cosy inside and nice outside."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "OK atmosphere. Smoky near the entrance."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Simon´s has a great atmosphere. Good prices for the area. Do not miss it."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3235752193",
+    "name": "Tele-Internetcafé Sonnenallee",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Would not come back. Waited far too long for a coffee. Not worth it."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3905700621",
+    "name": "Lucky Bar",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Not great. The bill was higher than the menu."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6409919467",
+    "name": "Zagga Bar",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Zagga Bar has a great atmosphere. Cosy inside and nice outside. Do not miss it."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Great bar. We stayed much longer than planned. Tell your friends."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Fine for one drink. Very crowded after ten."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A fun night out. A good choice of local beers."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Friendly crowd and good music. We stayed much longer than planned."
+      }
+    ]
+  },
+  {
+    "osmId": "node/1707013603",
+    "name": "Emil's Bar",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Great bar. A good choice of local beers. Five stars from me."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Friendly crowd and good music. Cosy inside and nice outside. Tell your friends."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6501792285",
+    "name": "Bar",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "A fun night out. Good prices for the area."
+      }
+    ]
+  },
+  {
+    "osmId": "node/549227523",
+    "name": "EL FUEGO BAR",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "A fun night out. The bartenders know their cocktails. Worth every minute."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Fine for one drink. Service was slow. Could be better."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1556422885",
+    "name": "Dos Pescados",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A fun night out. The music is just right. Five stars from me."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Friendly crowd and good music. We stayed much longer than planned."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A fun night out. We stayed much longer than planned."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Dos Pescados has a great atmosphere. A good choice of local beers. Recommended!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Excellent drinks. Cosy inside and nice outside. A great memory."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Average night. A bit expensive for what it is. It depends on the day."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Loved it. A good choice of local beers. Tell your friends."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "A letdown. Not a good vibe."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Too loud and rude staff. Dirty toilets."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7610396212",
+    "name": "Black & Gold Bar",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Overpriced drinks. Dirty toilets."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Too loud and rude staff. Waited ages for a drink."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Not great. Watered-down drinks."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€€",
+        "text": "A letdown. Watered-down drinks. I expected better."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "OK atmosphere. A bit expensive for what it is."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "OK atmosphere. Limited choice of beers. Maybe once."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€€",
+        "text": "Too loud and rude staff. The bouncer was unfriendly."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Decent bar. Limited choice of beers. Fair enough."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Fine for one drink. Very crowded after ten."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Overpriced drinks. The bill was higher than the menu. Would not recommend."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Decent bar. A bit expensive for what it is."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Not great. The bill was higher than the menu. I expected better."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Bad service. Dirty toilets. Avoid at busy hours."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "A letdown. Waited ages for a drink."
+      }
+    ]
+  },
+  {
+    "osmId": "node/1581067224",
+    "name": "CAFE BAR 25",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "A fun night out. The music is just right. Do not miss it."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Great bar. Cosy inside and nice outside. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great bar. We stayed much longer than planned."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "CAFE BAR 25 has a great atmosphere. The bartenders know their cocktails."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "OK atmosphere. Limited choice of beers. Not bad."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Excellent drinks. The bartenders know their cocktails. Would visit again."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Friendly crowd and good music. Good prices for the area. A great memory."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Friendly crowd and good music. A good choice of local beers. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "CAFE BAR 25 has a great atmosphere. Good prices for the area. Do not miss it."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Friendly crowd and good music. A good choice of local beers."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "A fun night out. The music is just right. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excellent drinks. Good prices for the area. Worth every minute."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A fun night out. Good prices for the area. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "CAFE BAR 25 has a great atmosphere. Good prices for the area."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "CAFE BAR 25 has a great atmosphere. Good prices for the area. Five stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Friendly crowd and good music. Cosy inside and nice outside."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excellent drinks. We stayed much longer than planned. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Friendly crowd and good music. The music is just right."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Excellent drinks. The bartenders know their cocktails."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Loved it. Cosy inside and nice outside. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "CAFE BAR 25 has a great atmosphere. A good choice of local beers."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great bar. Cosy inside and nice outside. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "CAFE BAR 25 has a great atmosphere. We stayed much longer than planned."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A fun night out. The bartenders know their cocktails."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "A fun night out. Good prices for the area."
+      }
+    ]
+  },
+  {
+    "osmId": "way/221444554",
+    "name": "Berliner Bierstuben",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Great bar. A good choice of local beers."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excellent drinks. Good prices for the area. Do not miss it."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Great bar. Good prices for the area."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Friendly crowd and good music. Good prices for the area."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Loved it. The music is just right."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Decent bar. Hard to get served at the bar."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3755207008",
+    "name": "Museum of European Cultures",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Inspiring from start to finish. Plenty of space to take your time."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Some rooms are great, others not. The route through the rooms is confusing."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Spent half a day here happily. The audio guide is worth taking. A great memory."
+      }
+    ]
+  },
+  {
+    "osmId": "way/23484395",
+    "name": "Naturpark Schöneberger Südgelände",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Fine for a quick stop. Some paths need repair."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Naturpark Schöneberger Südgelände is perfect for a slow afternoon. Perfect for children and dogs."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Quiet on weekdays. Some paths need repair."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7788079385",
+    "name": "Fantasy",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Too loud and rude staff. Not a good vibe."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Fine for one drink. Very crowded after ten. It depends on the day."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Not great. Dirty toilets. Skip it."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Average night. Hard to get served at the bar."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Nice but busy. Very crowded after ten. Three stars from me."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Overpriced drinks. Watered-down drinks. I expected better."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Not great. Dirty toilets. Would not recommend."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Overpriced drinks. Watered-down drinks."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Too loud and rude staff. The bill was higher than the menu."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Too loud and rude staff. Watered-down drinks. Avoid at busy hours."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "A letdown. The bouncer was unfriendly."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "A letdown. The bill was higher than the menu."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€€",
+        "text": "Overpriced drinks. The bill was higher than the menu."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Overpriced drinks. The bill was higher than the menu. Skip it."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Overpriced drinks. Waited ages for a drink."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Fine for one drink. Service was slow."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Decent bar. Limited choice of beers. Maybe once."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Great bar. We stayed much longer than planned."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "A letdown. The bouncer was unfriendly. I expected better."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Not great. Watered-down drinks. Would not recommend."
+      }
+    ]
+  },
+  {
+    "osmId": "relation/11308842",
+    "name": "Grünzug Heidekampgraben",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. Nice views and quiet corners."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. A good place for a morning run. Worth every minute."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Grünzug Heidekampgraben is perfect for a slow afternoon. The flowers are gorgeous in spring. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. A good place for a morning run."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "A decent place to walk. Better in spring than in winter."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. The flowers are gorgeous in spring. Highly recommended."
+      }
+    ]
+  },
+  {
+    "osmId": "way/137672607",
+    "name": "Kuno-Fischer-Platz",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Neglected and dirty. Very crowded and loud."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Too noisy. I would pick another park."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Not worth a detour. Litter on the paths. Skip it."
+      }
+    ]
+  },
+  {
+    "osmId": "way/154454326",
+    "name": "Strela-Platz",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Strela-Platz is perfect for a slow afternoon. A good place for a morning run. Five stars from me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Good for a short break. Toilets are far from the entrance."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Plenty of benches and shady spots. A great memory."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Strela-Platz is perfect for a slow afternoon. Plenty of benches and shady spots. Would visit again."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. The flowers are gorgeous in spring. Tell your friends."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "A decent place to walk. Few places to sit in the sun. Could be better."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. The flowers are gorgeous in spring. A great memory."
+      }
+    ]
+  },
+  {
+    "osmId": "way/42020938",
+    "name": "Schuckertplatz",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Clean and well looked after. Would visit again."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Plenty of benches and shady spots. Would visit again."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. Nice views and quiet corners."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Schuckertplatz is perfect for a slow afternoon. Plenty of benches and shady spots. Five stars from me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Good for a short break. Better in spring than in winter. Maybe once."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. A good place for a morning run."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Perfect for children and dogs."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Schuckertplatz is perfect for a slow afternoon. The flowers are gorgeous in spring. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Schuckertplatz is perfect for a slow afternoon. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Nice, nothing special. Few places to sit in the sun."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Schuckertplatz is perfect for a slow afternoon. Nice views and quiet corners."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Nice views and quiet corners. Do not miss it."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. A good place for a morning run. Tell your friends."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. A good place for a morning run."
+      }
+    ]
+  },
+  {
+    "osmId": "way/46550316",
+    "name": "Garden of roses",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Nice views and quiet corners. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Garden of roses is perfect for a slow afternoon. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "So peaceful. Nice views and quiet corners."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Clean and well looked after."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Quiet on weekdays. Few places to sit in the sun. Three stars from me."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "So peaceful. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. A good place for a morning run."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. A good place for a morning run."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Clean and well looked after."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "A decent place to walk. Toilets are far from the entrance."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Garden of roses is perfect for a slow afternoon. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Garden of roses is perfect for a slow afternoon. The flowers are gorgeous in spring. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Nice views and quiet corners. Worth every minute."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Perfect for children and dogs."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Perfect for children and dogs."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Clean and well looked after. Worth every minute."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Garden of roses is perfect for a slow afternoon. Clean and well looked after. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Clean and well looked after. Recommended!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Garden of roses is perfect for a slow afternoon. A good place for a morning run."
+      }
+    ]
+  },
+  {
+    "osmId": "way/12357722",
+    "name": "Lienemannbecken",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lienemannbecken is perfect for a slow afternoon. A good place for a morning run. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "A decent place to walk. Toilets are far from the entrance."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good for a short break. Not much shade in summer."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "So peaceful. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lienemannbecken is perfect for a slow afternoon. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. Clean and well looked after."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Nice views and quiet corners. Worth every minute."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Quiet on weekdays. Some paths need repair."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lienemannbecken is perfect for a slow afternoon. The flowers are gorgeous in spring. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Nice views and quiet corners. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lienemannbecken is perfect for a slow afternoon. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lienemannbecken is perfect for a slow afternoon. Clean and well looked after."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. A good place for a morning run. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Nice views and quiet corners. Worth every minute."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Plenty of benches and shady spots. Do not miss it."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Perfect for children and dogs."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Pleasant park. Not much shade in summer."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. The flowers are gorgeous in spring. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Clean and well looked after."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Fine for a quick stop. Toilets are far from the entrance."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Nice, nothing special. Not much shade in summer."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. Plenty of benches and shady spots. Highly recommended."
+      }
+    ]
+  },
+  {
+    "osmId": "way/525385367",
+    "name": "Schul-Umwelt-Zentrum Mitte - Filiale Seestraße",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Fine for a quick stop. Not much shade in summer. It depends on the day."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Pleasant park. Toilets are far from the entrance. Mixed feelings."
+      }
+    ]
+  },
+  {
+    "osmId": "way/514305350",
+    "name": "Schleifengarten",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Clean and well looked after."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Clean and well looked after. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Plenty of benches and shady spots. Worth every minute."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. The flowers are gorgeous in spring."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Nice views and quiet corners."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Lovely place to relax. A good place for a morning run."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Clean and well looked after. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Plenty of benches and shady spots. Five stars from me."
+      }
+    ]
+  },
+  {
+    "osmId": "way/295637413",
+    "name": "Lounge-Trapez",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Pleasant park. Not much shade in summer. Fair enough."
+      }
+    ]
+  },
+  {
+    "osmId": "node/1078744626",
+    "name": "China Food",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "OK for the price. Waited a while for the bill. Mixed feelings."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excellent meal. Fresh ingredients and careful cooking. A great memory."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Good food, slow service. A bit noisy at peak hours. Maybe once."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Excellent meal. The staff were friendly and quick."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "China Food was a great find. Lovely atmosphere in the evening."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Nice, but nothing special. Waited a while for the bill."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "OK for the price. Fair value, not a bargain. Mixed feelings."
+      }
+    ]
+  },
+  {
+    "osmId": "way/45524990",
+    "name": "Energy Museum",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Very well organised. Every room has something surprising."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A wonderful collection. The audio guide is worth taking."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Energy Museum is a must for art and history lovers. Great for families and for experts alike. Five stars from me."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Superb exhibitions. Every room has something surprising. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Very well organised. The audio guide is worth taking. Five stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A wonderful collection. The building itself is beautiful. Would visit again."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Confusing and tiring. Staff were not helpful at all. Would not recommend."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Inspiring from start to finish. The building itself is beautiful."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A wonderful collection. Every room has something surprising."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Energy Museum is a must for art and history lovers. Clear explanations in several languages."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Superb exhibitions. Every room has something surprising."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Very well organised. Plenty of space to take your time."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Inspiring from start to finish. The building itself is beautiful. A great memory."
+      }
+    ]
+  },
+  {
+    "osmId": "way/926795173",
+    "name": "Stadtteilgarten Schillerkiez",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Beautiful in every season. A good place for a morning run. Tell your friends."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. Plenty of benches and shady spots."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Clean and well looked after. Would visit again."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "So peaceful. Clean and well looked after. A great memory."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Great for a walk or a picnic. Nice views and quiet corners."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Stadtteilgarten Schillerkiez is perfect for a slow afternoon. Clean and well looked after. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Lovely place to relax. Nice views and quiet corners."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Nice views and quiet corners. Highly recommended."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Great for a walk or a picnic. Clean and well looked after. Five stars from me."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "A green escape from the city. A good place for a morning run. Highly recommended."
+      }
+    ]
+  },
+  {
+    "osmId": "way/145586611",
+    "name": "Dokumentationszentrum NS-Zwangsarbeit",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Spent half a day here happily. The audio guide is worth taking. Worth every minute."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Spent half a day here happily. Plenty of space to take your time."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Spent half a day here happily. Plenty of space to take your time. Would visit again."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Dokumentationszentrum NS-Zwangsarbeit is a must for art and history lovers. Plenty of space to take your time. Would visit again."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A wonderful collection. The building itself is beautiful. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Superb exhibitions. Clear explanations in several languages."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Not for me. Half of what I wanted to see was closed. Disappointing visit."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A wonderful collection. The building itself is beautiful."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "A wonderful collection. Every room has something surprising. Recommended!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Dokumentationszentrum NS-Zwangsarbeit is a must for art and history lovers. Great for families and for experts alike."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Interesting but too big for one visit. The route through the rooms is confusing."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Spent half a day here happily. The building itself is beautiful."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Spent half a day here happily. The building itself is beautiful. Would visit again."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Very well organised. Great for families and for experts alike. Five stars from me."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Fine, I expected a little more. The route through the rooms is confusing."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Dokumentationszentrum NS-Zwangsarbeit is a must for art and history lovers. Plenty of space to take your time. Tell your friends."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Inspiring from start to finish. Every room has something surprising. Highly recommended."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Dokumentationszentrum NS-Zwangsarbeit is a must for art and history lovers. Plenty of space to take your time. Highly recommended."
+      }
+    ]
   }
 ]
