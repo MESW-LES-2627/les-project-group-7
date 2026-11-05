@@ -3,13 +3,7 @@
  * can be tested without the UI.
  */
 
-function normalizeSearchText(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .trim();
-}
+import { normalizeSearchText } from "./search-text";
 
 /** The cities whose name contains the query, in the given order. An empty query matches all. */
 export function filterCitiesByName<City extends { name: string }>(
