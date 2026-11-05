@@ -43,7 +43,6 @@ import {
   PRICE_LEVELS,
   type PriceLevel,
   formatPriceLevel,
-  isPriceLevel,
 } from "@/domain/reviews/rating";
 
 export interface ReviewItem {
@@ -82,14 +81,15 @@ export default function ReviewModal({
 }: ReviewModalProps) {
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
-  const [priceLevel, setPriceLevel] = useState<PriceLevel>("€");
+  // No default: the reviewer says how expensive the place was, the form does not guess it
+  const [priceLevel, setPriceLevel] = useState<PriceLevel | null>(null);
   const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (place) {
       setRating(5);
       setHoverRating(0);
-      setPriceLevel(isPriceLevel(place.priceLevel) ? place.priceLevel : "€");
+      setPriceLevel(null);
       setComment("");
     }
   }, [place]);
@@ -101,7 +101,7 @@ export default function ReviewModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = comment.trim();
-    if (!trimmed) {
+    if (!trimmed || !priceLevel) {
       return;
     }
     onSubmit(rating, trimmed, priceLevel);
@@ -191,7 +191,9 @@ export default function ReviewModal({
             </div>
 
             <div>
-              <Label>Price level</Label>
+              <Label>
+                Price level <span className="text-rose-500">*</span>
+              </Label>
               <div
                 role="radiogroup"
                 aria-label="Price level"
@@ -246,7 +248,7 @@ export default function ReviewModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !comment.trim()}
+                disabled={isSubmitting || !comment.trim() || !priceLevel}
                 className="gap-1.5 text-xs"
               >
                 {isSubmitting ? (
