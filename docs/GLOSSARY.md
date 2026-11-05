@@ -14,7 +14,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Key Attributes:** `id`, `osmId`, `name`, `description`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`, may be unknown), `averageRating`, `reviewCount`, `source` (`IMPORTED` | `LAZY_OSM` | `SUGGESTED`). Its cost points (0..3) are derived from `priceLevel`.
 - **Invariants & Policies:**
   - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated `Review` records.
-  - `priceLevel`: places tagged `fee=no` in OpenStreetMap (parks, viewpoints, public landmarks) are `FREE` (0 cost points). OpenStreetMap has no other price data, so for every other place the `priceLevel` is the most common (mode) price level given in its reviews. A place with neither is **unknown**.
+  - `priceLevel`: places tagged `fee=no` in OpenStreetMap (parks, viewpoints, public landmarks) are `FREE` (0 cost points). OpenStreetMap has no other price data, so for every other place the `priceLevel` is the most common (mode) price level given in its reviews. A `FREE` place stays `FREE` until at least 2 reviews give a paid price (`PAID_REVIEWS_TO_LEAVE_FREE`, one review is not enough). A place with neither is **unknown**.
   - **A place enters the catalog in one of three ways** (see ADR-002): the _Import places_ command and the seed script (`source = IMPORTED`), on-the-fly saving when a user posts the first review for a place discovered live on the map (Stretch, `source = LAZY_OSM`), or an approved suggestion (post-MVP, `source = SUGGESTED`). In the committed MVP only the first one is used.
   - The place saved on the fly is created inside _Post review_. In the tracer bullet it is always assigned to the city Porto, which is a known limitation.
   - The map and the search call OpenStreetMap live (Stretch) to _discover_ places (see _Live Discovery_ in section 7). A discovered place is not in the catalog, and cannot be rated or planned, until it is saved.
@@ -39,8 +39,9 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### Review
 
 - **Definition:** User-authored evaluation of an experience at a specific `Place`.
-- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `priceLevel` (optional: how expensive it was, `€` | `€€` | `€€€`), `text`, `createdAt`, `updatedAt`.
+- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `priceLevel` (how expensive it was, `FREE` | `€` | `€€` | `€€€`; required when a review is posted; a review written before the form required it may have none), `text`, `createdAt`, `updatedAt`.
 - **Lifecycle & Rules:**
+  - **A review needs a rating, a price level and a text.** The form has no preselected rating or price level, and Submit stays disabled until the reviewer has chosen both and written at least one character (spaces alone do not count). The endpoint answers 400, naming the fields, and saves nothing when one is missing or invalid.
   - Posting a review triggers two policies on `Place`: **Mark place visited** and **Recalculate rating and price level**.
   - Editing or deleting a review triggers **Recalculate rating and price level**.
   - **A user can review a given place only once.** To change an opinion the user edits the review, and after deleting it can post a new one. Different users can each review the same place.
@@ -185,6 +186,16 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 ### Catalog Search (MVP)
 
 - **Definition:** Searching a city, browsing its places, filtering by type, price level and rating, and sorting by rating. It runs on our own PostgreSQL data only.
+- **Behavior:**
+  - **City search:** typing part of a city name filters the city buttons, ignoring case and accents (`ß` is read as `ss`), with a message when no city matches. Choosing a city lists only its places and flies the map to zoom 13, so the whole city is in view.
+  - **Place search:** a place matches when its name or address contains the text, with the same rule (case, accents, `ß`). The list, the map pins and the search popup use the same rule.
+  - **Choosing a place in the search popup** does not open the review dialog: the map flies to the place (zoom 16) and its name fills the search box. Its pin stays visible whatever the filters say, until the user types again, chooses another place or city, or rates it. Rating stays reachable from the pin.
+  - **Filters and order:** type, price level and minimum rating combine with AND. The list is always sorted by rating score (there is no sort control yet) and shows the places inside the visible map area.
+
+### Place Page (MVP)
+
+- **Definition:** The page `/places/[id]` of a place of the catalog: name, type, address with city and country, description (or a placeholder), average rating, number of reviews, price level (or "Price unknown") and its reviews, newest first, with author, rating, date, price level and text. A place without reviews says "No reviews yet" and offers "Write the first review". An unknown id shows a not-found page. The opening hours are not shown yet.
+- **Behavior:** the names in the ranking table and the cards link to it. A place discovered live and not yet saved has no page, so it is not linked. The OpenStreetMap attribution is shown on the page.
 
 ### Live Discovery (Stretch, built in the tracer bullet)
 
@@ -198,6 +209,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
   - Runs only when the user submits the search, never while typing, because the Nominatim usage policy forbids autocomplete. At most 1 request per second for the whole app, cached, with an identifying `User-Agent`.
   - Shows results in two groups: the local catalog and what was found on OpenStreetMap.
   - A place found this way is saved to the catalog when it is first reviewed, like any discovered place.
+  - Choosing an OpenStreetMap result focuses the place on the map and adds it to the list, like a place of the catalog, instead of opening the review dialog.
 
 ### Honest Symbolic Category Representation & Ranking DataTable
 

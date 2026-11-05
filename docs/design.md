@@ -108,8 +108,8 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
   removing a bookmark removes the place from the lists.
 - OpenStreetMap has no ratings or price levels, so reviewers provide the price level
   and the seed script creates demo users and reviews, so that rankings work from day one.
-  A place's price level is the most common (mode) price level of its reviews, or free
-  when OpenStreetMap tags `fee=no`.
+  A place's price level is the most common (mode) price level of its reviews, but a place
+  that OpenStreetMap tags `fee=no` is free and stays free until at least 2 reviews give a paid price.
 - Opening hours come from OpenStreetMap when mapped. Where they are missing the app
   shows "unknown" and cannot warn.
 - Travel time between stops is estimated from straight-line distance in the MVP.
@@ -154,7 +154,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | Place                          | Place               | name, description, category, address, latitude, longitude, openingHours (optional), /priceLevel, /averageRating, /reviewCount | belongs to a City, has Reviews and Visits                       |
 | Visit                          | Place               | visitedAt                                                                                    | links a User to a Place (at most one per pair); created when the user posts a review      |
 | PlaceSuggestion (post-MVP)     | Place suggestion    | proposedName, proposedCategory, proposedAddress, status, suggestedAt, decidedAt (optional)   | suggested by a User, decided by a moderator (ADMIN), proposed in a City, approved as a Place |
-| Review                         | Review              | rating (1..5), priceLevel (optional: €, €€ or €€€), text, createdAt                                        | written by a User about a Place (a user reviews a given place at most once)               |
+| Review                         | Review              | rating (1..5), priceLevel (FREE, €, €€ or €€€; required when posted), text, createdAt                                        | written by a User about a Place (a user reviews a given place at most once)               |
 | SavedPlace                     | Saved places        | type (WISHLIST / BOOKMARK)                                                                   | a User saves a Place                                                                      |
 | SavedList                      | List                | name                                                                                         | owned by a User, contains bookmarked SavedPlaces                                          |
 | Trip                           | Trip                | name, /averageCostPoints                                                                     | owned by a User, goes to a City, has TripConstraints, Days and an Itinerary               |
@@ -301,7 +301,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Context:** OpenStreetMap does not provide exact ticket or meal prices. Collecting exact euro amounts would produce false or incomplete data and make the itinerary generator rigid and fragile.
 - **Decision:** A discrete cost-point model with a soft target:
   - Cost points by level: `FREE = 0`, `€ = 1`, `€€ = 2`, `€€€ = 3`.
-  - Public places without a ticket (for example OpenStreetMap `fee=no`) automatically get `FREE` (0 points). Commercial places get the statistical **mode** of the price levels that users give in their reviews.
+  - Public places without a ticket (for example OpenStreetMap `fee=no`) automatically get `FREE` (0 points). Other places get the statistical **mode** of the price levels that users give in their reviews. A `FREE` place only changes when at least 2 reviews give a paid price.
   - A `Trip` has a `budgetLevel`, the target for the average of the whole trip. The generator and the planner keep the running average close to that value and warn when it is exceeded, without blocking the user's choices. Places with an unknown price are not counted.
 - **Consequences:**
   - _Positive:_ a deterministic, resilient generator that is easy to test with TDD (`src/domain/itinerary/itinerary.ts`). The user can mix free and paid attractions.

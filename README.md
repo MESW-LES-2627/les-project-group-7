@@ -57,7 +57,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 │   ├── data/               # JSON data used by the seed
 │   └── migrations/         # Prisma migration history (never edit an applied migration)
 ├── scripts/
-│   ├── import-osm.ts       # Imports Porto places from OpenStreetMap
+│   ├── import-osm.ts       # Imports the places of one MVP city (Porto, Paris, Berlin) from OpenStreetMap
 │   └── validate-docs.ts    # Checks the links and anchors in docs/ (npm run lint:docs)
 └── src/
     ├── app/                # Next.js App Router (pages and API routes)
@@ -67,6 +67,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
     │   ├── api/health/     # GET /api/health
+    │   ├── places/[id]/    # Place page (details and reviews)
     │   ├── register/       # Registration page
     │   ├── login/          # Login page
     │   ├── layout.tsx      # Page shell: top bar (SiteHeader) and theme
@@ -153,9 +154,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Key Features in Tracer Bullet
 
-- **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
+- **Interactive Rating System:** Submit a 1–5 star rating, a price level and a text for any spot, with instant UI updates. The form has no preselected rating or price level, and all three are required.
 - **Accounts:** Registration (`/register`, `POST /api/register`), login by username or e-mail (`/login`) and logout, with Better Auth behind them. The top bar shows the logged-in username. The review form shows the logged-in username and asks logged-out visitors to log in. Posting a review needs a logged-in user, and the author is always the user of the session (the reviews endpoint ignores any `userId` sent by the client).
 - **Dark mode:** The site opens in dark mode. The sun/moon button in the top bar switches the theme, and the choice is remembered in the browser. It has no user story of its own.
-- **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. Not built yet: price level on reviews and its recalculation, showing visited places after a page reload, and editing or deleting a review.
+- **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. The review form asks for a price level, and the place's price level is recalculated from its reviews (a free place needs 2 paid reviews to change). Not built yet: showing visited places after a page reload, and editing or deleting a review.
 - **OpenStreetMap Places:** Interactive Leaflet map with places loaded into PostgreSQL by the seed and import scripts, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
-- **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.
+- **Search & Filter:** A city search (ignoring case and accents) and a place search over the local PostgreSQL data, with filters for type, price level and minimum rating that combine, and a list sorted by rating score. Choosing a city or a searched place moves the map to it.
+- **Place page:** `/places/[id]` shows a place's details, rating, price level and reviews, newest first, and lets a logged-in user write a review. The opening hours are not shown yet.

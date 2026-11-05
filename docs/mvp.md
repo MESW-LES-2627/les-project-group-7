@@ -117,7 +117,8 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 - **Ratings and price levels:** OpenStreetMap has none, so they come from reviews.
   The seed script creates demo users and sample reviews (the schema does not mark
   them as demo data).
-  A place's price level is the most common (mode) price level given in its reviews.
+  A place's price level is the most common (mode) price level given in its reviews, except that a
+  free place (`fee=no`) stays free until at least 2 reviews give a paid price.
 - **Ranking:** places are ranked by a **weighted rating**, not by the plain average, so that
   one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
   `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 3` and

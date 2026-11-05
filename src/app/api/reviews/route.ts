@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/guard";
 import {
   calculateAverageRating,
-  calculatePriceLevelMode,
+  calculatePlacePriceLevel,
+  isPriceLevel,
 } from "@/domain/reviews/rating";
 import { validateReviewInput } from "@/domain/reviews/review-validation";
 import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
@@ -165,10 +166,9 @@ export async function POST(request: Request) {
             typeof rawPlace.longitude === "number"
               ? rawPlace.longitude
               : -8.6109,
-          priceLevel:
-            typeof rawPlace.priceLevel === "string"
-              ? rawPlace.priceLevel
-              : null,
+          priceLevel: isPriceLevel(rawPlace.priceLevel)
+            ? rawPlace.priceLevel
+            : null,
           cityId: city.id,
           source: "LAZY_OSM",
         },
@@ -228,10 +228,10 @@ export async function POST(request: Request) {
       priceLevelsList.push(allReviews[i].priceLevel);
     }
     const newAvg = calculateAverageRating(ratingsList);
-    const newPriceLevel =
-      calculatePriceLevelMode(priceLevelsList) ??
-      existingPlace.priceLevel ??
-      null;
+    const newPriceLevel = calculatePlacePriceLevel(
+      existingPlace.priceLevel,
+      priceLevelsList
+    );
 
     // Step 6: Update the Place with the new average, count, and price level
     const updatedPlace = await prisma.place.update({
