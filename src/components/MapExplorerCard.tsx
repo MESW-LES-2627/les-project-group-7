@@ -16,7 +16,11 @@ import CitySelector, { type CityOption } from "./CitySelector";
 import PlaceSearchAutocomplete from "./PlaceSearchAutocomplete";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
-import { PRICE_LEVELS, isPriceLevel } from "@/domain/reviews/rating";
+import {
+  PRICE_LEVELS,
+  formatPriceLevel,
+  isPriceLevel,
+} from "@/domain/reviews/rating";
 import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
 import type { PlaceCategory } from "@prisma/client";
 
@@ -179,7 +183,7 @@ export default function MapExplorerCard({
                 <option value="">Any</option>
                 {PRICE_LEVELS.map((level) => (
                   <option key={level} value={level}>
-                    {level}
+                    {formatPriceLevel(level)}
                   </option>
                 ))}
               </select>
