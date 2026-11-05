@@ -29,4 +29,4 @@ Use links that work on tag `iter-1`. If something does not exist yet, write `non
 |  |  |
 | Stories in this increment | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/iterations/1/stories.md |
 | Retrospective | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/iterations/1/retrospective.md |
-| AI log | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/iterations/1/ai-log.md |
+| AI log | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/ai-log.md |
