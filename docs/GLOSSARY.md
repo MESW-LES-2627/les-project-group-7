@@ -39,7 +39,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### Review
 
 - **Definition:** User-authored evaluation of an experience at a specific `Place`.
-- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `priceLevel` (how expensive it was, `FREE` | `€` | `€€` | `€€€`; required when a review is posted, the sample reviews of the seed may have none), `text`, `createdAt`, `updatedAt`.
+- **Key Attributes:** `id`, `userId`, `placeId`, `rating` (integer 1..5), `priceLevel` (how expensive it was, `FREE` | `€` | `€€` | `€€€`; required when a review is posted; a review written before the form required it may have none), `text`, `createdAt`, `updatedAt`.
 - **Lifecycle & Rules:**
   - **A review needs a rating, a price level and a text.** The form has no preselected rating or price level, and Submit stays disabled until the reviewer has chosen both and written at least one character (spaces alone do not count). The endpoint answers 400, naming the fields, and saves nothing when one is missing or invalid.
   - Posting a review triggers two policies on `Place`: **Mark place visited** and **Recalculate rating and price level**.
