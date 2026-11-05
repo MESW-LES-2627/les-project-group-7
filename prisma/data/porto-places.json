@@ -5663,5 +5663,115 @@
     "longitude": -8.6677962,
     "openingHours": null,
     "priceLevel": null
+  },
+  {
+    "osmId": "node/12514092225",
+    "name": "Lello & Irmao Bookstore",
+    "description": "Lello & Irmao Bookstore (books) in Porto, listed on OpenStreetMap.",
+    "category": "MONUMENT",
+    "address": "Rua das Carmelitas, 4050-161, Porto",
+    "latitude": 41.1468317,
+    "longitude": -8.6148485,
+    "openingHours": "Mo-Su 09:30-19:00",
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/98835981",
+    "name": "Ponte Luiz I (tabuleiro superior)",
+    "description": "Ponte Luiz I (tabuleiro superior) (pedestrian) in Porto, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Ponte Luiz I (tabuleiro superior), 4000-278, Porto",
+    "latitude": 41.1401696,
+    "longitude": -8.6094576,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/213579267",
+    "name": "Café Santiago",
+    "description": "Café Santiago (yes) in Porto, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rua de Passos Manuel 226, 4000-385, Porto",
+    "latitude": 41.1464312,
+    "longitude": -8.604772,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/365042798",
+    "name": "Café Majestic",
+    "description": "Café Majestic (yes) in Porto, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rua de Santa Catarina, 4000-442, Porto",
+    "latitude": 41.1471629,
+    "longitude": -8.6065817,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/247168260",
+    "name": "Clérigos Tower",
+    "description": "Clérigos Tower (tower) in Porto, listed on OpenStreetMap.",
+    "category": "MONUMENT",
+    "address": "Rua da Assunção, 4050-546, Porto",
+    "latitude": 41.1456547,
+    "longitude": -8.6146275,
+    "openingHours": "Mo-Su 09:00-19:00",
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/603359226",
+    "name": "Casa da Música",
+    "description": "Casa da Música (concert hall) in Porto, listed on OpenStreetMap.",
+    "category": "MONUMENT",
+    "address": "Avenida da Boavista 604-610, 4149-071, Porto",
+    "latitude": 41.1589025,
+    "longitude": -8.6307748,
+    "openingHours": "Mo-Su 09:30-18:00",
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/9560987799",
+    "name": "Serralves Foundation",
+    "description": "Serralves Foundation (foundation) in Porto, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rua de Dom João de Castro 210, 4150-417, Porto",
+    "latitude": 41.1590425,
+    "longitude": -8.6593536,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/210681249",
+    "name": "Church of São Francisco",
+    "description": "Church of São Francisco (place of worship) in Porto, listed on OpenStreetMap.",
+    "category": "MONUMENT",
+    "address": "Rua do Infante Dom Henrique, 4050-298, Porto",
+    "latitude": 41.1409824,
+    "longitude": -8.6157079,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/239012587",
+    "name": "Cais da Ribeira",
+    "description": "Cais da Ribeira (pedestrian) in Porto, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Cais da Ribeira, 4050-149, Porto",
+    "latitude": 41.1403515,
+    "longitude": -8.6130468,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/8261781140",
+    "name": "Fonte da Moura",
+    "description": "Fonte da Moura (neighbourhood) in Porto, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "4100-307, Porto",
+    "latitude": 41.1701824,
+    "longitude": -8.6598111,
+    "openingHours": null,
+    "priceLevel": null
   }
 ]
