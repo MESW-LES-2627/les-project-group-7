@@ -225,19 +225,6 @@ export default async function PlacePage({ params }: PlacePageProps) {
             </ol>
           )}
         </section>
-
-        <footer className="pt-4 text-xs text-slate-400 dark:text-slate-600">
-          Data &copy;{" "}
-          <a
-            href="https://www.openstreetmap.org/copyright"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-slate-600 dark:hover:text-slate-400"
-          >
-            OpenStreetMap
-          </a>{" "}
-          contributors
-        </footer>
       </main>
     </div>
   );
