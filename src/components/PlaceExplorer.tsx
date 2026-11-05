@@ -2,7 +2,7 @@
 
 /**
  * The main screen of the home page. It keeps the state of the explorer (the catalog, the
- * selected city, the search text, the category, the visible map area and the page) and puts
+ * selected city, the search text, the filters and the page) and puts
  * together the map card, the ranking (table or cards) and the review dialog. It also asks
  * OpenStreetMap for the places of the visible map area, which are shown as discovered.
  */
@@ -55,7 +55,6 @@ export default function PlaceExplorer({
   const [filters, setFilters] = useState<PlaceFilters>(NO_PLACE_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
-  const [mapBounds, setMapBounds] = useState<BoundingBox | null>(null);
 
   const activeCityName = initialCities.find(
     (c) => c.id === selectedCityId
@@ -77,13 +76,17 @@ export default function PlaceExplorer({
       searchQuery,
       currentPage,
       pageSize: PAGE_SIZE,
-      mapBounds,
     });
 
-  // Reset pagination on filter, city or viewport change
+  // Reset pagination on filter or city change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, searchQuery, selectedCityId, mapBounds]);
+  }, [filters, searchQuery, selectedCityId]);
+
+  // Moving the map replaces the OpenStreetMap places, so the list can get shorter than the page
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   // Smoothly pan map to selected city
   const handleSelectCity = useCallback((city: CityOption | null) => {
@@ -94,8 +97,6 @@ export default function PlaceExplorer({
     }
     setSelectedCityId(city.id);
     setSelectedCityCenter([city.latitude, city.longitude]);
-    // The old viewport is another city: list the whole city until the map arrives
-    setMapBounds(null);
   }, []);
 
   // Callback to sync catalog updates when a review is submitted
@@ -209,9 +210,8 @@ export default function PlaceExplorer({
     ];
   }, [mapPlaces, focusedPlace]);
 
-  // Debounced bounding-box OSM fetcher & viewport tracker
+  // Debounced OpenStreetMap fetch for the visible map area
   const handleMapMove = useCallback((bounds: BoundingBox) => {
-    setMapBounds(bounds);
     if (osmDebounceRef.current) clearTimeout(osmDebounceRef.current);
 
     osmDebounceRef.current = setTimeout(async () => {
@@ -278,8 +278,8 @@ export default function PlaceExplorer({
               Place Ranking{activeCityName ? ` in ${activeCityName}` : ""}
             </h2>
             <p className="text-xs text-slate-500">
-              {filteredPlaces.length} of {allPlaces.length} places visible on
-              the map (sorted by rating)
+              {filteredPlaces.length} of {allPlaces.length} places, best rating
+              score first
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 /**
  * Pure domain module providing geographical calculations, geodesic distances,
- * walking travel estimates and bounding box spatial containment tests.
+ * walking travel estimates and the bounding box type of the map.
  */
 
 export interface GeoBoundingBox {
@@ -8,22 +8,6 @@ export interface GeoBoundingBox {
   west: number;
   north: number;
   east: number;
-}
-
-/**
- * Determines whether a geographical coordinate point falls within a bounding box.
- */
-export function isPointInsideBounds(
-  lat: number,
-  lon: number,
-  bounds: GeoBoundingBox
-): boolean {
-  return (
-    lat >= bounds.south &&
-    lat <= bounds.north &&
-    lon >= bounds.west &&
-    lon <= bounds.east
-  );
 }
 
 /**

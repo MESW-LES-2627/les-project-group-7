@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import type { PlaceItem } from "@/types/place";
 import type { MapPlace } from "@/components/MapComponent";
-import { isPointInsideBounds, type GeoBoundingBox } from "@/domain/catalog/geo";
 import {
   filterPlaces,
   sortPlacesByRating,
@@ -17,7 +16,6 @@ interface UsePlaceFilteringProps {
   searchQuery: string;
   currentPage: number;
   pageSize: number;
-  mapBounds?: GeoBoundingBox | null;
 }
 
 export function usePlaceFiltering({
@@ -28,7 +26,6 @@ export function usePlaceFiltering({
   searchQuery,
   currentPage,
   pageSize,
-  mapBounds,
 }: UsePlaceFilteringProps) {
   // 1. Single-pass merge of DB places and OSM places
   const allPlaces = useMemo(() => {
@@ -66,16 +63,11 @@ export function usePlaceFiltering({
     return filterPlaces(cityAndSearchMatches, filters);
   }, [allPlaces, selectedCityId, filters, searchQuery]);
 
-  // 3. Filter by map viewport bounds and sort by rating descending
-  const filteredPlaces = useMemo(() => {
-    const inViewport = mapBounds
-      ? matchingPlaces.filter((place) =>
-          isPointInsideBounds(place.latitude, place.longitude, mapBounds)
-        )
-      : matchingPlaces;
-
-    return sortPlacesByRating(inViewport);
-  }, [matchingPlaces, mapBounds]);
+  // 3. The ranking: every matching place, best rating score first, wherever the map is
+  const filteredPlaces = useMemo(
+    () => sortPlacesByRating(matchingPlaces),
+    [matchingPlaces]
+  );
 
   // 4. Pagination calculations
   const totalPages = Math.max(1, Math.ceil(filteredPlaces.length / pageSize));
