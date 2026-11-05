@@ -10789,5 +10789,93 @@
     "longitude": 13.4713879,
     "openingHours": null,
     "priceLevel": null
+  },
+  {
+    "osmId": "way/20593936",
+    "name": "Mommsenstadion",
+    "description": "Mommsenstadion (stadium) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Harbigstraße, 14055, Berlin",
+    "latitude": 52.5010801,
+    "longitude": 13.2643879,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/2459919675",
+    "name": "Berlin Hauptbahnhof (tief)",
+    "description": "Berlin Hauptbahnhof (tief) (station) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Europaplatz 1, 10557, Berlin",
+    "latitude": 52.5246361,
+    "longitude": 13.369861,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/3419894993",
+    "name": "Berlin Eastern Station",
+    "description": "Berlin Eastern Station (station) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Mitteltunnel, 10243, Berlin",
+    "latitude": 52.5103817,
+    "longitude": 13.4349112,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/27556933",
+    "name": "Berlin Zoologischer Garten",
+    "description": "Berlin Zoologischer Garten (station) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Hardenbergplatz, 10623, Berlin",
+    "latitude": 52.5074342,
+    "longitude": 13.3325608,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/1095078202",
+    "name": "Südkreuz (Ringbahn)",
+    "description": "Südkreuz (Ringbahn) (station) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Hildegard-Knef-Platz, 10829, Berlin",
+    "latitude": 52.4759806,
+    "longitude": 13.3650726,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/459277140",
+    "name": "Berlin Gesundbrunnen",
+    "description": "Berlin Gesundbrunnen (station) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Ramlerstraße, 13355, Berlin",
+    "latitude": 52.5486453,
+    "longitude": 13.3902169,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/530812080",
+    "name": "Berlin Friedrichstraße",
+    "description": "Berlin Friedrichstraße (station) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Georgenstraße, 10117, Berlin",
+    "latitude": 52.5201744,
+    "longitude": 13.3869884,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/4537633",
+    "name": "Zufahrt zum Flughafen Tegel",
+    "description": "Zufahrt zum Flughafen Tegel (construction) in Berlin, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Zufahrt zum Flughafen Tegel, 13405, Berlin",
+    "latitude": 52.5503399,
+    "longitude": 13.2950235,
+    "openingHours": null,
+    "priceLevel": null
   }
 ]

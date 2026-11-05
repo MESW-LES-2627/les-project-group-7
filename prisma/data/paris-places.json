@@ -10525,5 +10525,115 @@
     "longitude": 2.4117075,
     "openingHours": null,
     "priceLevel": null
+  },
+  {
+    "osmId": "way/53559935",
+    "name": "Parc des Princes",
+    "description": "Parc des Princes (stadium) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rue du Commandant Guilbaud 24, 75016, Paris",
+    "latitude": 48.8413634,
+    "longitude": 2.2530693,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/403524549",
+    "name": "Stade Jean-Bouin",
+    "description": "Stade Jean-Bouin (stadium) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Avenue du Général Sarrail 20 - 40, 75016, Paris",
+    "latitude": 48.8433187,
+    "longitude": 2.2529615,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/5949684850",
+    "name": "Stade Charléty",
+    "description": "Stade Charléty (tram stop) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Boulevard Kellermann, 75013, Paris",
+    "latitude": 48.8194749,
+    "longitude": 2.3457777,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/5364676905",
+    "name": "Gare du Nord (Métro)",
+    "description": "Gare du Nord (Métro) (station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rue du Faubourg Saint-Denis, 75010, Paris",
+    "latitude": 48.8795666,
+    "longitude": 2.3572124,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/1161318094",
+    "name": "Gare de Lyon",
+    "description": "Gare de Lyon (train station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rue Van Gogh 4, 75571, Paris",
+    "latitude": 48.8443818,
+    "longitude": 2.3748001,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/2506241285",
+    "name": "Paris Gare de l'Est",
+    "description": "Paris Gare de l'Est (station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Place du 11 Novembre 1918, 75010, Paris",
+    "latitude": 48.8770979,
+    "longitude": 2.3594905,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "node/65331500",
+    "name": "Gare Montparnasse",
+    "description": "Gare Montparnasse (station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Allée de la deuxième D.B., 75015, Paris",
+    "latitude": 48.8400624,
+    "longitude": 2.3191085,
+    "openingHours": "Mo-Su 05:00-01:15",
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/727994377",
+    "name": "Gare Saint-Lazare",
+    "description": "Gare Saint-Lazare (train station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Rue Intérieure 11, 75008, Paris",
+    "latitude": 48.8770414,
+    "longitude": 2.3250674,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/62380197",
+    "name": "Gare d'Austerlitz",
+    "description": "Gare d'Austerlitz (train station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Quai d'Austerlitz 85, 75013, Paris",
+    "latitude": 48.8417775,
+    "longitude": 2.3661406,
+    "openingHours": null,
+    "priceLevel": null
+  },
+  {
+    "osmId": "way/468790339",
+    "name": "Gare de Paris-Bercy-Bourgogne-Pays d'Auvergne",
+    "description": "Gare de Paris-Bercy-Bourgogne-Pays d'Auvergne (train station) in Paris, listed on OpenStreetMap.",
+    "category": "OTHER",
+    "address": "Boulevard de Bercy 48, 75012, Paris",
+    "latitude": 48.8383999,
+    "longitude": 2.383826,
+    "openingHours": null,
+    "priceLevel": null
   }
 ]

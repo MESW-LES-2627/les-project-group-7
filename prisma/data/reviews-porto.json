@@ -2394,5 +2394,2120 @@
         "text": "Uma coleção maravilhosa. Há espaço para ver com calma. Recomendo!"
       }
     ]
+  },
+  {
+    "osmId": "node/801914063",
+    "name": "S. Martino - Restaurante Pizzeria Gelataria",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Doses generosas e preços justos."
+      }
+    ]
+  },
+  {
+    "osmId": "way/756935315",
+    "name": "Mesa com Tradição",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Não voltaria. Esperámos mais de uma hora pela comida."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Serviço fraco. O empregado foi mal-educado. Evitar em horas de ponta."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€",
+        "text": "Serviço fraco. A sala estava barulhenta e suja."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Refeição razoável. Preço justo, não é uma pechincha."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€€",
+        "text": "Não voltaria. Os pratos não sabiam a nada."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Bom para o preço. Preço justo, não é uma pechincha."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€€",
+        "text": "Uma desilusão. Preços de turista para comida mediana. Não compensa."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Serviço fraco. A sala estava barulhenta e suja. Não é para mim."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Não vale o preço. O empregado foi mal-educado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Doses generosas e preços justos."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€",
+        "text": "Uma desilusão. Os pratos não sabiam a nada. Evitar em horas de ponta."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Refeição desiludida. O empregado foi mal-educado. Não recomendo."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Refeição razoável. As sobremesas deixaram a desejar. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Boa comida, serviço lento. Preço justo, não é uma pechincha. Sentimentos mistos."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Uma desilusão. Esperámos mais de uma hora pela comida."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€€",
+        "text": "Serviço fraco. A sala estava barulhenta e suja. Evitar em horas de ponta."
+      }
+    ]
+  },
+  {
+    "osmId": "way/587486357",
+    "name": "Quinta dos Afonsos",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. A sobremesa foi a melhor parte. Não percam."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Não vale o preço. A conta tinha erros."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Reserve antes, enche depressa. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Refeição razoável. Esperámos um pouco pela conta. Sentimentos mistos."
+      }
+    ]
+  },
+  {
+    "osmId": "way/887069049",
+    "name": "O Chanquinhas",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Reserve antes, enche depressa. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Alguns pratos melhores do que outros. A ementa é curta mas serve. Depende do dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Mediano mas agradável. Preço justo, não é uma pechincha. Nada mau."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. O pessoal foi simpático e rápido. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Ingredientes frescos e cozinha cuidada. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. O pessoal foi simpático e rápido. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Ambiente agradável à noite. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Ambiente agradável à noite. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. Ingredientes frescos e cozinha cuidada. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Ingredientes frescos e cozinha cuidada. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Vou voltar de certeza. O pessoal foi simpático e rápido. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "O Chanquinhas foi uma boa descoberta. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. Doses generosas e preços justos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Ingredientes frescos e cozinha cuidada."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "O Chanquinhas foi uma boa descoberta. Reserve antes, enche depressa. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Refeição razoável. As sobremesas deixaram a desejar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Vou voltar de certeza. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "O Chanquinhas foi uma boa descoberta. Doses generosas e preços justos. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Vou voltar de certeza. A sobremesa foi a melhor parte. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "O Chanquinhas foi uma boa descoberta. Doses generosas e preços justos. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "O Chanquinhas foi uma boa descoberta. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para o preço. As sobremesas deixaram a desejar. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Simpático, nada de especial. As doses podiam ser maiores. Razoável."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7157145487",
+    "name": "Casa Pinto",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. A sobremesa foi a melhor parte. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Ambiente agradável à noite. Voltaria."
+      }
+    ]
+  },
+  {
+    "osmId": "way/461172679",
+    "name": "Chefe Almeida",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Serviço fraco. O empregado foi mal-educado."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Alguns pratos melhores do que outros. As doses podiam ser maiores. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Refeição razoável. Algum barulho nas horas de ponta."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Doses generosas e preços justos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. Ambiente agradável à noite."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Mediano mas agradável. As doses podiam ser maiores."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Refeição razoável. Preço justo, não é uma pechincha. Sentimentos mistos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Chefe Almeida foi uma boa descoberta. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Alguns pratos melhores do que outros. Algum barulho nas horas de ponta. Talvez uma vez."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Simpático, nada de especial. As sobremesas deixaram a desejar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. Doses generosas e preços justos. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. Ingredientes frescos e cozinha cuidada. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Chefe Almeida foi uma boa descoberta. Ambiente agradável à noite."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Chefe Almeida foi uma boa descoberta. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Refeição razoável. As doses podiam ser maiores."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Mediano mas agradável. Algum barulho nas horas de ponta."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom para o preço. Preço justo, não é uma pechincha."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Mediano mas agradável. As sobremesas deixaram a desejar. Sentimentos mistos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Mediano mas agradável. Esperámos um pouco pela conta. Nada mau."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. O pessoal foi simpático e rápido. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Reserve antes, enche depressa."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4222563488",
+    "name": "O Moreira",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Refeição razoável. As sobremesas deixaram a desejar. Depende do dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Simpático, nada de especial. As doses podiam ser maiores. Razoável."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. Doses generosas e preços justos. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1206696124",
+    "name": "Bom Gosto Take Away",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Doses generosas e preços justos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. A sobremesa foi a melhor parte. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bom Gosto Take Away foi uma boa descoberta. Doses generosas e preços justos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Boa receção e comida ótima. O pessoal foi simpático e rápido."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Simpático, nada de especial. As doses podiam ser maiores."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Delicioso do princípio ao fim. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bom Gosto Take Away foi uma boa descoberta. Ambiente agradável à noite. Voltaria."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Alguns pratos melhores do que outros. Algum barulho nas horas de ponta. Bom no geral."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bom Gosto Take Away foi uma boa descoberta. Reserve antes, enche depressa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. A sobremesa foi a melhor parte."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3928216019",
+    "name": "Rei da Picanha",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Refeição razoável. Preço justo, não é uma pechincha. Bom no geral."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Comida fria. Preços de turista para comida mediana."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom para o preço. Preço justo, não é uma pechincha. Depende do dia."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para o preço. Algum barulho nas horas de ponta."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Comida fria. A conta tinha erros. Não compensa."
+      }
+    ]
+  },
+  {
+    "osmId": "way/833321077",
+    "name": "Restaurante Maracaná",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. A sobremesa foi a melhor parte."
+      }
+    ]
+  },
+  {
+    "osmId": "node/12617904546",
+    "name": "Cerqueira",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Vou voltar de certeza. Ingredientes frescos e cozinha cuidada. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "node/5815527554",
+    "name": "Monte Crasto",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Vou voltar de certeza. A sobremesa foi a melhor parte. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Boa comida, serviço lento. As doses podiam ser maiores. Razoável."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Refeição razoável. A ementa é curta mas serve. Bom no geral."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Monte Crasto foi uma boa descoberta. O pessoal foi simpático e rápido."
+      }
+    ]
+  },
+  {
+    "osmId": "way/692039240",
+    "name": "Restaurante Os Sousas",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. A sobremesa foi a melhor parte. Não percam."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6051002155",
+    "name": "A Cêpa",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. Ingredientes frescos e cozinha cuidada."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "A Cêpa foi uma boa descoberta. Ambiente agradável à noite."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4432931691",
+    "name": "Juma coffe",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece. Valeu cada minuto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para descansar. O serviço pode ser lento. Podia ser melhor."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para descansar. Os doces variam. Razoável."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Café caro. O bolo estava seco."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Café razoável. Os doces variam. Bom no geral."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Preços justos para a qualidade. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Juma coffe é a minha paragem preferida. Calmo de manhã, animado ao almoço. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom no geral. Difícil arranjar mesa."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Bom wifi para trabalhar. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um café adorável. Bom wifi para trabalhar. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Bom wifi para trabalhar. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Calmo de manhã, animado ao almoço. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Serve para uma pausa rápida. Os doces variam. Podia ser melhor."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom no geral. O serviço pode ser lento."
+      }
+    ]
+  },
+  {
+    "osmId": "node/13956191101",
+    "name": "Café Snack-Bar D. João",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Preços justos para a qualidade. Voltaria."
+      }
+    ]
+  },
+  {
+    "osmId": "way/327103345",
+    "name": "Gens Sport Clube",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Os bolos são feitos no dia. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Esplanada agradável ao sol. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Pessoal simpático que nos reconhece. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Preços justos para a qualidade."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Gens Sport Clube é a minha paragem preferida. Bom wifi para trabalhar. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Bom wifi para trabalhar. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Gens Sport Clube é a minha paragem preferida. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Calmo de manhã, animado ao almoço. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Pessoal simpático que nos reconhece. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Os bolos são feitos no dia. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Pessoal simpático que nos reconhece. Voltaria."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom no geral. Os doces variam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Preços justos para a qualidade. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Esplanada agradável ao sol. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Esplanada agradável ao sol."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4316811657",
+    "name": "Bar Social Cohaemato",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Esplanada agradável ao sol. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Preços justos para a qualidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Calmo de manhã, animado ao almoço. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bar Social Cohaemato é a minha paragem preferida. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Um café adorável. Os bolos são feitos no dia. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Calmo de manhã, animado ao almoço. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Bom wifi para trabalhar. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bar Social Cohaemato é a minha paragem preferida. Esplanada agradável ao sol. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Preços justos para a qualidade."
+      }
+    ]
+  },
+  {
+    "osmId": "node/13296612425",
+    "name": "Andreia",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Andreia é a minha paragem preferida. Preços justos para a qualidade. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "way/224283768",
+    "name": "Café Vale",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Mesas sujas. Bebidas frias e acolhimento ausente. Não é para mim."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4288876937",
+    "name": "Café Paulinha",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Pessoal simpático que nos reconhece. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café Paulinha é a minha paragem preferida. Esplanada agradável ao sol. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Os bolos são feitos no dia. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café Paulinha é a minha paragem preferida. Calmo de manhã, animado ao almoço. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Preços justos para a qualidade."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Café excelente. Calmo de manhã, animado ao almoço. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Calmo de manhã, animado ao almoço. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Café excelente. Preços justos para a qualidade. Muito recomendado."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Serve para uma pausa rápida. Difícil arranjar mesa. Podia ser melhor."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1218860734",
+    "name": "Irreverente",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Preços justos para a qualidade."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6047616888",
+    "name": "Pastelaria Bela Sombra",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Café razoável. Preços um pouco altos. Bom no geral."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Os melhores doces da zona. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Bom wifi para trabalhar. Valeu cada minuto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom no geral. Poucas opções vegetarianas. Talvez uma vez."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Pessoal simpático que nos reconhece. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Pessoal simpático que nos reconhece."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1272555544",
+    "name": "Café Castro",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Café excelente. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Preços justos para a qualidade."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bom no geral. O serviço pode ser lento."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café Castro é a minha paragem preferida. Esplanada agradável ao sol."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Os bolos são feitos no dia."
+      }
+    ]
+  },
+  {
+    "osmId": "node/8175987517",
+    "name": "Serra - Bakery",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "€",
+        "text": "Não compensa. Bebidas frias e acolhimento ausente. Nunca mais."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "€",
+        "text": "Mesas sujas. Há melhores a poucas ruas. Não é para mim."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Não voltaria. O pessoal ignorou-nos. Nunca mais."
+      }
+    ]
+  },
+  {
+    "osmId": "node/14124547859",
+    "name": "Café Santa Apolónia",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Desiludido. Há melhores a poucas ruas. Não é para mim."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para descansar. Preços um pouco altos. Depende do dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Esplanada agradável ao sol. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Agradável mas cheio. Os doces variam."
+      }
+    ]
+  },
+  {
+    "osmId": "node/3386299094",
+    "name": "S. Gens",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Agradável mas cheio. Os doces variam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "S. Gens é a minha paragem preferida. Bom wifi para trabalhar. Voltaria."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Café caro. Há melhores a poucas ruas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Serve para uma pausa rápida. O serviço pode ser lento. Podia ser melhor."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece. Uma boa memória."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Lento e pouco simpático. Bebidas frias e acolhimento ausente."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para descansar. Algum barulho ao almoço. Nada mau."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Bom wifi para trabalhar. Recomendo!"
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Sítio agradável, café mediano. O serviço pode ser lento. Razoável."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Café excelente. Pessoal simpático que nos reconhece. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Preços justos para a qualidade."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Bom wifi para trabalhar. Digam aos amigos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Café razoável. Preços um pouco altos. Bom no geral."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para descansar. Algum barulho ao almoço. Talvez uma vez."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom para descansar. Algum barulho ao almoço. Bom no geral."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Bom wifi para trabalhar. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "S. Gens é a minha paragem preferida. Pessoal simpático que nos reconhece. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bom no geral. Difícil arranjar mesa. Três estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Acolhedor e simpático. Os bolos são feitos no dia. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Perfeito para ler. Esplanada agradável ao sol. Valeu cada minuto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Sítio agradável, café mediano. Difícil arranjar mesa."
+      }
+    ]
+  },
+  {
+    "osmId": "node/689567048",
+    "name": "Velhos hábitos",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Os melhores doces da zona. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Pessoal simpático que nos reconhece. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Os bolos são feitos no dia."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Calmo de manhã, animado ao almoço. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Bom wifi para trabalhar."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Perfeito para ler. Pessoal simpático que nos reconhece."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Acolhedor e simpático. Calmo de manhã, animado ao almoço."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um café adorável. Calmo de manhã, animado ao almoço. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Velhos hábitos é a minha paragem preferida. Esplanada agradável ao sol. Recomendo!"
+      }
+    ]
+  },
+  {
+    "osmId": "node/11360225463",
+    "name": "Dekaras Bar",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Bons preços para a zona."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bar razoável. Um pouco caro para o que é."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Dekaras Bar tem um ambiente excelente. Ficámos muito mais tempo do que previsto. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Gente simpática e boa música. Acolhedor dentro e agradável fora. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Os barmen sabem fazer cocktails. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Ficámos muito mais tempo do que previsto. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Acolhedor dentro e agradável fora."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7562349375",
+    "name": "Palhinhas Bar",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Uma desilusão. Casas de banho sujas. Esperava melhor."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bebidas excelentes. Os barmen sabem fazer cocktails. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bar ótimo. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Os barmen sabem fazer cocktails. Voltaria."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Palhinhas Bar tem um ambiente excelente. Os barmen sabem fazer cocktails. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Bons preços para a zona. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. A música está no ponto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Adorei. A música está no ponto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Palhinhas Bar tem um ambiente excelente. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Boa escolha de cervejas locais. Não percam."
+      }
+    ]
+  },
+  {
+    "osmId": "way/328016924",
+    "name": "Bar da comissão de festas em honra a São Roque",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Gente simpática e boa música. Ficámos muito mais tempo do que previsto. Uma boa memória."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Adorei. Bons preços para a zona."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bar da comissão de festas em honra a São Roque tem um ambiente excelente. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boas bebidas, música alta. Cheira a fumo perto da entrada."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Gente simpática e boa música. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bebidas excelentes. Acolhedor dentro e agradável fora. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Gente simpática e boa música. Bons preços para a zona."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Serve para uma bebida. Difícil ser atendido ao balcão."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Adorei. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Gente simpática e boa música. Boa escolha de cervejas locais. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "node/6906534910",
+    "name": "Bit Bar",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Gente simpática e boa música. Acolhedor dentro e agradável fora. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bar razoável. Escolha limitada de cervejas. Podia ser melhor."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Bons preços para a zona."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Adorei. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bar ótimo. Bons preços para a zona. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Uma noite divertida. Ficámos muito mais tempo do que previsto. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bit Bar tem um ambiente excelente. Acolhedor dentro e agradável fora."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7823742648",
+    "name": "Urbano Bar",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. A música está no ponto. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Urbano Bar tem um ambiente excelente. Bons preços para a zona."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Urbano Bar tem um ambiente excelente. Bons preços para a zona. Não percam."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Adorei. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Adorei. Acolhedor dentro e agradável fora. Voltaria."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Ambiente normal. Muito cheio depois das dez. Bom no geral."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Urbano Bar tem um ambiente excelente. Boa escolha de cervejas locais. Digam aos amigos."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Ficámos muito mais tempo do que previsto. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Bebidas excelentes. Os barmen sabem fazer cocktails. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Bons preços para a zona."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Bons preços para a zona. Cinco estrelas."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. A música está no ponto."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Serve para uma bebida. Difícil ser atendido ao balcão. Podia ser melhor."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Os barmen sabem fazer cocktails. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Uma noite divertida. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Urbano Bar tem um ambiente excelente. Acolhedor dentro e agradável fora. Uma boa memória."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Uma noite divertida. Boa escolha de cervejas locais. Digam aos amigos."
+      }
+    ]
+  },
+  {
+    "osmId": "way/450465190",
+    "name": "Flor da Serra",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Flor da Serra tem um ambiente excelente. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Adorei. Acolhedor dentro e agradável fora. Recomendo!"
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Bons preços para a zona."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€€",
+        "text": "Uma noite divertida. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Boas bebidas, música alta. Muito cheio depois das dez. Bom no geral."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Acolhedor dentro e agradável fora. Uma boa memória."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7858207207",
+    "name": "Divas bar",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Adorei. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Uma noite divertida. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. A música está no ponto. Digam aos amigos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Boas bebidas, música alta. Difícil ser atendido ao balcão."
+      }
+    ]
+  },
+  {
+    "osmId": "node/4628972515",
+    "name": "Stravagância Caffé Bar",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Boas bebidas, música alta. O serviço foi lento. Nada mau."
+      }
+    ]
+  },
+  {
+    "osmId": "node/1719138558",
+    "name": "Tea Caffe",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€",
+        "text": "Bar razoável. Cheira a fumo perto da entrada. Razoável."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1272559394",
+    "name": "Red Horse Club",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Acolhedor dentro e agradável fora. Cinco estrelas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Bar razoável. Muito cheio depois das dez. Razoável."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Os barmen sabem fazer cocktails. Uma boa memória."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Serve para uma bebida. O serviço foi lento."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Noite mediana. Escolha limitada de cervejas. Talvez uma vez."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Noite mediana. Muito cheio depois das dez."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€€",
+        "text": "Mau serviço. Esperei imenso por uma bebida."
+      }
+    ]
+  },
+  {
+    "osmId": "node/7752042966",
+    "name": "Bar Sede ACDM",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. A música está no ponto. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Ficámos muito mais tempo do que previsto."
+      }
+    ]
+  },
+  {
+    "osmId": "node/12848458801",
+    "name": "Cafetaria Jardim",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Bebidas excelentes. Ficámos muito mais tempo do que previsto."
+      }
+    ]
+  },
+  {
+    "osmId": "node/1244924517",
+    "name": "Etc Lounge",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Acolhedor dentro e agradável fora."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Etc Lounge tem um ambiente excelente. Bons preços para a zona. Voltaria."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Etc Lounge tem um ambiente excelente. Ficámos muito mais tempo do que previsto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Boa escolha de cervejas locais."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. A música está no ponto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Os barmen sabem fazer cocktails. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Os barmen sabem fazer cocktails."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Gente simpática e boa música. Bons preços para a zona. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Uma noite divertida. Boa escolha de cervejas locais. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Bar ótimo. Ficámos muito mais tempo do que previsto. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Bebidas excelentes. Acolhedor dentro e agradável fora."
+      }
+    ]
+  },
+  {
+    "osmId": "node/689567049",
+    "name": "Quanto Baste Bar",
+    "reviews": [
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Boas bebidas, música alta. Um pouco caro para o que é. Três estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€",
+        "text": "Quanto Baste Bar tem um ambiente excelente. A música está no ponto. Valeu cada minuto."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Adorei. Boa escolha de cervejas locais. Não percam."
+      }
+    ]
+  },
+  {
+    "osmId": "way/99016373",
+    "name": "Jardim Soares dos Reis",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Nada para ver. Caminhos fechados sem explicação. Não é para mim."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Nada para ver. Lixo pelos caminhos. Não compensa."
+      }
+    ]
+  },
+  {
+    "osmId": "way/468263627",
+    "name": "Parque da Lavandeira",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Bom para a corrida da manhã. Recomendo!"
+      }
+    ]
+  },
+  {
+    "osmId": "way/1046807342",
+    "name": "Parque Botânico do Castelo",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Parque Botânico do Castelo é perfeito para uma tarde calma. Perfeito para crianças e cães. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Limpo e bem cuidado. Valeu cada minuto."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Ótimo para passear ou fazer piquenique. As flores na primavera são lindas."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1026178863",
+    "name": "Jardim Basílio Teles",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Perfeito para crianças e cães."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. Limpo e bem cuidado. Recomendo!"
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. As flores na primavera são lindas. Cinco estrelas."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. Muitos bancos e sítios com sombra. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. As flores na primavera são lindas. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Tão sossegado. As flores na primavera são lindas."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Bom para uma pausa curta. Alguns caminhos precisam de arranjo. Razoável."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Uma fuga verde da cidade. Perfeito para crianças e cães. Cinco estrelas."
+      }
+    ]
+  },
+  {
+    "osmId": "way/1067583686",
+    "name": "Parque Urbano de Rio Tinto",
+    "reviews": [
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Abandonado e sujo. Pouca iluminação à noite. Passem à frente."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Parque Urbano de Rio Tinto é perfeito para uma tarde calma. Limpo e bem cuidado. Valeu cada minuto."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "€",
+        "text": "Desiludido. Muito cheio e barulhento. Nunca mais."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Demasiado barulho. Pouca iluminação à noite. Evitar em horas de ponta."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Jardim agradável. Pouca sombra no verão. Bom no geral."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "FREE",
+        "text": "Bonito em todas as estações. As flores na primavera são lindas. Não percam."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Simpático, nada de especial. Melhor na primavera do que no inverno. Sentimentos mistos."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Um sítio decente para passear. Alguns caminhos precisam de arranjo. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "FREE",
+        "text": "Um sítio decente para passear. As casas de banho ficam longe da entrada. Bom no geral."
+      },
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Senti-me inseguro ao anoitecer. Muitas obras por perto. Não compensa."
+      }
+    ]
+  },
+  {
+    "osmId": "way/461247087",
+    "name": "Parque do Complexo Mineiro de São Pedro da Cova",
+    "reviews": [
+      {
+        "rating": 5,
+        "priceLevel": "FREE",
+        "text": "Parque do Complexo Mineiro de São Pedro da Cova é perfeito para uma tarde calma. Muitos bancos e sítios com sombra. Uma boa memória."
+      }
+    ]
+  },
+  {
+    "osmId": "way/154931433",
+    "name": "Casa de Chá da Boa Nova",
+    "reviews": [
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Boa receção e comida ótima. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Refeição razoável. As doses podiam ser maiores. Nada mau."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Simpático, nada de especial. As doses podiam ser maiores."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€€",
+        "text": "Refeição razoável. Algum barulho nas horas de ponta. Podia ser melhor."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€",
+        "text": "Um dos melhores jantares da viagem. Ambiente agradável à noite. Muito recomendado."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Vou voltar de certeza. O pessoal foi simpático e rápido. Muito recomendado."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Um dos melhores jantares da viagem. A sobremesa foi a melhor parte."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Delicioso do princípio ao fim. A sobremesa foi a melhor parte. Digam aos amigos."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Ambiente agradável à noite. Não percam."
+      },
+      {
+        "rating": 5,
+        "priceLevel": "€€",
+        "text": "Refeição excelente. Ambiente agradável à noite. Uma boa memória."
+      },
+      {
+        "rating": 3,
+        "priceLevel": "€€",
+        "text": "Alguns pratos melhores do que outros. Preço justo, não é uma pechincha. Razoável."
+      },
+      {
+        "rating": 4,
+        "priceLevel": "€€€",
+        "text": "Um dos melhores jantares da viagem. Reserve antes, enche depressa. Voltaria."
+      }
+    ]
+  },
+  {
+    "osmId": "way/99993723",
+    "name": "Largo do Padre Joaquim Pereira dos Santos",
+    "reviews": [
+      {
+        "rating": 1,
+        "priceLevel": "FREE",
+        "text": "Demasiado barulho. Caminhos fechados sem explicação. Evitar em horas de ponta."
+      },
+      {
+        "rating": 2,
+        "priceLevel": "FREE",
+        "text": "Desiludido. Lixo pelos caminhos."
+      }
+    ]
   }
 ]

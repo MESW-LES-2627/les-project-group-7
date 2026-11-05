@@ -11,7 +11,7 @@ import { isPriceLevel } from "./rating";
 
 // city, and how many places must have sample reviews
 const CITIES: [string, number][] = [
-  ["porto", 50],
+  ["porto", 100],
   ["paris", 100],
   ["berlin", 100],
 ];
