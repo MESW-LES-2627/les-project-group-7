@@ -75,14 +75,6 @@ The rules behind the stored values changed five times between 2 and 5 Nov 2026 (
 half up, and a free place stays free until two reviews say it is paid (all 5 Nov). The reviews route changed
 five times in the same days. That is more than once a month, so V4.
 
-### 3.4 What this already cost
-
-The policy "mark the place as visited when a review is posted" exists only inline in the handler. The seed
-writes reviews without going through the handler, so the new demo data (6,549 reviews) came with no visit at all.
-It was found on 5 Nov while reviewing the "Visited" badge of #38 and fixed in the seed of #20, before it reached
-dev. The same thing
-would happen to the next place that needs the policies: they are copied, not shared.
-
 ## 4. Cohesion analysis
 
 **The handler `POST /api/reviews`** has seven reasons to run, in sequence: authenticate, validate the input,
@@ -113,7 +105,6 @@ decision, because splitting it would not reduce the copies of the sequence.
 `refreshPlaceStats(db, placeId)`. Next to it, `markPlaceVisited(db, userId, placeId)` holds the visit policy.
 The post handler, the future edit and delete handlers and the seed call them, passing their database client.
 The formulas stay where they are, in `src/domain/reviews/rating.ts`, which stays pure and free of the database.
-The migration of #37 stays as written, because it is frozen (R3).
 
 The change is made when US-C2-01 is built, in Iteration 2, as its first step, so that edit and delete never
 contain a copy.
