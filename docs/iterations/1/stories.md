@@ -16,7 +16,7 @@ The acceptance criteria of each story are in [user-stories.md](../../user-storie
 | US-B2-01 Load demo data (#18) | #19 Seed with real hashes, #21 Demo users and reviews without duplicates, #20 Enough reviews for every city | #118, #120, #131 |
 | US-B3-01 Find a city and browse its places (#22) | #23 City search and empty state, #24 Accent-insensitive place search | #124, #126 |
 | US-B3-02 Filter and sort places (#25) | #26 Filter functions with unit tests, #27 Filter controls on the explorer | #122, #123, #130 |
-| US-C1-01 Post a review (#36) | #38 Review form validation and visited marker, #37 One review per user and place | #125, #129, #132 |
+| US-C1-01 Post a review (#36) | #38 Review form validation and visited marker, #37 One review per user and place | #125, #129, #132, #133 |
 
 ## Started, not done
 
@@ -24,7 +24,7 @@ The acceptance criteria of each story are in [user-stories.md](../../user-storie
 | :---- | :---- | :---- |
 | US-B4-01 See a place's details (#28) | #29 Place page with details and reviews (#127) | #30 Opening hours display, planned for Iteration 2 |
 | US-B5-01 See places on a map (#31) | #32 Map with pins, clustering and popup (#128) | #33 Performance with hundreds of places, planned for Iteration 2 |
-| US-B6-01 See the top-rated places (#34) | #107 Rating score with unit tests (#117) | #35 Ranking by city and type, independent of the map (in progress) |
+| US-B6-01 See the top-rated places (#34) | #107 Rating score with unit tests (#117) | #35 Ranking by city and type, independent of the map (#134, in review) |
 
 ## Other work in the iteration
 
