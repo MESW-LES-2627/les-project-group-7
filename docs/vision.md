@@ -1,6 +1,6 @@
 # Vision
 
-Group 7 · MESW LES 2026-27 · Iteration 0
+Group 7 · MESW LES 2026-27
 
 This is the **maximum vision**: everything we would like the product to be if time
 and budget were unlimited. Most of it will not be built. The part we commit to is

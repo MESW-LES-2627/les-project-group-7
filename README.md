@@ -8,7 +8,7 @@ A web application that combines place reviews and community rankings (TripAdviso
 
 ## Documentation & Architecture
 
-All Iteration 0 design deliverables and domain specifications are stored in this repository:
+All design deliverables and domain specifications are stored in this repository:
 
 - **[Vision](docs/vision.md):** The long-term product vision and feature roadmap.
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.

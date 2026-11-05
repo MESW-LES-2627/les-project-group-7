@@ -2,7 +2,7 @@
 
 Team: Group 7  
 Tag: `iter-1`  
-Previous tag: `sprint-1-start` (there is no `iter-0` tag)
+Previous tag: none yet (Iteration 0 had no tag; the start of this iteration is tagged `sprint-1-start`)
 
 This file lives on the tagged commit at `docs/iterations/1/CLAIM.md`. The review opens this file. We do not hunt the repository. A dead link scores that line at most 4.
 
@@ -28,5 +28,5 @@ Use links that work on tag `iter-1`. If something does not exist yet, write `non
 | CI/CD Pipeline | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/.github/workflows/deploy.yml |
 |  |  |
 | Stories in this increment | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/iterations/1/stories.md |
-| Retrospective | none yet |
-| AI log | none yet |
+| Retrospective | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/iterations/1/retrospective.md |
+| AI log | https://github.com/MESW-LES-2627/les-project-group-7/blob/iter-1/docs/iterations/1/ai-log.md |

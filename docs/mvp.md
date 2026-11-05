@@ -1,6 +1,6 @@
 # MVP
 
-Group 7 · MESW LES 2026-27 · Iteration 0
+Group 7 · MESW LES 2026-27
 
 The MVP is the smallest version of the product that we **commit to finish and
 release by 18 Dec 2026**. Everything else in the [vision](vision.md) is Stretch
