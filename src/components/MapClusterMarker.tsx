@@ -6,7 +6,7 @@
  * per number.
  */
 
-import { Marker, Popup, useMap } from "react-leaflet";
+import { Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { MapCluster } from "@/domain/catalog/clustering";
 
@@ -25,7 +25,6 @@ export function getClusterIcon(count: number): L.DivIcon {
     className: "custom-cluster-badge",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2],
     html: `
       <div style="background-color: ${bgColor}; color: white; width: ${size}px; height: ${size}px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2.5px solid rgba(255,255,255,0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.28); cursor: pointer;">
         ${count}
@@ -55,17 +54,6 @@ export default function MapClusterMarker({ cluster }: { cluster: MapCluster }) {
           );
         },
       }}
-    >
-      <Popup>
-        <div className="min-w-[150px] p-1">
-          <h4 className="text-xs font-bold text-slate-900">
-            {cluster.count} places in this area
-          </h4>
-          <p className="mt-0.5 text-[11px] text-slate-500">
-            Click the bubble to zoom in
-          </p>
-        </div>
-      </Popup>
-    </Marker>
+    />
   );
 }

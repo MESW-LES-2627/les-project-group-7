@@ -23,6 +23,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
+import { getCategoryConfig } from "@/domain/catalog/categories";
 import { clusterPlaces } from "@/domain/catalog/clustering";
 import { type GeoBoundingBox } from "@/domain/catalog/geo";
 import { formatPriceLevel } from "@/domain/reviews/rating";
@@ -274,7 +275,9 @@ export default function MapComponent({
                     {formatPriceLevel(place.priceLevel)}
                   </span>
                   <span>•</span>
-                  <span className="text-slate-500">{place.category}</span>
+                  <span className="text-slate-500">
+                    {getCategoryConfig(place.category).label}
+                  </span>
                 </div>
 
                 {onSelectPlace && (
@@ -286,7 +289,7 @@ export default function MapComponent({
                     <Star className="h-3 w-3 fill-white" />
                     {place.isDiscovered
                       ? "Be first to rate"
-                      : "Rate this place"}
+                      : "See details and reviews"}
                   </Button>
                 )}
               </div>
