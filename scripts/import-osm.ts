@@ -34,7 +34,7 @@ interface CityConfig {
   /** Famous places, searched by name: a search by kind returns only 50 places and misses many. */
   landmarks: string[];
   /** How many tiles the area is cut into for --grid: a big city needs more. */
-  grid: { rows: number; cols: number };
+  grid: { rows: number; cols: number; limit?: number };
 }
 
 /** The kinds of place that are searched for in every city. */
@@ -91,8 +91,14 @@ const CITIES: Record<string, CityConfig> = {
       "Cais da Ribeira, Porto",
       "Fonte da Moura, Porto",
       "Mercado do Bolhão, Porto",
+      // Football stadiums, train stations and airports (only those inside the area are saved)
+      "Estádio do Dragão, Porto",
+      "Estádio do Bessa, Porto",
+      "Estação de Campanhã, Porto",
+      "Estação de São Bento, Porto",
+      "Aeroporto Francisco Sá Carneiro, Porto",
     ],
-    grid: { rows: 3, cols: 3 },
+    grid: { rows: 6, cols: 5, limit: 3 },
   },
   paris: {
     id: "city-paris",
@@ -132,6 +138,20 @@ const CITIES: Record<string, CityConfig> = {
       "Les Deux Magots, Paris",
       "Palais Garnier, Paris",
       "Musée Rodin, Paris",
+      // Football stadiums, train stations and airports (only those inside the area are saved)
+      "Parc des Princes, Paris",
+      "Stade Jean-Bouin, Paris",
+      "Stade Charléty, Paris",
+      "Gare du Nord, Paris",
+      "Gare de Lyon, Paris",
+      "Gare de l'Est, Paris",
+      "Gare Montparnasse, Paris",
+      "Gare Saint-Lazare, Paris",
+      "Gare d'Austerlitz, Paris",
+      "Gare de Bercy, Paris",
+      "Aéroport de Paris-Charles-de-Gaulle",
+      "Aéroport de Paris-Orly",
+      "Stade de France, Saint-Denis",
     ],
     grid: { rows: 2, cols: 4 },
   },
@@ -170,6 +190,18 @@ const CITIES: Record<string, CityConfig> = {
       "Topography of Terror, Berlin",
       "Gendarmenmarkt, Berlin",
       "Hackescher Markt, Berlin",
+      // Football stadiums, train stations and airports (only those inside the area are saved)
+      "Olympiastadion, Berlin",
+      "Stadion An der Alten Försterei, Berlin",
+      "Mommsenstadion, Berlin",
+      "Berlin Hauptbahnhof",
+      "Berlin Ostbahnhof",
+      "Bahnhof Berlin Zoologischer Garten",
+      "Berlin Südkreuz",
+      "Berlin Gesundbrunnen",
+      "Bahnhof Berlin Friedrichstraße",
+      "Flughafen Berlin-Tegel",
+      "Flughafen Berlin Brandenburg",
     ],
     grid: { rows: 3, cols: 3 },
   },
@@ -310,7 +342,11 @@ async function main() {
     city.grid.rows,
     city.grid.cols
   ).flatMap((viewbox) =>
-    TILE_KINDS.map((query) => ({ query, limit: TILE_LIMIT, viewbox }))
+    TILE_KINDS.map((query) => ({
+      query,
+      limit: city.grid.limit ?? TILE_LIMIT,
+      viewbox,
+    }))
   );
   const searches = landmarksOnly
     ? byName
