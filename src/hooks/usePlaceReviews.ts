@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import type { ReviewItem } from "@/components/ReviewModal";
 import type { PriceLevel } from "@/domain/reviews/rating";
@@ -23,7 +23,9 @@ export function usePlaceReviews({
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
-  const fetchReviewsForPlace = async (placeId: string) => {
+  // Both stay the same between renders (useCallback): openReviewModal reaches the
+  // memoized map pins, and a new function on every render would re-render them.
+  const fetchReviewsForPlace = useCallback(async (placeId: string) => {
     setIsLoadingReviews(true);
 
     try {
@@ -40,14 +42,17 @@ export function usePlaceReviews({
     } finally {
       setIsLoadingReviews(false);
     }
-  };
+  }, []);
 
-  const openReviewModal = (place: PlaceItem) => {
-    setActiveReviewPlace(place);
-    setSubmitSuccess(null);
-    setErrorMsg(null);
-    fetchReviewsForPlace(place.id);
-  };
+  const openReviewModal = useCallback(
+    (place: PlaceItem) => {
+      setActiveReviewPlace(place);
+      setSubmitSuccess(null);
+      setErrorMsg(null);
+      fetchReviewsForPlace(place.id);
+    },
+    [fetchReviewsForPlace]
+  );
 
   const closeReviewModal = () => {
     setActiveReviewPlace(null);
