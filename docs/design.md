@@ -289,7 +289,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-002: Places come from import and seed scripts and live discovery (OpenStreetMap)
 
-- **Status:** Accepted. This replaces the first version of the ADR, which said all places come from an import script and the app never calls OpenStreetMap live. The tracer bullet was built with live discovery, so the ADR describes what the code does. Live discovery is outside the committed MVP (Stretch S19, see [mvp.md](mvp.md)): in the MVP the catalog comes from the scripts only, for three cities.
+- **Status:** Accepted. Live discovery is outside the committed MVP (Stretch S19, see [mvp.md](mvp.md)): in the MVP the catalog comes from the scripts only, for three cities.
 - **Context:** Reviews (`Review`), visits (`Visit`) and itinerary stops (`ItineraryStop`) need referential integrity with `Place.id` in the relational database. The public Overpass API servers have strict rate limits (HTTP 429), unpredictable latency (3 s to 60 s) and frequent failures (HTTP 502), so the app must keep working when they do not answer.
 - **Decision:** The catalog is the `Place` table in PostgreSQL. Places enter it in three ways:
   - _Scripts (`source = IMPORTED`):_ `scripts/import-osm.ts` is the _Import places_ command and loads the places of one MVP city (`npm run import:osm -- porto`, `paris` or `berlin`) from OpenStreetMap (Nominatim); only Porto's snapshot is loaded by the seed today. `prisma/seed.ts` creates the MVP cities (Porto, Paris and Berlin), their places, the demo users and the sample reviews. The demo data is not marked in the schema.
@@ -298,7 +298,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Alternatives considered:** only the import script, with no live calls. It was the first version of this decision: the demos then need no external network, but a place that was not imported cannot be reviewed.
 - **Consequences:**
   - _Positive:_ with live discovery any place on the map can be reviewed, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
-  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. In the tracer bullet a place saved on the fly is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities. The EventStorming board does not show the on-the-fly saving yet.
+  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. A place saved on the fly is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities.
 
 ### ADR-003: Soft budget metric based on cost points
 
@@ -314,11 +314,11 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-004: Search outside the catalog with Nominatim
 
-- **Status:** Accepted. Built in the tracer bullet (`/api/osm/search` and the search box on the map), outside the committed MVP scope (see [mvp.md](mvp.md)). The search box runs on submit only, and the server enforces the limit of 1 request per second (per server instance, see below).
+- **Status:** Accepted. Outside the committed MVP scope (see [mvp.md](mvp.md)). The search box runs on submit only.
 - **Context:** Text search over the PostgreSQL catalog cannot find a place that is not in our database. The MVP search (city, filters, sort) runs on the catalog only. The public Nominatim service has a strict usage policy: it forbids autocomplete (search as you type), allows at most 1 request per second for the whole application, asks for caching and requires a User-Agent that identifies the application.
 - **Decision:** Use the OpenStreetMap geocoding service (**Nominatim API**) through a dedicated backend endpoint (`/api/osm/search`), within the policy:
   - Search runs only when the user submits (Enter), never while typing.
-  - At most 1 request per second in total (the endpoint answers HTTP 429 with `Retry-After: 1` to the extra requests, and answers from the cache do not count), results cached on our side (15 min TTL), a defensive timeout of 3 seconds and an identifying `User-Agent`. The counter is in the memory of one server instance, so on Vercel, where several instances can run, the limit is per instance. That is enough for the expected traffic, and a shared counter (for example in the database) would be needed to make it exact.
+  - At most 1 request per second in total (extra requests get HTTP 429), results cached on our side, a short timeout and an identifying `User-Agent`. The counter is per server instance, which is enough at this scale.
   - Results are shown in two groups: _Local catalog_ and _Found on OpenStreetMap_.
 - **Consequences:**
   - _Positive:_ any public place in the world can be found and shown on the map.
@@ -330,7 +330,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Context:** Generic stock photography caused visual identity problems (for example local monuments and restaurants shown with photos from other European capitals) and generated needless network traffic.
 - **Decision:** No external stock photos. Use canonical symbolic representation ([`src/domain/catalog/categories.ts`](../src/domain/catalog/categories.ts)) together with a Ranking DataTable view:
   1. _Canonical symbolic identity:_ each category (`PlaceCategory`) has consistent semantic iconography (`Lucide`), themed badges and a dedicated pastel palette.
-  2. _Ranking DataTable:_ a Letterboxd/TripAdvisor-style table, ordered by `averageRating` descending (ties broken by review count), showing rank, category, price level and quick actions ("Map" and "Rate").
+  2. _Ranking DataTable:_ a Letterboxd/TripAdvisor-style table, ordered by the rating score (ADR-008), showing rank, category, price level and quick actions ("Map" and "Rate").
   3. _View toggle:_ a smooth, responsive switch between "Table" and "Cards" that keeps filters and pagination.
   4. _Photos in later tiers:_ landmark photos from Wikimedia Commons are Stretch and photos uploaded with reviews are Dream (see [vision.md](vision.md)).
 - **Consequences:**
@@ -343,7 +343,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Context:** Four people must work on the same stack with the same results, and teachers must not need to install anything to see the product.
 - **Decision:**
   - _Database:_ PostgreSQL, accessed through Prisma. The schema changes only through versioned Prisma migrations stored in the repository. A migration that was already applied is never edited or squashed: a change is always a new, incremental migration.
-  - _Development:_ VS Code inside a dev container. One `docker-compose.yml` defines two containers: the app and the database. This is planned. Today `docker-compose.yml` runs only the database (PostgreSQL 18, the same major version as Neon) and the app runs on the developer's machine with `npm run dev`.
+  - _Development:_ VS Code inside a dev container (planned): one `docker-compose.yml` with the app and the database. Today `docker-compose.yml` runs only the database (PostgreSQL 18, the same major version as Neon) and the app runs on the developer's machine.
   - Docker is used only for local work. Deployment does not use it (see ADR-007).
 - **Consequences:**
   - _Positive:_ every member has the same environment (once the dev container exists), reproducible migrations and the same database engine (PostgreSQL) locally and in the cloud.
@@ -354,8 +354,8 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Status:** Accepted
 - **Context:** The project needs two separate environments (dev and prod) that teachers can open, at no cost. The repository is private in the course organisation, and Vercel's free plan cannot connect to private organisation repositories.
 - **Decision:**
-  - _App hosting:_ Vercel Hobby (non-commercial use), with two projects: `les-group7-dev` (branch `dev`, address `les-group7-dev.vercel.app`) and `les-group7` (branch `main`, address `les-group7.vercel.app`). Both are deployed to their own production environment, which gives each a fixed public address.
-  - _Database:_ Neon Free, with two projects: `les-g7-dev` and `les-g7-prod`. The app uses the pooled connection string (`DATABASE_URL`) and migrations use the direct one.
+  - _App hosting:_ Vercel Hobby (non-commercial use), with two projects, one per environment: branch `dev` and branch `main`. Each is deployed to its own production environment, which gives it a fixed public address (see [deployment.md](deployment.md)).
+  - _Database:_ Neon Free, one project per environment. The app uses the pooled connection string and migrations use the direct one.
   - _Pipeline:_ a GitHub Action (`.github/workflows/deploy.yml`) runs on every push to `dev` or `main`: install, lint and tests, build, `prisma migrate deploy` and upload with the Vercel command line tool. Vercel never connects to the repository.
   - _Prisma on Vercel:_ `prisma/schema.prisma` generates the query engine for two targets, `native` (the CI runner) and `rhel-openssl-3.0.x` (the system Vercel Functions run on). With only the first one the pages fail with "could not locate the Query Engine".
   - _Secrets:_ stored only in GitHub secrets and Vercel environment settings, never in the repository or in chat.
@@ -365,7 +365,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ free, two fixed public addresses, a deployment that is repeatable and visible in GitHub.
   - _Trade-offs:_ Neon suspends the database after 5 minutes without use, so the first request is slower. Free limits apply (Neon: 1 GB and 100 compute-hours per month per project). Both Vercel projects belong to one person's account.
-  - _Hobby plan:_ it only deploys commits authored by the account owner and blocks the rest (the deployment stays in the state `BLOCKED` and the upload waits). The workflow hides `.git` while it uploads so that the upload carries no commit author. A deploy of a teammate's commit is not proven. If it fails, only the account owner can deploy until the plan changes. Which commit was deployed is visible in the GitHub Action run, not in Vercel.
+  - _Hobby plan:_ it only deploys commits authored by the account owner. The workflow hides `.git` while it uploads so that the upload carries no commit author. A deploy of a teammate's commit is not proven. If it fails, only the account owner can deploy until the plan changes. The commit that was deployed is visible in the GitHub Action run, not in Vercel.
   - _Data history:_ Neon Free keeps only 6 hours of history, so a prod backup must be taken before each release (see [deployment.md](deployment.md)).
 
 ### ADR-008: Rank places by a weighted rating
@@ -384,15 +384,13 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Status:** Accepted
 - **Context:** The MVP needs registration, login, logout, and "every write action requires login, users can only change their own data" (see [mvp.md](mvp.md)). The prototype has none of it: the user is chosen with buttons and the review endpoint trusts a `userId` from the request body. Security code (password hashing, sessions, rate limiting) is easy to get wrong, so we prefer a maintained library to our own.
 - **Decision:** Use **Better Auth** (npm `better-auth`, pinned to an exact version) with the Prisma adapter, e-mail and password, and the `username` plugin.
-  - _Where:_ the server instance in `src/lib/auth.ts`, the library's routes under `src/app/api/auth/[...all]/route.ts`, and our own `POST /api/register`. There is no browser client of the library: the login and logout buttons call its endpoints (`/api/auth/sign-in/email`, `/api/auth/sign-in/username`, `/api/auth/sign-out`) with `fetch`, and `buildLoginRequest` and `loginErrorMessage` (`src/domain/identity/login.ts`) hold the rules of the login form.
-  - _Passwords:_ hashed by the library (scrypt by default) and stored in its `Account` table. The old `User.passwordHash` column was dropped by the migration `20261102180000_drop_user_password_hash` (#19), once nothing wrote it any more. Minimum length 8, maximum 128.
-  - _Usernames:_ 3 to 30 characters, letters, numbers, underscores and dots, stored in lower case (the plugin's defaults).
-  - _Sessions:_ kept in the database (table `Session`), valid for 7 days, and revocable on the server. Logging out ends the session.
-  - _Protecting endpoints:_ every handler that writes data reads the user with `auth.api.getSession({ headers })` and answers 401 without one. The user id always comes from the session. We do not rely on middleware alone, as the library's own docs advise. Against cross-site requests the cookie is `SameSite=Lax`, and our endpoints also check that the `Origin` header is this site (`isAllowedOrigin`, `src/domain/identity/origin.ts`): `POST /api/register` does it now, and the guard of the write endpoints does it for the rest.
-  - _Registration:_ the form posts to `POST /api/register` with `{ username, email, password }`, and this is the only way to create an account (the library's own sign-up path and its username probe are switched off with `disabledPaths`, so the checks below cannot be skipped). The body must be JSON (415) and the `Origin` must be this site (403). Our own validation answers 400 with `{ errors: { username?, email?, password? } }`, one message per wrong field. A taken username or e-mail answers 409 with the same shape and names every taken field. Success answers 201 with the session cookie. Every well-formed attempt counts towards a limit of 20 per 10 minutes per address, then 429 with `Retry-After`; a form with a typo is free. The counter is a row of the `RateLimit` table with its own key.
-  - _Login:_ with e-mail or username (two library calls, chosen by the presence of "@"). The error never says whether the user exists.
-  - _Login rate limit:_ enabled in every environment, not only in production, so that what we test locally is what runs live: 3 sign-in attempts by e-mail per 10 seconds, and 100 requests per 10 seconds for the other endpoints. Memory storage does not suit serverless, so the counters are stored in the database (table `RateLimit`).
-  - _Environment:_ `BETTER_AUTH_SECRET` (at least 32 characters, a different value for dev and prod) and `BETTER_AUTH_URL`, set in each Vercel project. Values are never committed.
+  - _Where:_ the server instance in `src/lib/auth.ts`, the library's routes under `src/app/api/auth/[...all]/route.ts`, and our own `POST /api/register`. There is no browser client of the library: the login and logout buttons call its endpoints with `fetch`, and the rules of the login form are pure functions in `src/domain/identity/login.ts`.
+  - _Passwords:_ hashed by the library (scrypt) and stored in its `Account` table, not in `User`.
+  - _Sessions:_ kept in the database (`Session`), valid for 7 days and revocable on the server. Logging out ends the session.
+  - _Protecting endpoints:_ every handler that writes data reads the user with `auth.api.getSession` and answers 401 without one. The user id always comes from the session, never from the request, and middleware alone is not relied on. Against cross-site requests the cookie is `SameSite=Lax` and the write endpoints also check that the `Origin` is this site (`isAllowedOrigin`, `src/domain/identity/origin.ts`).
+  - _Registration:_ the only way to create an account is our own `POST /api/register`. The library's sign-up path is switched off, so our validation (one message per wrong field), the duplicate check and our rate limit cannot be skipped.
+  - _Login:_ with e-mail or username. The error never says whether the user exists.
+  - _Rate limiting:_ on in every environment, so that what is tested locally is what runs live, and stored in the database, because serverless instances have no shared memory (table `RateLimit`).
   - _Not in the MVP:_ e-mail verification, password reset, social login, two-factor authentication.
 - **Alternatives considered:**
   - _Our own signed cookie_ (HMAC): little code, but we would own the cryptography and the session handling, and could not revoke a session.
