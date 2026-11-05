@@ -58,14 +58,16 @@ const CITIES: Record<string, CityConfig> = {
     country: "Portugal",
     latitude: 41.1579,
     longitude: -8.6291,
+    // The zone that the app covers: from Perafita in the north to Vilar do Paraíso in the south, with
+    // the Douro and the coast, and no more (the airport, Maia or Valongo are outside)
     area: {
       name: "Porto",
-      minLat: 41.05,
-      maxLat: 41.35,
-      minLon: -8.75,
-      maxLon: -8.45,
+      minLat: 41.08,
+      maxLat: 41.24,
+      minLon: -8.73,
+      maxLon: -8.56,
     },
-    // The district of Porto also covers Vila Nova de Gaia and Matosinhos
+    // The zone also covers part of Vila Nova de Gaia and Matosinhos
     searches: [
       ...KINDS.map((kind) => `${kind} in Porto, Portugal`),
       "monument in Vila Nova de Gaia, Portugal",
@@ -96,9 +98,8 @@ const CITIES: Record<string, CityConfig> = {
       "Estádio do Bessa, Porto",
       "Estação de Campanhã, Porto",
       "Estação de São Bento, Porto",
-      "Aeroporto Francisco Sá Carneiro, Porto",
     ],
-    grid: { rows: 6, cols: 5, limit: 3 },
+    grid: { rows: 4, cols: 3, limit: 6 },
   },
   paris: {
     id: "city-paris",
