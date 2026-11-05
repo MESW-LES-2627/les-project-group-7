@@ -122,6 +122,32 @@ Check before and after: `SELECT coalesce("priceLevel", 'unknown'), count(*) FROM
 Status: run on dev on 5 Nov 2026, followed by the seed (625 places, 20 demo users). Not run on prod yet: it
 waits for the merge of `dev` into `main`.
 
+**Hand-written places of the prototype seed (US-B2-01, #20).** The old seed created 18 places by
+hand: 10 in Porto (ids `porto/...`) and 8 in Paris and Berlin (invented OpenStreetMap ids), with 78
+reviews. They are replaced by the real OpenStreetMap places from the snapshots, which now carry the
+sample reviews, and three of them were duplicates of imported places (São Bento, Bolhão, Jardim do
+Morro). This removes them and their reviews, visits and saved places (all their reviews were written
+by demo users on dev). Run it before `npm run seed`, which then writes the sample reviews, including
+the "Meh" review, on the real places. Check first that nobody else reviewed them:
+`SELECT count(*) FROM "Review" r JOIN "Place" p ON p.id = r."placeId" WHERE p."osmId" IN (...) AND r."userId" NOT LIKE 'demo-user-%';`
+
+```sql
+BEGIN;
+DELETE FROM "Place" WHERE "osmId" IN (
+  'porto/serralves', 'porto/cafe-santiago', 'porto/ponte-dom-luis', 'porto/sao-bento',
+  'porto/mercado-bolhao', 'porto/livraria-lello', 'porto/torre-clerigos', 'porto/cafe-majestic',
+  'porto/jardim-morro', 'porto/catraio-beer',
+  'node/45299496', 'node/45299497', 'node/45299498', 'node/45299500',
+  'node/65299496', 'node/65299497', 'node/65299498', 'node/65299499'
+);
+COMMIT;
+```
+
+Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
+
+Status: tried on a copy of dev on 5 Nov 2026 (1,529 places, 1,145 reviews and 30 demo users afterwards).
+Not run on dev or prod yet.
+
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
 with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
 them. This removes the cities and their 16 places; the reviews, visits, saved places and itinerary

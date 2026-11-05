@@ -106,9 +106,11 @@ npm run prisma:migrate
 npm run seed
 ```
 
-`npm run import:osm -- <city>` (`porto`, `paris` or `berlin`) additionally imports the places of one city from OpenStreetMap (optional). It saves them in the database and in `prisma/data/<city>-places.json`; `--dry-run` only shows what it would save. Nothing is saved unless OpenStreetMap answered every request.
+`npm run import:osm -- <city>` (`porto`, `paris` or `berlin`) additionally imports the places of one city from OpenStreetMap (optional). It saves them in the database and in `prisma/data/<city>-places.json`; `--dry-run` only shows what it would save, and `--landmarks-only` searches only the famous places of the city by name and adds them to the existing file. Nothing is saved unless OpenStreetMap answered every request (a failed request is tried again 3 times first).
 
-**Demo users.** The seed creates 20 users that can log in like any other (`viajante_porto`, `ana_exploradora`, `rui_gastronomo` and so on; the list is in `prisma/data/demo-users.json`), all with the password `tripbook-demo`. Each sample review of a place is written by a different one of them, because nobody reviews a place twice. To use another password, run the seed with `DEMO_PASSWORD` set (8 to 128 characters), for example `DEMO_PASSWORD=another-password npm run seed`. The seed can be run again at any time: it does not duplicate anything, it puts the demo password back and it replaces only the sample reviews that it wrote itself (same place, demo user and text), so every other review is kept, also one written while logged in as a demo user.
+**Demo places and reviews.** The seed loads the places of the three cities from the snapshots in `prisma/data` (Porto 525, Paris 466, Berlin 446, all real OpenStreetMap places) and writes sample reviews on 50 places of each city, from 1 to 25 reviews per place, in `prisma/data/reviews-<city>.json` (Porto in Portuguese, Paris and Berlin in English). The places that have many reviews, a few, or only one let you see the rating score at work. The stored rating, review count and price level of each place are recalculated from its reviews at the end of the seed, with the same functions that the app uses.
+
+**Demo users.** The seed creates 30 users that can log in like any other (`viajante_porto`, `ana_exploradora`, `rui_gastronomo` and so on; the list is in `prisma/data/demo-users.json`), all with the password `tripbook-demo`. Each sample review of a place is written by a different one of them, because nobody reviews a place twice. To use another password, run the seed with `DEMO_PASSWORD` set (8 to 128 characters), for example `DEMO_PASSWORD=another-password npm run seed`. The seed can be run again at any time: it does not duplicate anything, it puts the demo password back and it replaces only the sample reviews that it wrote itself (same place, demo user and text), so every other review is kept, also one written while logged in as a demo user.
 
 ### 2. Running Tests
 
@@ -135,7 +137,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run build` / `npm start`           | Production build (runs `prisma generate` first) and server      |
 | `npm run test:watch` / `test:report`    | Vitest in watch mode / verbose report                           |
 | `npm run prisma:studio`                 | Opens Prisma Studio to browse the database                      |
-| `npm run import:osm -- <city>`          | Imports the places of porto, paris or berlin from OpenStreetMap |
+| `npm run import:osm -- <city>`          | Imports the places of porto, paris or berlin from OpenStreetMap (`--landmarks-only`, `--dry-run`) |
 | `npm run format` / `format:check`       | Prettier on `src/` (write / check only)                         |
 | `npm run lint:docs` / `format:docs`     | Checks the links and anchors in `docs/` / formats `docs/*.md`   |
 | `npm run knip`                          | Finds unused files, exports and dependencies                    |
