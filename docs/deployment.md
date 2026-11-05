@@ -119,6 +119,9 @@ COMMIT;
 
 Check before and after: `SELECT coalesce("priceLevel", 'unknown'), count(*) FROM "Place" GROUP BY 1;`
 
+Status: run on dev on 5 Nov 2026, followed by the seed (625 places, 20 demo users). Not run on prod yet: it
+waits for the merge of `dev` into `main`.
+
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
 with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
 them. This removes the cities and their 16 places; the reviews, visits, saved places and itinerary
@@ -132,6 +135,8 @@ COMMIT;
 ```
 
 Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
+
+Status: run on dev on 5 Nov 2026. Not run on prod yet.
 
 ## Known problems and rules
 
