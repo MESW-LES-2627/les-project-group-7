@@ -79,15 +79,15 @@ export default function ReviewModal({
   onClose,
   onSubmit,
 }: ReviewModalProps) {
-  const [rating, setRating] = useState(5);
+  // No defaults: the reviewer chooses the rating and the price level, the form does not guess them
+  const [rating, setRating] = useState<number | null>(null);
   const [hoverRating, setHoverRating] = useState(0);
-  // No default: the reviewer says how expensive the place was, the form does not guess it
   const [priceLevel, setPriceLevel] = useState<PriceLevel | null>(null);
   const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (place) {
-      setRating(5);
+      setRating(null);
       setHoverRating(0);
       setPriceLevel(null);
       setComment("");
@@ -101,7 +101,7 @@ export default function ReviewModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = comment.trim();
-    if (!trimmed || !priceLevel) {
+    if (!rating || !trimmed || !priceLevel) {
       return;
     }
     onSubmit(rating, trimmed, priceLevel);
@@ -161,7 +161,9 @@ export default function ReviewModal({
         {currentUsername ? (
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
-              <Label htmlFor="star-rating">Rating (1 to 5 stars)</Label>
+              <Label htmlFor="star-rating">
+                Rating (1 to 5 stars) <span className="text-rose-500">*</span>
+              </Label>
               <div className="flex items-center gap-1.5" id="star-rating">
                 {[1, 2, 3, 4, 5].map((starValue) => (
                   <Button
@@ -177,7 +179,7 @@ export default function ReviewModal({
                   >
                     <Star
                       className={`h-7 w-7 ${
-                        starValue <= (hoverRating || rating)
+                        starValue <= (hoverRating || rating || 0)
                           ? "fill-amber-400 text-amber-400"
                           : "text-slate-300"
                       } transition-transform active:scale-90`}
@@ -185,7 +187,7 @@ export default function ReviewModal({
                   </Button>
                 ))}
                 <span className="ml-2 text-sm font-bold text-slate-700">
-                  {rating} / 5
+                  {rating ? `${rating} / 5` : "Choose a rating"}
                 </span>
               </div>
             </div>
@@ -248,7 +250,9 @@ export default function ReviewModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !comment.trim() || !priceLevel}
+                disabled={
+                  isSubmitting || !rating || !comment.trim() || !priceLevel
+                }
                 className="gap-1.5 text-xs"
               >
                 {isSubmitting ? (
