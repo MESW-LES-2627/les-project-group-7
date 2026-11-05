@@ -58,13 +58,13 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Rating Score (Weighted Rating)
 
-- **Definition:** The number used to **rank** places, instead of the plain `averageRating`, so that one review cannot outrank many (see ADR-008). It is a Bayesian average: `score = (n / (n + m)) × averageRating + (m / (n + m)) × C`, with `n` = `reviewCount`, `m = 3` and `C = 4.0` (named constants), rounded to 2 decimals.
+- **Definition:** The number used to **rank** places, instead of the plain `averageRating`, so that one review cannot outrank many (see ADR-008). It is a Bayesian average: `score = (n / (n + m)) × averageRating + (m / (n + m)) × C`, with `n` = `reviewCount`, `m = 6` and `C = 4.0` (named constants), rounded to 2 decimals.
 - **Rules:**
   - A place with no reviews has no score and is ranked after all rated places.
   - Ties are broken by `reviewCount`, then by name.
   - Every list sorted by rating (the ranking, the top-rated list, the sort in search) uses this score. The place still shows its plain `averageRating` and `reviewCount`.
   - The "minimum rating" filter uses the plain `averageRating`.
-  - Examples: 1 review of 5 gives 4.25, 3 reviews of 5 give 4.50, 50 reviews averaging 4.8 give 4.75.
+  - Examples: 1 review of 5 gives 4.14, 3 reviews of 5 give 4.33, 50 reviews averaging 4.8 give 4.71.
 
 ---
 
