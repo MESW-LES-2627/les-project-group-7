@@ -8,13 +8,15 @@ skinparam ArrowColor #555555
 skinparam component {
   BackgroundColor #FFF8E1
   BorderColor #666666
+  BackgroundColor<<built>> #DDF3DD
 }
 skinparam package {
   BorderColor #888888
 }
 
 legend right
-  |<#FFF8E1> MVP component |
+  |<#DDF3DD> Built (Iteration 1) |
+  |<#FFF8E1> MVP component, not built yet |
   |<#EEEEEE> Stretch (designed, not in the MVP) |
   |<#F8C9D8> External system |
   **How to read this diagram**
@@ -23,19 +25,20 @@ legend right
   Lollipop (REST API) = interface that the backend offers to the Web App.
   Plain line from the REST API = this component is reachable through the API.
   Box "Backend" = the server side of the one Next.js app. Each component in it is a module.
+  The scripts are run by hand on a developer machine: they are not part of the deployed app.
 endlegend
 
 actor "User" as user
 actor "Admin" as admin
 
-component "Web App\n(browser UI, map)" as web #D6ECFA
+component "Web App\n(browser UI, map,\nplace page)" as web <<built>> #D6ECFA
 
 package "Backend" as backend {
   interface "REST API" as api
 
-  component "Identity\n(users, auth, roles)\nBetter Auth library" as identity
-  component "Place Catalog\n(places, import,\nopening hours, visited, rating,\ntop-rated)" as catalog
-  component "Reviews\n(post, edit, delete,\nprice level)" as reviews
+  component "Identity\n(users, auth, roles)\nBetter Auth library" as identity <<built>>
+  component "Place Catalog\n(places, city and place search,\nfilters, opening hours, visited,\nrating, top-rated)" as catalog <<built>>
+  component "Reviews\n(post: built;\nedit, delete: not yet;\nprice level)" as reviews <<built>>
   component "Saved Places\n(wishlist, bookmarks, lists)" as saved
   component "Trip Planner\n(trips, days, itinerary,\nvisit times, hours of the day,\ntravel time, opening-hours\nand budget warnings)" as planner
   component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist,\nhours of the day,\nopening hours)" as generator
@@ -43,16 +46,19 @@ package "Backend" as backend {
   component "Reminders\n(scheduler)" as reminders #EEEEEE
 }
 
+component "Import and seed scripts\n(CLI: import-osm, seed)\nPlace Catalog: import,\ndemo data" as scripts <<built>>
+
 database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 
-cloud "Places data source\n(OpenStreetMap)" as places #F8C9D8
+cloud "Places data source\n(OpenStreetMap, Overpass)\nlive discovery" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
 cloud "Routing service\n(on foot, by car,\npublic transport)\nStretch" as routing #F8C9D8
-cloud "Geocoding service\n(Nominatim)\nbuilt, not in the\ncommitted MVP" as geocoding #F8C9D8
+cloud "Geocoding service\n(Nominatim)\nimport: MVP;\nsearch outside the\ncatalog: not in the\ncommitted MVP" as geocoding #F8C9D8
 cloud "Notification service\n(e-mail / push)\nStretch" as notif #F8C9D8
 
 user --> web
 admin --> web
+admin --> scripts : runs
 web --> api : HTTPS / JSON
 web --> tiles : map tiles
 api - identity
@@ -71,7 +77,10 @@ generator ..> saved : wishlist places
 publishing ..> planner : copy itinerary
 reminders ..> planner : upcoming visits
 
-catalog --> places : import places\n(live discovery: Stretch)
+scripts --> geocoding : places of a city
+scripts --> db : places, demo users,\nsample reviews
+scripts ..> catalog : same rules\n(categories, ratings)
+catalog ..> places : live discovery\n(outside the MVP)
 catalog ..> geocoding : search outside\nthe catalog
 planner ..> routing : real travel times
 reminders --> notif : send reminder

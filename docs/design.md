@@ -12,6 +12,7 @@ deliverable below is stored in this repository and linked from here.
 | UML component diagram                | Done   | [Component diagram](#3-component-diagram)                                    |
 | Architecture Decision Records (ADRs) | Done   | [ADRs](#4-architecture-decision-records-adrs)                                |
 | Domain glossary (ubiquitous language) | Done  | [GLOSSARY.md](GLOSSARY.md)                                                   |
+| Change scenario, coupling and cohesion analysis, design decision | Done | [change-scenario.md](design/change-scenario.md) and [ADR-010](#adr-010-one-function-recomputes-the-stored-values-of-a-place) |
 | Deployment (Vercel and Neon)          | Done   | [ADR-007](#adr-007-deployment-on-vercel-and-neon) and [deployment.md](deployment.md) |
 
 ---
@@ -165,7 +166,7 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | Reminder (post-MVP)            | Reminder            | sentAt                                                                                       | reminds of an ItineraryStop; created when the visit time is near                          |
 | PublishedItinerary (post-MVP)  | Published itinerary | title, publishedAt                                                                           | published by a User, bookmarked by Users, has PublishedStops (a copy of an itinerary)     |
 | PublishedStop (post-MVP)       | Published itinerary | dayNumber, visitTime (optional), position                                                    | visits a Place                                                                            |
-| PriceLevel (enumeration)       | shared              | FREE = 0, € = 1, €€ = 2, €€€ = 3 (cost points)                                               | used by Place (all four values) and Review (€ to €€€ only); the trip budget level also uses € to €€€; unknown is not counted                         |
+| PriceLevel (enumeration)       | shared              | FREE = 0, € = 1, €€ = 2, €€€ = 3 (cost points)                                               | used by Place and Review (all four values); the trip budget level uses € to €€€; unknown is not counted                         |
 | PlaceCategory (enumeration)    | shared              | RESTAURANT, MUSEUM, MONUMENT, PARK, CAFE, BAR, OTHER                                         | used by Place, PlaceSuggestion and TripConstraints                                        |
 
 Design notes:
@@ -183,8 +184,9 @@ Design notes:
 - A published itinerary is a copy, so it survives the deletion of the original trip.
 - _Top-rated places_ is a read model (a query), not a class. `/averageRating`,
   `/reviewCount` and `/priceLevel` are derived from the reviews of the place (the
-  price level is free when OpenStreetMap says there is no fee, otherwise the most
-  common price level in the reviews).
+  price level is free when OpenStreetMap says there is no fee, and it stays free
+  until 2 reviews give a paid price; otherwise it is the most common price level in
+  the reviews).
 - Visit belongs to the Place aggregate, as on the EventStorming board. The Review
   aggregate only triggers it through a policy, so deleting a review does not remove
   the Visit.
@@ -199,8 +201,9 @@ Design notes:
 - **Source:** [component-diagram.puml](design/component-diagram.puml) (PlantUML)
 
 The component diagram is **the solution**: how the system is built to solve the problem
-described by the [domain model](#2-domain-model). Grey components are Stretch:
-designed, not in the MVP.
+described by the [domain model](#2-domain-model). Green components are built (end of
+Iteration 1), yellow ones are MVP and not built yet, grey ones are Stretch: designed,
+not in the MVP.
 
 **How to read the diagram** (the same legend is inside the diagram):
 
@@ -217,22 +220,23 @@ designed, not in the MVP.
 
 | Component            | Responsibility                                                                                                                                                               | Depends on                                                              |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Web App              | Browser UI for users and admins, including the map                                                                                                                           | Backend REST API, Map tiles (external)                                  |
-| Identity             | Users, authentication (Better Auth, see ADR-009), roles                                                                                                                                                 | Database                                                                |
-| Place Catalog        | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
-| Reviews              | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog                                            | Place Catalog                                                           |
+| Web App (built)      | Browser UI for users and admins, including the map and the place page                                                                                                         | Backend REST API, Map tiles (external)                                  |
+| Identity (built)     | Users, authentication (Better Auth, see ADR-009), roles                                                                                                                                                 | Database                                                                |
+| Place Catalog (built) | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
+| Reviews (post built; edit and delete not yet) | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog (ADR-010 puts both policies in one function)                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
 | Trip Planner         | Trips, days, itineraries, visit times, travel-time estimates, opening-hours and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
 | Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average, the wishlist, the hours of the day and known opening hours.                           | Place Catalog, Saved Places                                             |
+| Import and seed scripts (built) | The command line side of Place Catalog: imports the places of a city from OpenStreetMap into a snapshot and the database, and loads the demo users, places and sample reviews. They are run by hand and reuse the rules of `src/domain` | Database, Geocoding service (external), Place Catalog rules |
 | Publishing (Stretch) | Published itineraries, sharing, bookmarks                                                                                                                                    | Trip Planner                                                            |
 | Reminders (Stretch)  | Scheduler that sends visit reminders                                                                                                                                         | Trip Planner, Notification service (external)                           |
 
 External systems:
 
-- **Places data source** (OpenStreetMap), used by Place Catalog to import places and, outside the committed MVP, to discover places live on the map (see ADR-002).
+- **Places data source** (OpenStreetMap, Overpass), used by Place Catalog to discover places live on the map, outside the committed MVP (see ADR-002).
 - **Map tiles** (OpenStreetMap), used by the Web App to draw the map.
 - **Routing service** (Stretch, provider chosen later), used by Trip Planner for real travel times.
-- **Geocoding service** (Nominatim, built but outside the committed MVP), used by Place Catalog to search outside the catalog (see ADR-004).
+- **Geocoding service** (Nominatim), used by the import script to load the places of a city (MVP), and, built but outside the committed MVP, by Place Catalog to search outside the catalog (see ADR-002 and ADR-004).
 - **Notification service** (e-mail or push, Stretch), used by Reminders.
 
 Each component matches aggregates from the EventStorming (Identity = User, Place
@@ -269,6 +273,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
 | ADR-009 | Authentication with Better Auth                           | Accepted (confirmed in a spike) |
+| ADR-010 | One function recomputes the stored values of a place      | Accepted (to be built with US-C2-01) |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -415,3 +420,14 @@ truth. Domain policies are on the EventStorming board and in section 1.
   - _Checked and fine:_ a `role` sent at sign-up or through `update-user` is ignored; `delete-user` and `change-email` are not exposed; a wrong password and an unknown user answer the same and take the same time (about 370 ms each); the cookie is `HttpOnly` and `SameSite=Lax`, and `Secure` over https.
   - _Known and accepted:_ registration tells which username or e-mail is taken (the story requires it), e-mails are not verified, and the password policy is length only.
   - _Not done yet:_ HTTP security headers (clickjacking and content type protection) and the dependency updates that `npm audit` suggests. Both are separate tickets.
+
+### ADR-010: One function recomputes the stored values of a place
+
+- **Status:** Accepted on 5 Nov 2026. It is built with US-C2-01 (edit and delete a review), planned for Iteration 2.
+- **Context:** A place stores three values that are derived from its reviews: `averageRating`, `reviewCount` and `priceLevel`. The rules are pure functions in `src/domain/reviews/rating.ts`, but the sequence that applies them (load the reviews, apply the rules, write the three values) is written in the post handler and in the seed, and the visit policy only in the post handler. The rules changed five times in four days, and the seed missed the visit policy because it was copied, not shared. Edit and delete (US-C2-01) would add two more copies. The full analysis is in [change-scenario.md](design/change-scenario.md).
+- **Decision:** One function, `refreshPlaceStats(db, placeId)` in `src/lib/place-stats.ts`, recomputes the three values, and `markPlaceVisited(db, userId, placeId)` next to it holds the visit policy. The post, edit and delete handlers and the seed call them and pass their database client. The formulas stay pure in `src/domain/reviews/rating.ts`. The migration of #37 stays as written: it is frozen.
+- **Alternatives considered:** copying the steps into each handler (cheapest now, functional coupling between four writers with the most volatile rules); computing the values in the database with a trigger or a view (a volatile rule moves into SQL, away from the tested code); not storing the values and computing them on every read (every list and ranking aggregates thousands of reviews).
+- **Consequences:**
+  - _Positive:_ functional coupling becomes contract coupling (a caller only says which place changed), a rule change touches one place, the Place policies leave the review handler as the component diagram says, and the seed cannot miss a policy again.
+  - _Trade-offs:_ one more module and one more level of indirection, and the function is tested with a database or a fake client, not as a pure function. Two simultaneous requests can still compute from a stale list of reviews; the new module allows one transaction in one place.
+  - _Revisit:_ when the stored values grow (for example the rating score is stored), or when `rating.ts` keeps growing with unrelated rules and must be split.
