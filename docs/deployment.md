@@ -95,6 +95,28 @@ every migration that changes or fills existing tables.
 
 Done on 31 Oct 2026 for the Better Auth migration (ADR-009).
 
+### A migration that deletes data: one review per user and place (US-C1-01, #37)
+
+`20261105190000_unique_review_per_user_and_place` adds a unique index on the user and the place of a
+review. The index cannot be created while a database holds two reviews of one user on one place, and the
+old demo seed wrote such reviews (dev and prod were seeded with it). So the migration first deletes them,
+keeping the oldest review of each user and place, and recalculates the stored average rating and review
+count of the places it touched. It does not touch their price level: the next review or the seed does.
+On a database without repeated reviews it changes nothing.
+
+It runs on prod when `dev` is merged into `main`, before the seed of prod, so it deletes data there and
+needs the team's agreement. Check before how many reviews it would delete:
+
+```sql
+SELECT count(*) AS repeated_pairs, coalesce(sum(n - 1), 0) AS reviews_to_delete
+FROM (SELECT count(*) AS n FROM "Review" GROUP BY "userId", "placeId" HAVING count(*) > 1) d;
+```
+
+Tested on 5 Nov 2026 on a copy of the old local database (117 reviews, 7 repeated pairs: 106 reviews
+left, the oldest of each pair kept, the 2 places recalculated, nothing else changed, a second run does
+nothing) and on a copy of dev with the demo data (no repeated reviews, nothing changed). It is still to
+test on a Neon branch of dev, as described above.
+
 ## One-off data cleanups
 
 The seed and the import only add and update: they never delete, and they leave the price level

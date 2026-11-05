@@ -44,7 +44,7 @@ This glossary defines the canonical ubiquitous language for the place review and
   - **A review needs a rating, a price level and a text.** The form has no preselected rating or price level, and Submit stays disabled until the reviewer has chosen both and written at least one character (spaces alone do not count). The endpoint answers 400, naming the fields, and saves nothing when one is missing or invalid.
   - Posting a review triggers two policies on `Place`: **Mark place visited** and **Recalculate rating and price level**.
   - Editing or deleting a review triggers **Recalculate rating and price level**.
-  - **A user can review a given place only once.** To change an opinion the user edits the review, and after deleting it can post a new one. Different users can each review the same place.
+  - **A user can review a given place only once.** To change an opinion the user edits the review, and after deleting it can post a new one. Different users can each review the same place. The reviews endpoint answers 409 to a second review, the review dialog shows a notice and no form, and a unique index on the user and the place is the guarantee. The migration that added it deletes the older repeated reviews first and keeps the oldest.
   - Deleting a review does **not** delete the corresponding `Visit`.
 
 ### Visit
