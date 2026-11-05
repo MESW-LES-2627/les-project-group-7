@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
+import OpenStreetMapAttribution from "@/components/OpenStreetMapAttribution";
 
 export const metadata: Metadata = {
   title: "Tripbook — Place Reviews & Day-by-Day Trip Planning",
@@ -23,9 +24,15 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+
+      <body className="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased">
         <SiteHeader />
-        {children}
+
+        <div className="flex-1">{children}</div>
+
+        <footer className="border-t border-slate-200 px-4 py-4 dark:border-slate-700">
+          <OpenStreetMapAttribution />
+        </footer>
       </body>
     </html>
   );
