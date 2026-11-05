@@ -140,18 +140,54 @@ DELETE FROM "Place" WHERE "osmId" IN (
   'node/45299496', 'node/45299497', 'node/45299498', 'node/45299500',
   'node/65299496', 'node/65299497', 'node/65299498', 'node/65299499'
 );
--- Old imported places of Porto outside the zone (Perafita to Vilar do Paraíso) and without reviews
-DELETE FROM "Place" p
-WHERE p."cityId" = 'city-porto' AND p.source = 'IMPORTED'
-  AND (p.latitude NOT BETWEEN 41.08 AND 41.24 OR p.longitude NOT BETWEEN -8.73 AND -8.56)
-  AND NOT EXISTS (SELECT 1 FROM "Review" r WHERE r."placeId" = p.id);
 COMMIT;
 ```
 
 Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
 
-Status: tried on a copy of dev on 5 Nov 2026 (2,969 places, 6,549 reviews and 30 demo users afterwards).
-Not run on dev or prod yet.
+Status: tried on a copy of dev on 5 Nov 2026. Not run on dev or prod yet.
+
+**Old Porto places that are not in the snapshot (US-B2-01, #20).** Porto used to be imported from a box
+four times as big and with another set of queries, so the database holds old imported places that the
+snapshot of today does not have (84 on dev), some outside the zone from Perafita to Vilar do Paraíso, and
+the seed never deletes them. This removes the old imported Porto places that are not in
+`prisma/data/porto-places.json`, unless a review, a visit, a saved place, a list entry or a trip stop
+points at them. Run it from the root of the repository, after the cleanup above and before the seed. With
+`COMMIT=1` it deletes; without it everything is rolled back and only the numbers are printed (on a copy of dev before the
+seed: 84 to delete and 533 Porto places left).
+
+```bash
+# usage: [COMMIT=1] bash prune-porto.sh psql "$DATABASE_URL"
+MODE=${COMMIT:+COMMIT}; MODE=${MODE:-ROLLBACK}
+{
+  echo 'BEGIN;'
+  echo 'CREATE TEMP TABLE keep (osm_id text);'
+  echo 'COPY keep FROM STDIN;'
+  node -e 'for (const p of require("./prisma/data/porto-places.json")) console.log(p.osmId)'
+  echo '\.'
+  cat <<'SQL'
+SELECT count(*) AS to_delete FROM "Place" p
+WHERE p."cityId" = 'city-porto' AND p.source = 'IMPORTED' AND p."osmId" NOT IN (SELECT osm_id FROM keep)
+  AND NOT EXISTS (SELECT 1 FROM "Review" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "Visit" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "SavedPlace" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ListEntry" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ItineraryStop" x WHERE x."placeId" = p.id);
+DELETE FROM "Place" p
+WHERE p."cityId" = 'city-porto' AND p.source = 'IMPORTED' AND p."osmId" NOT IN (SELECT osm_id FROM keep)
+  AND NOT EXISTS (SELECT 1 FROM "Review" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "Visit" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "SavedPlace" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ListEntry" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ItineraryStop" x WHERE x."placeId" = p.id);
+SELECT count(*) AS porto_places_after FROM "Place" WHERE "cityId" = 'city-porto';
+SQL
+  echo "$MODE;"
+} | "$@" -tA
+```
+
+Status: tried on a copy of dev on 5 Nov 2026, after the cleanup above and the seed (2,896 places, 6,549 reviews
+and 30 demo users afterwards; every city has 30% of its places reviewed). Not run on dev or prod yet.
 
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
 with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
