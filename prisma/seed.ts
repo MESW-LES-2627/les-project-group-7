@@ -92,7 +92,7 @@ interface SampleReview {
  *
  * Every review goes to a different demo user (nobody reviews a place twice, US-C1-01). A user who
  * already has another review on the place is skipped, and `offset` varies who writes first. A
- * review with a `username` is written by that user.
+ * review with a `username` is written by that user. Each author also gets the place marked as visited.
  */
 async function replaceDemoReviews(
   placeId: string,
@@ -136,15 +136,24 @@ async function replaceDemoReviews(
   const start = free.length === 0 ? 0 : offset % free.length;
   const rotation = [...free.slice(start), ...free.slice(0, start)];
   let next = 0;
+  const authors = reviews.map((_, i) => pinned[i] ?? rotation[next++]);
 
   await prisma.review.createMany({
     data: reviews.map((review, i) => ({
       rating: review.rating,
       priceLevel: review.priceLevel,
       text: review.text,
-      userId: pinned[i] ?? rotation[next++],
+      userId: authors[i],
       placeId,
     })),
+  });
+
+  // The reviews endpoint marks the place as visited for the author of a review (US-C1-01), and the seed
+  // writes reviews straight into the database, so it marks the places visited too. A visit that is
+  // already there stays.
+  await prisma.visit.createMany({
+    data: authors.map((userId) => ({ userId, placeId })),
+    skipDuplicates: true,
   });
 }
 
