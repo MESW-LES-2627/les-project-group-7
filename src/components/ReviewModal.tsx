@@ -40,6 +40,10 @@ import {
 import type { PlaceItem } from "./PlaceExplorer";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import {
+  ALREADY_REVIEWED_MESSAGE,
+  hasReviewedPlace,
+} from "@/domain/reviews/one-review-rule";
+import {
   PRICE_LEVELS,
   type PriceLevel,
   formatPriceLevel,
@@ -157,8 +161,12 @@ export default function ReviewModal({
           </div>
         )}
 
-        {/* Review Form */}
-        {currentUsername ? (
+        {/* Review Form: one review per user and place, so a user who reviewed it sees a notice */}
+        {currentUsername && hasReviewedPlace(reviews, currentUsername) ? (
+          <p className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+            {ALREADY_REVIEWED_MESSAGE}
+          </p>
+        ) : currentUsername ? (
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
               <Label htmlFor="star-rating">
