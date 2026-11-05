@@ -114,8 +114,15 @@ FROM (SELECT count(*) AS n FROM "Review" GROUP BY "userId", "placeId" HAVING cou
 
 Tested on 5 Nov 2026 on a copy of the old local database (117 reviews, 7 repeated pairs: 106 reviews
 left, the oldest of each pair kept, the 2 places recalculated, nothing else changed, a second run does
-nothing) and on a copy of dev with the demo data (no repeated reviews, nothing changed). It is still to
-test on a Neon branch of dev, as described above.
+nothing) and on a copy of dev with the demo data (no repeated reviews, nothing changed).
+
+Tested the same day on a Neon branch of dev, with the direct string as the workflow uses it. Dev has no
+repeated reviews, so 15 were added to the branch (12 pairs, 9 places) to test the deletion: 93 reviews
+became 78, the oldest of each pair stayed, the 9 places have the right count and average, no other place
+or price level changed, the index is the one of the schema, and a second `migrate deploy` does nothing.
+The app on the pooled string of the branch then answered 409 to a second review of a user on a place, and
+two requests at once saved only one. On dev itself: 0 repeated reviews, so the migration deletes nothing
+there. On prod the number is not known yet: check it with the query above before the merge into `main`.
 
 ## One-off data cleanups
 
