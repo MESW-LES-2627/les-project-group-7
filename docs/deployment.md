@@ -122,7 +122,16 @@ became 78, the oldest of each pair stayed, the 9 places have the right count and
 or price level changed, the index is the one of the schema, and a second `migrate deploy` does nothing.
 The app on the pooled string of the branch then answered 409 to a second review of a user on a place, and
 two requests at once saved only one. On dev itself: 0 repeated reviews, so the migration deletes nothing
-there. On prod the number is not known yet: check it with the query above before the merge into `main`.
+there.
+
+Tested the same day on a Neon branch of prod (a copy, prod itself was not touched), applying all the
+migrations that prod does not have yet (trip day hours, Better Auth, the drop of `passwordHash` and this one)
+with the direct string, as the deploy will do. Prod holds 535 places, 7 cities, 2 demo users and 95 reviews,
+with 20 repeated pairs: the migration deleted 49 reviews (95 became 46, all written by the two demo users),
+left no repeated pair, every place has the right count and average, and users, places, cities and visits
+are unchanged. The 2 demo users got their `name` and `displayUsername` from Better Auth, but **have no
+`Account` (0 accounts), so nobody can log in on prod until the seed has been run**. A second
+`migrate deploy` does nothing.
 
 ## One-off data cleanups
 
