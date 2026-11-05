@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import type { PlaceItem } from "./PlaceExplorer";
 import { formatPriceLevel } from "@/domain/reviews/rating";
+import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 
@@ -128,9 +129,7 @@ export default function PlaceGrid({
                   <div className="flex items-center gap-1.5 text-xs">
                     <span className="inline-flex items-center gap-0.5 font-bold text-amber-600">
                       <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                      {place.averageRating
-                        ? place.averageRating.toFixed(1)
-                        : "—"}
+                      {formatAverageRating(place.averageRating)}
                     </span>
                     <span className="text-slate-400">
                       ({place.reviewCount}{" "}
