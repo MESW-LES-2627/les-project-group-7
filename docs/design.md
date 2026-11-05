@@ -265,15 +265,15 @@ truth. Domain policies are on the EventStorming board and in section 1.
 | ADR     | Decision                                                  | Status                |
 | ------- | --------------------------------------------------------- | --------------------- |
 | ADR-001 | Full-stack architecture with Next.js 15 App Router       | Accepted              |
-| ADR-002 | Places come from import and seed scripts and live discovery (OpenStreetMap) | Accepted (live discovery built, outside the committed MVP) |
+| ADR-002 | Places come from import and seed scripts and live discovery (OpenStreetMap) | Accepted (live discovery outside the committed MVP) |
 | ADR-003 | Soft budget metric based on cost points                   | Accepted              |
-| ADR-004 | Search outside the catalog with Nominatim                 | Accepted (built, outside the committed MVP) |
+| ADR-004 | Search outside the catalog with Nominatim                 | Accepted (outside the committed MVP) |
 | ADR-005 | Honest symbolic places and a Ranking DataTable            | Accepted              |
 | ADR-006 | Data and development environment                          | Accepted              |
-| ADR-007 | Deployment on Vercel and Neon                             | Accepted (tested on dev and prod) |
+| ADR-007 | Deployment on Vercel and Neon                             | Accepted              |
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
-| ADR-009 | Authentication with Better Auth                           | Accepted (confirmed in a spike) |
-| ADR-010 | One function recomputes the stored values of a place      | Accepted (to be built with US-C2-01) |
+| ADR-009 | Authentication with Better Auth                           | Accepted              |
+| ADR-010 | One function recomputes the stored values of a place      | Accepted              |
 
 ### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -351,7 +351,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-007: Deployment on Vercel and Neon
 
-- **Status:** Accepted. The dev path was tested on 21 Oct 2026, first with a hello-world app and then with the real skeleton, including the Prisma migration step on the dev database. The `main` (prod) path ran on 22 Oct 2026: the migrations were applied, the deploy succeeded and the site answers. Not yet proven: a deploy of a commit pushed by a teammate (see the Hobby plan note below).
+- **Status:** Accepted
 - **Context:** The project needs two separate environments (dev and prod) that teachers can open, at no cost. The repository is private in the course organisation, and Vercel's free plan cannot connect to private organisation repositories.
 - **Decision:**
   - _App hosting:_ Vercel Hobby (non-commercial use), with two projects: `les-group7-dev` (branch `dev`, address `les-group7-dev.vercel.app`) and `les-group7` (branch `main`, address `les-group7.vercel.app`). Both are deployed to their own production environment, which gives each a fixed public address.
@@ -365,7 +365,7 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ free, two fixed public addresses, a deployment that is repeatable and visible in GitHub.
   - _Trade-offs:_ Neon suspends the database after 5 minutes without use, so the first request is slower. Free limits apply (Neon: 1 GB and 100 compute-hours per month per project). Both Vercel projects belong to one person's account.
-  - _Hobby plan:_ it only deploys commits authored by the account owner and blocks the rest (the deployment stays in the state `BLOCKED` and the upload waits). The workflow hides `.git` while it uploads so that the upload carries no commit author. This worked for the owner's commits on dev and prod, and has not been tested with a teammate's commit. If it fails, only the account owner can deploy until the plan changes. Which commit was deployed is visible in the GitHub Action run, not in Vercel.
+  - _Hobby plan:_ it only deploys commits authored by the account owner and blocks the rest (the deployment stays in the state `BLOCKED` and the upload waits). The workflow hides `.git` while it uploads so that the upload carries no commit author. A deploy of a teammate's commit is not proven. If it fails, only the account owner can deploy until the plan changes. Which commit was deployed is visible in the GitHub Action run, not in Vercel.
   - _Data history:_ Neon Free keeps only 6 hours of history, so a prod backup must be taken before each release (see [deployment.md](deployment.md)).
 
 ### ADR-008: Rank places by a weighted rating
@@ -381,9 +381,9 @@ truth. Domain policies are on the EventStorming board and in section 1.
 
 ### ADR-009: Authentication with Better Auth
 
-- **Status:** Accepted. Confirmed by a spike on 31 Oct 2026 (a throwaway local branch, Postgres 18, Prisma 6.19, Next 15; see the end of this ADR).
+- **Status:** Accepted
 - **Context:** The MVP needs registration, login, logout, and "every write action requires login, users can only change their own data" (see [mvp.md](mvp.md)). The prototype has none of it: the user is chosen with buttons and the review endpoint trusts a `userId` from the request body. Security code (password hashing, sessions, rate limiting) is easy to get wrong, so we prefer a maintained library to our own.
-- **Decision:** Use **Better Auth** (npm `better-auth`, pinned to an exact version, 1.7.x at the time of writing) with the Prisma adapter, e-mail and password, and the `username` plugin.
+- **Decision:** Use **Better Auth** (npm `better-auth`, pinned to an exact version) with the Prisma adapter, e-mail and password, and the `username` plugin.
   - _Where:_ the server instance in `src/lib/auth.ts`, the library's routes under `src/app/api/auth/[...all]/route.ts`, and our own `POST /api/register`. There is no browser client of the library: the login and logout buttons call its endpoints (`/api/auth/sign-in/email`, `/api/auth/sign-in/username`, `/api/auth/sign-out`) with `fetch`, and `buildLoginRequest` and `loginErrorMessage` (`src/domain/identity/login.ts`) hold the rules of the login form.
   - _Passwords:_ hashed by the library (scrypt by default) and stored in its `Account` table. The old `User.passwordHash` column was dropped by the migration `20261102180000_drop_user_password_hash` (#19), once nothing wrote it any more. Minimum length 8, maximum 128.
   - _Usernames:_ 3 to 30 characters, letters, numbers, underscores and dots, stored in lower case (the plugin's defaults).
@@ -401,29 +401,16 @@ truth. Domain policies are on the EventStorming board and in section 1.
 - **Consequences:**
   - _Positive:_ a maintained, widely used library, revocable database sessions, hashing and rate limiting that we do not write ourselves, and less security code to defend.
   - _Trade-offs:_ new tables (`Session`, `Account`, `Verification`, `RateLimit`) and new `User` columns (the library requires a `name`, which we set to the username, and `emailVerified`), through incremental migrations. The seed must create users through the library's hashing. The library is a young 1.x package, so we pin the version and upgrade deliberately.
-- **Confirmed in the spike (31 Oct 2026):**
-  - _Works with our stack:_ Better Auth 1.7.14 with the Prisma adapter, Prisma 6.19 and Next 15. 16 checks passed against a running server: registration, login by username and by e-mail, logout, the guard, duplicates, validation errors, the origin check and the rate limit.
-  - _Cookie:_ `better-auth.session_token`, `HttpOnly`, `SameSite=Lax`, 7 days, and with an https site URL `__Secure-` plus `Secure`. A request that carries the cookie is refused (403) when its `Origin` is foreign or missing, which is the protection against cross-site posts.
-  - _Data:_ e-mails and usernames are stored in lower case (the original username is kept in `displayUsername`). The password hash is in `Account.password` (scrypt, provider `credential`). A `role` sent in the sign-up body is ignored and the stored role is `USER`, so our `Role` enum works with the library's `role` field. The library creates its own string ids for new users, and the ids of existing users do not change.
-  - _Errors:_ a wrong password and an unknown user give the same answer. The library reports one error at a time, so our own validation runs first to give one message per field (a user who is wrong on two fields is told about both).
-  - _Rate limit:_ with database storage, the 4th sign-in within 10 seconds answers 429 and the counter recovers after the window. The counter is keyed by the address in `x-forwarded-for`, which Vercel sets.
-  - _Telemetry:_ off by default (it needs an explicit setting or `BETTER_AUTH_TELEMETRY`), and we also set it off in the config.
-  - _Seed:_ `hashPassword` from `better-auth/crypto` plus an `Account` row lets a demo user log in with a known password, and the old fake hash no longer works.
-- **Things the spike found that the plan must respect:**
-  - The migration cannot be the generated one. The library needs a required `name` and `updatedAt` on `User`, and the dev and prod databases already have users, so the generated SQL fails ("column contains null values"). The migration adds the columns as nullable, fills them for existing users (`name` = username) and then makes them required.
-  - The CLI wants to rename our tables (`@@map("user")`) and add a second `createdAt`. We keep our table names and map the library's `createdAt` to our `registeredAt` (`user.fields`), so no existing column or table changes name.
-  - `auth.api.signUpEmail` reports some failures by returning an error Response and others (for example the username checks) by throwing `APIError`. The `POST /api/register` wrapper handles both. The library answers a successful sign-up with 200, and the wrapper answers 201.
-  - The library never writes the old `passwordHash` column, which is required in the old schema, so the migration makes it optional. The seed and the reviews endpoint (which created demo users) still wrote it at first and only got the new required `name`; #14 removed the endpoint's demo users and #19 gave the seed real accounts. The column was dropped afterwards, in a new migration, so that no deploy broke code that still wrote it.
-- **Verified on the real database (31 Oct 2026):** the migration was applied through the direct connection to a copy of the dev database (a temporary Neon branch). The two demo users got their new columns, all 535 places and 94 reviews were intact, and the four new tables existed. The app then ran through Neon's pooled connection, which is what Vercel uses, and the 35 curl checks passed there, including the rate limit counters in the database. The procedure is in [deployment.md](deployment.md).
-- **Security review (31 Oct 2026):**
-  - _Found and fixed:_ `POST /api/register` accepted a cross-site request (a foreign `Origin` and a `text/plain` body registered an account and set the cookie), because calling the library from server code skips its own origin check. It now requires a JSON body and the site's own `Origin`. Sign-up had no rate limit, and the library's own public sign-up path would have bypassed one, so that path is switched off and the registration route carries the limit.
-  - _Checked and fine:_ a `role` sent at sign-up or through `update-user` is ignored; `delete-user` and `change-email` are not exposed; a wrong password and an unknown user answer the same and take the same time (about 370 ms each); the cookie is `HttpOnly` and `SameSite=Lax`, and `Secure` over https.
-  - _Known and accepted:_ registration tells which username or e-mail is taken (the story requires it), e-mails are not verified, and the password policy is length only.
-  - _Not done yet:_ HTTP security headers (clickjacking and content type protection) and the dependency updates that `npm audit` suggests. Both are separate tickets.
+- **Constraints that shape the design:**
+  - The migration is written by hand. The library needs a required `name` and `updatedAt` on `User`, and the databases already have users, so the migration adds the columns as nullable, fills them (`name` = username) and then makes them required.
+  - Our table names stay. The library's `createdAt` is mapped to our `registeredAt` (`user.fields`), so no existing column or table changes name.
+  - `auth.api.signUpEmail` reports some failures by returning an error Response and others (for example the username checks) by throwing `APIError`. The `POST /api/register` wrapper handles both and answers 201 for a success.
+  - The old `passwordHash` column was made optional first and dropped in a later migration, once the seed (#19) and the reviews endpoint (#14) no longer wrote it, so that no deploy broke code that still wrote it.
+- **Known limits:** registration tells which username or e-mail is taken (the story requires it), e-mails are not verified, and the password policy is length only. HTTP security headers (clickjacking and content type protection) are not set yet.
 
 ### ADR-010: One function recomputes the stored values of a place
 
-- **Status:** Accepted on 5 Nov 2026. It is built with US-C2-01 (edit and delete a review), planned for Iteration 2.
+- **Status:** Accepted. It is built with US-C2-01 (edit and delete a review).
 - **Context:** A place stores three values that are derived from its reviews: `averageRating`, `reviewCount` and `priceLevel`. The rules are pure functions in `src/domain/reviews/rating.ts`, but the sequence that applies them (load the reviews, apply the rules, write the three values) is written in the post handler and in the seed, and the visit policy only in the post handler. The rules changed five times in four days, and the seed missed the visit policy because it was copied, not shared. Edit and delete (US-C2-01) would add two more copies. The full analysis is in [change-scenario-1.md](design/change-scenario-1.md).
 - **Decision:** One function, `refreshPlaceStats(db, placeId)` in `src/lib/place-stats.ts`, recomputes the three values, and `markPlaceVisited(db, userId, placeId)` next to it holds the visit policy. The post, edit and delete handlers and the seed call them and pass their database client. The formulas stay pure in `src/domain/reviews/rating.ts`. The migration of #37 stays as written: it is frozen.
 - **Alternatives considered:** copying the steps into each handler (cheapest now, functional coupling between four writers with the most volatile rules); computing the values in the database with a trigger or a view (a volatile rule moves into SQL, away from the tested code); not storing the values and computing them on every read (every list and ranking aggregates thousands of reviews).
