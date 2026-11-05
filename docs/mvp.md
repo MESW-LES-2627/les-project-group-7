@@ -121,7 +121,7 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   free place (`fee=no`) stays free until at least 2 reviews give a paid price.
 - **Ranking:** places are ranked by a **weighted rating**, not by the plain average, so that
   one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
-  `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 3` and
+  `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 6` and
   `C = 4.0`. The plain average and the number of reviews are still shown.
 - **Hours of the day:** every trip has a time when the day starts and a time when it
   ends (default 09:00 to 20:00; the earliest start is 08:00 and the latest end is

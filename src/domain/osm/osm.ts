@@ -290,6 +290,32 @@ export interface CityArea {
   maxLon: number;
 }
 
+/**
+ * Cuts a city area into `rows` x `cols` equal tiles, north to south and west to east. A search by
+ * kind returns at most 50 places, mostly the central ones, so the import also searches every tile
+ * (Nominatim `viewbox`: left, top, right, bottom) to reach the whole city.
+ */
+export function gridTiles(
+  area: CityArea,
+  rows: number,
+  cols: number
+): { left: number; top: number; right: number; bottom: number }[] {
+  const tiles = [];
+  const height = (area.maxLat - area.minLat) / rows;
+  const width = (area.maxLon - area.minLon) / cols;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      tiles.push({
+        left: area.minLon + col * width,
+        top: area.maxLat - row * height,
+        right: area.minLon + (col + 1) * width,
+        bottom: area.maxLat - (row + 1) * height,
+      });
+    }
+  }
+  return tiles;
+}
+
 /** A place ready to be saved by the import (US-B1-01). */
 export interface ImportedPlace {
   osmId: string;

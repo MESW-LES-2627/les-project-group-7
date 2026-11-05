@@ -160,6 +160,73 @@ Check before and after: `SELECT coalesce("priceLevel", 'unknown'), count(*) FROM
 Status: run on dev on 5 Nov 2026, followed by the seed (625 places, 20 demo users). Not run on prod yet: it
 waits for the merge of `dev` into `main`.
 
+**Hand-written places of the prototype seed (US-B2-01, #20).** The old seed created 18 places by
+hand: 10 in Porto (ids `porto/...`) and 8 in Paris and Berlin (invented OpenStreetMap ids), with 78
+reviews. They are replaced by the real OpenStreetMap places from the snapshots, which now carry the
+sample reviews, and three of them were duplicates of imported places (São Bento, Bolhão, Jardim do
+Morro). This removes them and their reviews, visits and saved places (all their reviews were written
+by demo users on dev). Run it before `npm run seed`, which then writes the sample reviews, including
+the "Meh" review, on the real places. Check first that nobody else reviewed them:
+`SELECT count(*) FROM "Review" r JOIN "Place" p ON p.id = r."placeId" WHERE p."osmId" IN (...) AND r."userId" NOT LIKE 'demo-user-%';`
+
+```sql
+BEGIN;
+DELETE FROM "Place" WHERE "osmId" IN (
+  'porto/serralves', 'porto/cafe-santiago', 'porto/ponte-dom-luis', 'porto/sao-bento',
+  'porto/mercado-bolhao', 'porto/livraria-lello', 'porto/torre-clerigos', 'porto/cafe-majestic',
+  'porto/jardim-morro', 'porto/catraio-beer',
+  'node/45299496', 'node/45299497', 'node/45299498', 'node/45299500',
+  'node/65299496', 'node/65299497', 'node/65299498', 'node/65299499'
+);
+COMMIT;
+```
+
+Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
+
+Status: tried on a copy of dev on 5 Nov 2026. Not run on dev or prod yet.
+
+**Old Porto places that are not in the snapshot (US-B2-01, #20).** Porto used to be imported from a box
+four times as big and with another set of queries, so the database holds old imported places that the
+snapshot of today does not have (84 on dev), some outside the zone from Perafita to Vilar do Paraíso, and
+the seed never deletes them. This removes the old imported Porto places that are not in
+`prisma/data/porto-places.json`, unless a review, a visit, a saved place, a list entry or a trip stop
+points at them. Run it from the root of the repository, after the cleanup above and before the seed. With
+`COMMIT=1` it deletes; without it everything is rolled back and only the numbers are printed (on a copy of dev before the
+seed: 84 to delete and 533 Porto places left).
+
+```bash
+# usage: [COMMIT=1] bash prune-porto.sh psql "$DATABASE_URL"
+MODE=${COMMIT:+COMMIT}; MODE=${MODE:-ROLLBACK}
+{
+  echo 'BEGIN;'
+  echo 'CREATE TEMP TABLE keep (osm_id text);'
+  echo 'COPY keep FROM STDIN;'
+  node -e 'for (const p of require("./prisma/data/porto-places.json")) console.log(p.osmId)'
+  echo '\.'
+  cat <<'SQL'
+SELECT count(*) AS to_delete FROM "Place" p
+WHERE p."cityId" = 'city-porto' AND p.source = 'IMPORTED' AND p."osmId" NOT IN (SELECT osm_id FROM keep)
+  AND NOT EXISTS (SELECT 1 FROM "Review" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "Visit" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "SavedPlace" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ListEntry" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ItineraryStop" x WHERE x."placeId" = p.id);
+DELETE FROM "Place" p
+WHERE p."cityId" = 'city-porto' AND p.source = 'IMPORTED' AND p."osmId" NOT IN (SELECT osm_id FROM keep)
+  AND NOT EXISTS (SELECT 1 FROM "Review" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "Visit" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "SavedPlace" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ListEntry" x WHERE x."placeId" = p.id)
+  AND NOT EXISTS (SELECT 1 FROM "ItineraryStop" x WHERE x."placeId" = p.id);
+SELECT count(*) AS porto_places_after FROM "Place" WHERE "cityId" = 'city-porto';
+SQL
+  echo "$MODE;"
+} | "$@" -tA
+```
+
+Status: tried on a copy of dev on 5 Nov 2026, after the cleanup above and the seed (2,896 places, 6,549 reviews
+and 30 demo users afterwards; every city has 30% of its places reviewed). Not run on dev or prod yet.
+
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
 with four landmarks each. The MVP cities are Porto, Paris and Berlin, so the seed no longer creates
 them. This removes the cities and their 16 places; the reviews, visits, saved places and itinerary

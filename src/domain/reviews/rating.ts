@@ -55,7 +55,9 @@ export function calculateAverageRating(
     return null;
   }
 
-  return Number((sum / count).toFixed(1));
+  // Whole numbers until the last step: (sum / count).toFixed(1) turns 4.35 into 4.3, because 4.35
+  // cannot be stored exactly, and the rule is to round half up (4.4).
+  return Math.round((sum * 10) / count) / 10;
 }
 
 /**
@@ -63,7 +65,7 @@ export function calculateAverageRating(
  * its own average counts as much as the prior. Revisit it, and C, when the catalog gets many more
  * reviews (see "Revisit" in ADR-008).
  */
-export const RATING_SCORE_M = 3;
+export const RATING_SCORE_M = 6;
 
 /** The prior of the rating score (ADR-008): the rating that a place with no reviews is assumed to have. */
 export const RATING_SCORE_C = 4.0;
@@ -71,7 +73,7 @@ export const RATING_SCORE_C = 4.0;
 /**
  * The number that ranks places (ADR-008, the weighted rating, a Bayesian average):
  * `(n / (n + m)) * average + (m / (n + m)) * C`, rounded to 2 decimals. One review cannot outrank
- * many: 1 review of 5 scores 4.25, and 50 reviews averaging 4.8 score 4.75.
+ * many: 1 review of 5 scores 4.14, and 50 reviews averaging 4.8 score 4.71.
  */
 export function ratingScore(
   average: number | null | undefined,

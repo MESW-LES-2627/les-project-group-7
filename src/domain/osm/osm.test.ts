@@ -8,6 +8,7 @@ import {
   formatNominatimAddress,
   placeFromNominatim,
   getQuantizedKey,
+  gridTiles,
   type CityArea,
 } from "./osm";
 
@@ -294,5 +295,43 @@ describe("OSM Domain Mapping", () => {
       const key2 = getQuantizedKey(41.14564, -8.61433, 41.15123, -8.60894);
       expect(key1).toBe(key2);
     });
+  });
+});
+
+describe("gridTiles", () => {
+  const area: CityArea = {
+    name: "Test",
+    minLat: 10,
+    maxLat: 12,
+    minLon: 20,
+    maxLon: 24,
+  };
+
+  it("cuts the area into rows x cols tiles, north to south and west to east", () => {
+    const tiles = gridTiles(area, 2, 4);
+    expect(tiles).toHaveLength(8);
+    expect(tiles[0]).toEqual({ left: 20, top: 12, right: 21, bottom: 11 });
+    expect(tiles[3]).toEqual({ left: 23, top: 12, right: 24, bottom: 11 });
+    expect(tiles[4]).toEqual({ left: 20, top: 11, right: 21, bottom: 10 });
+    expect(tiles[7]).toEqual({ left: 23, top: 11, right: 24, bottom: 10 });
+  });
+
+  it("covers the whole area without gaps or overlaps", () => {
+    const tiles = gridTiles(area, 3, 3);
+    const total = tiles.reduce(
+      (sum, t) => sum + (t.right - t.left) * (t.top - t.bottom),
+      0
+    );
+    expect(total).toBeCloseTo((24 - 20) * (12 - 10), 10);
+    expect(Math.min(...tiles.map((t) => t.left))).toBe(20);
+    expect(Math.max(...tiles.map((t) => t.right))).toBeCloseTo(24, 10);
+    expect(Math.max(...tiles.map((t) => t.top))).toBe(12);
+    expect(Math.min(...tiles.map((t) => t.bottom))).toBeCloseTo(10, 10);
+  });
+
+  it("is the whole area for a 1 x 1 grid", () => {
+    expect(gridTiles(area, 1, 1)).toEqual([
+      { left: 20, top: 12, right: 24, bottom: 10 },
+    ]);
   });
 });

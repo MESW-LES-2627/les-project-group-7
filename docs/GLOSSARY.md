@@ -21,7 +21,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Import places
 
-- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts`, one MVP city at a time (`npm run import:osm -- porto`, `paris` or `berlin`). A place is saved only if it has a name; its category comes from the OpenStreetMap tags (one mapping for the import, the search box and the live map, anything unknown is `OTHER`); its opening hours are the `opening_hours` tag, or unknown; its price level is `FREE` if the tag says `fee=no` and unknown otherwise, never guessed. If OpenStreetMap does not answer, nothing is saved. The seed script `prisma/seed.ts` creates the cities, their places, the demo users and the sample reviews. Its event is _Places imported_.
+- **Definition:** The admin command that loads places from OpenStreetMap into PostgreSQL with `scripts/import-osm.ts`, one MVP city at a time (`npm run import:osm -- porto`, `paris` or `berlin`). A place is saved only if it has a name; its category comes from the OpenStreetMap tags (one mapping for the import, the search box and the live map, anything unknown is `OTHER`); its opening hours are the `opening_hours` tag, or unknown; its price level is `FREE` if the tag says `fee=no` and unknown otherwise, never guessed. If OpenStreetMap does not answer, nothing is saved. Famous places, football stadiums, train stations and airports are searched by name too (only those inside the city area are saved), and each tile of a big city is searched for each kind (`--grid`), because a search by kind returns only 50 places, mostly central ones. The seed script `prisma/seed.ts` creates the cities, loads their places from the snapshots (`prisma/data/<city>-places.json`), creates the demo users and the sample reviews (`prisma/data/reviews-<city>.json`: 30% of the places of each city, 1 to 25 reviews each), and then recalculates the rating, review count and price level of each reviewed place with the same functions that the app uses, because the seed writes the reviews straight into the database, and marks each place as visited for the users who reviewed it, as posting a review does. Its event is _Places imported_.
 
 ### City
 
@@ -58,13 +58,13 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Rating Score (Weighted Rating)
 
-- **Definition:** The number used to **rank** places, instead of the plain `averageRating`, so that one review cannot outrank many (see ADR-008). It is a Bayesian average: `score = (n / (n + m)) × averageRating + (m / (n + m)) × C`, with `n` = `reviewCount`, `m = 3` and `C = 4.0` (named constants), rounded to 2 decimals.
+- **Definition:** The number used to **rank** places, instead of the plain `averageRating`, so that one review cannot outrank many (see ADR-008). It is a Bayesian average: `score = (n / (n + m)) × averageRating + (m / (n + m)) × C`, with `n` = `reviewCount`, `m = 6` and `C = 4.0` (named constants), rounded to 2 decimals.
 - **Rules:**
   - A place with no reviews has no score and is ranked after all rated places.
   - Ties are broken by `reviewCount`, then by name.
   - Every list sorted by rating (the ranking, the top-rated list, the sort in search) uses this score. The place still shows its plain `averageRating` and `reviewCount`.
   - The "minimum rating" filter uses the plain `averageRating`.
-  - Examples: 1 review of 5 gives 4.25, 3 reviews of 5 give 4.50, 50 reviews averaging 4.8 give 4.75.
+  - Examples: 1 review of 5 gives 4.14, 3 reviews of 5 give 4.33, 50 reviews averaging 4.8 give 4.71.
 
 ---
 

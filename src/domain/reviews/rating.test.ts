@@ -20,6 +20,14 @@ describe("Rating calculations", () => {
     expect(calculateAverageRating([1, 2])).toBe(1.5);
   });
 
+  it("rounds half up, also where the decimal cannot be stored exactly", () => {
+    // 13 ratings of 4 and 7 of 5: the mean is exactly 4.35
+    const ratings = [...Array(13).fill(4), ...Array(7).fill(5)];
+    expect(calculateAverageRating(ratings)).toBe(4.4);
+    expect(calculateAverageRating([4, 5, 4, 4])).toBe(4.3); // 4.25
+    expect(calculateAverageRating([1, 1, 2])).toBe(1.3); // 1.33
+  });
+
   it("filters out invalid ratings outside 1..5 range", () => {
     expect(calculateAverageRating([0, 5, 6])).toBe(5.0);
     expect(calculateAverageRating([])).toBeNull();
@@ -136,20 +144,20 @@ describe("PriceLevel domain constants and type guard", () => {
 
 describe("Rating score (weighted rating, ADR-008)", () => {
   it("uses the constants of the ADR", () => {
-    expect(RATING_SCORE_M).toBe(3);
+    expect(RATING_SCORE_M).toBe(6);
     expect(RATING_SCORE_C).toBe(4.0);
   });
 
-  it("gives 4.25 to 1 review of 5", () => {
-    expect(ratingScore(5, 1)).toBe(4.25);
+  it("gives 4.14 to 1 review of 5", () => {
+    expect(ratingScore(5, 1)).toBe(4.14);
   });
 
-  it("gives 4.5 to 3 reviews of 5", () => {
-    expect(ratingScore(5, 3)).toBe(4.5);
+  it("gives 4.33 to 3 reviews of 5", () => {
+    expect(ratingScore(5, 3)).toBe(4.33);
   });
 
-  it("gives 4.75 to 50 reviews averaging 4.8", () => {
-    expect(ratingScore(4.8, 50)).toBe(4.75);
+  it("gives 4.71 to 50 reviews averaging 4.8", () => {
+    expect(ratingScore(4.8, 50)).toBe(4.71);
   });
 
   it("ranks 50 reviews averaging 4.8 above 1 review of 5", () => {
@@ -157,7 +165,7 @@ describe("Rating score (weighted rating, ADR-008)", () => {
   });
 
   it("pulls a low average up towards 4.0 and keeps a few bad reviews low", () => {
-    expect(ratingScore(1, 1)).toBe(3.25);
+    expect(ratingScore(1, 1)).toBe(3.57);
     expect(ratingScore(1, 50)).toBeLessThan(ratingScore(1, 1)!);
   });
 
@@ -185,10 +193,10 @@ describe("Rating score (weighted rating, ADR-008)", () => {
   });
 
   it("is rounded to 2 decimals", () => {
-    // 2 reviews averaging 4.3: (2/5)*4.3 + (3/5)*4 = 4.12
-    expect(ratingScore(4.3, 2)).toBe(4.12);
-    // 7 reviews averaging 3.7: (7/10)*3.7 + (3/10)*4 = 3.79
-    expect(ratingScore(3.7, 7)).toBe(3.79);
+    // 2 reviews averaging 4.4: (2/8)*4.4 + (6/8)*4 = 4.1
+    expect(ratingScore(4.4, 2)).toBe(4.1);
+    // 7 reviews averaging 3.7: (7/13)*3.7 + (6/13)*4 = 3.84
+    expect(ratingScore(3.7, 7)).toBe(3.84);
   });
 });
 
