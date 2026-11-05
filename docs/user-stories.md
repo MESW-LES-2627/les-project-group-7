@@ -335,7 +335,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Business rules**
 
-- The price level shown is the most common price level in the reviews (mode), or `FREE` for `fee=no` places.
+- The price level shown is the most common price level in the reviews (mode), except that a `fee=no` place stays `FREE` until at least 2 reviews give a paid price.
 
 **Out of scope**
 
@@ -449,7 +449,8 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Business rules**
 
 - Average rating = mean of all ratings, rounded to one decimal.
-- Place price level = most common price level in its reviews; ties go to the lower level.
+- Place price level = most common price level in its reviews; ties go to the lower level. A place that is `FREE` (tagged `fee=no`) stays `FREE` until at least 2 reviews give a paid price, so one review cannot turn a free park into a paid one.
+- The review form has no preselected price level: the reviewer chooses one.
 - A user can review a given place only once (to change an opinion the user edits the review). Different users can each review the same place.
 
 **Out of scope**

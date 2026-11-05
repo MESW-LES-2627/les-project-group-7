@@ -145,6 +145,39 @@ export function calculatePriceLevelMode(
 }
 
 /**
+ * How many reviews with a paid price it takes to change a free place (tagged `fee=no` in
+ * OpenStreetMap) into a paid one. One review is not enough: it may be a mistake, and the tag is data.
+ */
+export const PAID_REVIEWS_TO_LEAVE_FREE = 2;
+
+/**
+ * The price level a place has after its reviews changed (US-C1-01): the most common price level of
+ * its reviews, except that a FREE place stays FREE until at least PAID_REVIEWS_TO_LEAVE_FREE reviews
+ * give a paid price. With no review that gives a price, the place keeps the level it had.
+ */
+export function calculatePlacePriceLevel(
+  currentLevel: string | null | undefined,
+  reviewLevels?: readonly (string | null | undefined)[] | null
+): PriceLevel | null {
+  const fromReviews = calculatePriceLevelMode(reviewLevels);
+
+  if (
+    currentLevel === "FREE" &&
+    fromReviews !== null &&
+    fromReviews !== "FREE"
+  ) {
+    const paidReviews = (reviewLevels ?? []).filter(
+      (level) => isPriceLevel(level) && level !== "FREE"
+    ).length;
+    if (paidReviews < PAID_REVIEWS_TO_LEAVE_FREE) {
+      return "FREE";
+    }
+  }
+
+  return fromReviews ?? (isPriceLevel(currentLevel) ? currentLevel : null);
+}
+
+/**
  * Calculates the average cost points for a set of stops on a day.
  * Safe type narrowing using `isPriceLevel` type guard.
  */

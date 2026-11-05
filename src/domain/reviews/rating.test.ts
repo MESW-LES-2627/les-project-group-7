@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
   calculateAverageRating,
+  calculatePlacePriceLevel,
   calculatePriceLevelMode,
   calculateAverageCostPoints,
   formatPriceLevel,
   isPriceLevel,
+  PAID_REVIEWS_TO_LEAVE_FREE,
   PRICE_LEVELS,
   RATING_SCORE_C,
   RATING_SCORE_M,
@@ -69,6 +71,46 @@ describe("Cost points and Soft Daily Budget calculation", () => {
   it("returns null if no stops have known pricing", () => {
     expect(calculateAverageCostPoints([{ priceLevel: null }])).toBeNull();
     expect(calculateAverageCostPoints([])).toBeNull();
+  });
+});
+
+describe("calculatePlacePriceLevel", () => {
+  it("uses the most common price level of the reviews", () => {
+    expect(calculatePlacePriceLevel("€", ["€€", "€€", "€"])).toBe("€€");
+    expect(calculatePlacePriceLevel(null, ["€€€"])).toBe("€€€");
+  });
+
+  it("keeps the level the place had when no review gives a price", () => {
+    expect(calculatePlacePriceLevel("€€", [])).toBe("€€");
+    expect(calculatePlacePriceLevel("FREE", [null, "INVALID"])).toBe("FREE");
+    expect(calculatePlacePriceLevel(null, [])).toBeNull();
+    expect(calculatePlacePriceLevel("INVALID", [])).toBeNull();
+  });
+
+  it("keeps a FREE place FREE when only one review says it is paid", () => {
+    expect(PAID_REVIEWS_TO_LEAVE_FREE).toBe(2);
+    expect(calculatePlacePriceLevel("FREE", ["€€€"])).toBe("FREE");
+    expect(calculatePlacePriceLevel("FREE", ["€", "FREE", "FREE"])).toBe(
+      "FREE"
+    );
+  });
+
+  it("changes a FREE place once two reviews say it is paid", () => {
+    expect(calculatePlacePriceLevel("FREE", ["€€", "€€"])).toBe("€€");
+    // two paid reviews against one FREE: the most common paid level wins as usual
+    expect(calculatePlacePriceLevel("FREE", ["€", "€", "FREE"])).toBe("€");
+    // two paid reviews that differ: the tie goes to the lower level
+    expect(calculatePlacePriceLevel("FREE", ["€", "€€€"])).toBe("€");
+  });
+
+  it("keeps a FREE place FREE when its reviews say FREE", () => {
+    expect(calculatePlacePriceLevel("FREE", ["FREE", "FREE", "€"])).toBe(
+      "FREE"
+    );
+  });
+
+  it("does not hold a paid place back: only a FREE place needs two reviews", () => {
+    expect(calculatePlacePriceLevel("€", ["€€€"])).toBe("€€€");
   });
 });
 
