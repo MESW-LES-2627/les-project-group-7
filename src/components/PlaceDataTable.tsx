@@ -113,6 +113,14 @@ export default function PlaceDataTable({
                               OSM
                             </Badge>
                           )}
+                          {place.isVisited && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700"
+                            >
+                              Visited
+                            </Badge>
+                          )}
                         </div>
                         <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
                           {place.address}

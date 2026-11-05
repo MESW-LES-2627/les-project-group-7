@@ -102,7 +102,8 @@ export function usePlaceReviews({
       const createdReview = (data as { review: ReviewItem }).review;
 
       onPlaceUpdated(updatedPlace, createdReview);
-      setActiveReviewPlace(updatedPlace);
+      // The server just saved a visit with the review
+      setActiveReviewPlace({ ...updatedPlace, isVisited: true });
 
       if (createdReview) {
         setReviewsList((prev) => [

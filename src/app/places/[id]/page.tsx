@@ -55,6 +55,13 @@ export default async function PlacePage({ params }: PlacePageProps) {
     ? (session.user.displayUsername ?? session.user.username ?? null)
     : null;
 
+  // A visit is saved with each review the user posts
+  const isVisited = session
+    ? (await prisma.visit.findUnique({
+        where: { userId_placeId: { userId: session.user.id, placeId: id } },
+      })) !== null
+    : false;
+
   const categoryConfig = getCategoryConfig(place.category);
 
   const formattedRating = formatAverageRating(place.averageRating);
@@ -74,6 +81,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
     averageRating: place.averageRating,
     reviewCount: place.reviewCount,
     city: place.city,
+    isVisited,
   };
 
   // shortcut: all reviews of a place are loaded and sorted in memory; add pagination when a place passes ~100 reviews.
@@ -98,15 +106,23 @@ export default async function PlacePage({ params }: PlacePageProps) {
               {place.name}
             </h1>
 
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${categoryConfig.bgColor} ${categoryConfig.textColor} ${categoryConfig.borderColor} border`}
-            >
-              <CategorySymbol
-                type={categoryConfig.iconType}
-                className="h-3.5 w-3.5"
-              />
-              {categoryConfig.label}
-            </span>
+            <div className="flex items-center gap-2">
+              {isVisited && (
+                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Visited
+                </span>
+              )}
+
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${categoryConfig.bgColor} ${categoryConfig.textColor} ${categoryConfig.borderColor} border`}
+              >
+                <CategorySymbol
+                  type={categoryConfig.iconType}
+                  className="h-3.5 w-3.5"
+                />
+                {categoryConfig.label}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">

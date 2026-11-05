@@ -87,6 +87,14 @@ export default function PlaceGrid({
                         OSM
                       </Badge>
                     )}
+                    {place.isVisited && (
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700 shadow-sm"
+                      >
+                        Visited
+                      </Badge>
+                    )}
                     <Badge
                       variant="secondary"
                       className="font-mono text-[11px] shadow-sm"

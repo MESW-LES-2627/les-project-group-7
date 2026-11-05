@@ -37,6 +37,26 @@ export default async function Home() {
     orderBy: { name: "asc" },
   });
 
+  // A database failure must not take down the page: treat the visitor as logged out.
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch((error) => {
+      console.error("getSession failed:", error);
+      return null;
+    });
+  const currentUsername = session
+    ? (session.user.displayUsername ?? session.user.username ?? null)
+    : null;
+
+  // Places the logged-in user has visited (a visit is saved with each review)
+  const visits = session
+    ? await prisma.visit.findMany({
+        where: { userId: session.user.id },
+        select: { placeId: true },
+      })
+    : [];
+  const visitedPlaceIds = new Set(visits.map((visit) => visit.placeId));
+
   // 3. Map to the clean interface expected by the UI component
   const places = dbPlaces.map((place) => ({
     id: place.id,
@@ -51,6 +71,7 @@ export default async function Home() {
     averageRating: place.averageRating,
     reviewCount: place.reviewCount,
     city: place.city,
+    isVisited: visitedPlaceIds.has(place.id),
   }));
 
   const cities = dbCities.map((city) => ({
@@ -61,17 +82,6 @@ export default async function Home() {
     longitude: city.longitude,
     count: city._count.places,
   }));
-
-  // A database failure must not take down the page: treat the visitor as logged out.
-  const session = await auth.api
-    .getSession({ headers: await headers() })
-    .catch((error) => {
-      console.error("getSession failed:", error);
-      return null;
-    });
-  const currentUsername = session
-    ? (session.user.displayUsername ?? session.user.username ?? null)
-    : null;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
