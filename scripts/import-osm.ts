@@ -4,6 +4,7 @@
  *
  *   npm run import:osm -- <city> [--dry-run]       cities: porto, paris, berlin
  *   npm run import:osm -- <city> --landmarks-only   only the named landmarks, added to the snapshot
+ *   npm run import:osm -- <city> --grid             a search in every tile of the city, added to the snapshot
  *
  * Nothing is written, in the database or in the file, unless every request to OpenStreetMap
  * answered. The rules about what is saved (name, category, opening hours, price level) are in
@@ -15,6 +16,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   placeFromNominatim,
+  gridTiles,
   type CityArea,
   type ImportedPlace,
 } from "../src/domain/osm/osm";
@@ -31,6 +33,8 @@ interface CityConfig {
   searches: string[];
   /** Famous places, searched by name: a search by kind returns only 50 places and misses many. */
   landmarks: string[];
+  /** How many tiles the area is cut into for --grid: a big city needs more. */
+  grid: { rows: number; cols: number };
 }
 
 /** The kinds of place that are searched for in every city. */
@@ -88,6 +92,7 @@ const CITIES: Record<string, CityConfig> = {
       "Fonte da Moura, Porto",
       "Mercado do Bolhão, Porto",
     ],
+    grid: { rows: 3, cols: 3 },
   },
   paris: {
     id: "city-paris",
@@ -128,6 +133,7 @@ const CITIES: Record<string, CityConfig> = {
       "Palais Garnier, Paris",
       "Musée Rodin, Paris",
     ],
+    grid: { rows: 2, cols: 4 },
   },
   berlin: {
     id: "city-berlim",
@@ -165,18 +171,44 @@ const CITIES: Record<string, CityConfig> = {
       "Gendarmenmarkt, Berlin",
       "Hackescher Markt, Berlin",
     ],
+    grid: { rows: 3, cols: 3 },
   },
 };
+
+/** The kinds that --grid searches in every tile, and how many places it asks for per kind and tile. */
+const TILE_KINDS = [
+  "restaurant",
+  "cafe",
+  "bar",
+  "park",
+  "museum",
+  "monument",
+  "viewpoint",
+  "attraction",
+  "church",
+  "garden",
+];
+const TILE_LIMIT = 8;
+
+type Tile = ReturnType<typeof gridTiles>[number];
 
 /** How many times one search is tried before the whole import stops, and the pause between tries. */
 const ATTEMPTS = 4;
 const PAUSE_MS = 8000;
 
 /** One try. A problem (no answer, an error status, an answer that is not a list) throws. */
-async function askNominatim(query: string, limit: number): Promise<unknown[]> {
+async function askNominatim(
+  query: string,
+  limit: number,
+  viewbox?: Tile
+): Promise<unknown[]> {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
     query
-  )}&format=json&limit=${limit}&addressdetails=1&extratags=1`;
+  )}&format=json&limit=${limit}&addressdetails=1&extratags=1${
+    viewbox
+      ? `&viewbox=${viewbox.left},${viewbox.top},${viewbox.right},${viewbox.bottom}&bounded=1`
+      : ""
+  }`;
 
   let res: Response;
   try {
@@ -217,10 +249,14 @@ async function askNominatim(query: string, limit: number): Promise<unknown[]> {
  * moment, so a failed try is repeated after a pause. If every try fails, the whole import stops
  * with the last message, before anything was written.
  */
-async function fetchFromOsm(query: string, limit: number): Promise<unknown[]> {
+async function fetchFromOsm(
+  query: string,
+  limit: number,
+  viewbox?: Tile
+): Promise<unknown[]> {
   for (let attempt = 1; ; attempt++) {
     try {
-      return await askNominatim(query, limit);
+      return await askNominatim(query, limit, viewbox);
     } catch (err) {
       if (attempt === ATTEMPTS) throw err;
       const reason = err instanceof Error ? err.message : String(err);
@@ -234,12 +270,15 @@ async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
   const landmarksOnly = args.includes("--landmarks-only");
+  const grid = args.includes("--grid");
+  // --landmarks-only and --grid add to the snapshot that exists, the plain import replaces it
+  const addToSnapshot = landmarksOnly || grid;
   const cityName = args.find((arg) => !arg.startsWith("--"))?.toLowerCase();
   const city = cityName ? CITIES[cityName] : undefined;
 
   if (!city || !cityName) {
     throw new Error(
-      `Usage: npm run import:osm -- <city> [--dry-run] [--landmarks-only]   (cities: ${Object.keys(CITIES).join(", ")})`
+      `Usage: npm run import:osm -- <city> [--dry-run] [--landmarks-only | --grid]   (cities: ${Object.keys(CITIES).join(", ")})`
     );
   }
 
@@ -251,8 +290,8 @@ async function main() {
   const file = path.join(process.cwd(), `prisma/data/${cityName}-places.json`);
   const places = new Map<string, ImportedPlace>();
 
-  // Landmarks only: the places already in the snapshot stay, the landmarks are added to them
-  if (landmarksOnly && fs.existsSync(file)) {
+  // The places already in the snapshot stay, the new ones are added to them
+  if (addToSnapshot && fs.existsSync(file)) {
     for (const place of JSON.parse(
       fs.readFileSync(file, "utf-8")
     ) as ImportedPlace[]) {
@@ -261,17 +300,27 @@ async function main() {
     console.log(`${places.size} places are already in the snapshot.`);
   }
 
-  // A search by kind asks for 50 results, a search by name for the best match
-  const searches = [
-    ...(landmarksOnly
-      ? []
-      : city.searches.map((query) => ({ query, limit: 50 }))),
-    ...city.landmarks.map((query) => ({ query, limit: 1 })),
-  ];
+  // A search by kind asks for 50 results, a search by name for the best match, and a search in a
+  // tile for a few places of one kind: together they cover the whole city, not only its centre
+  type Search = { query: string; limit: number; viewbox?: Tile };
+  const byKind: Search[] = city.searches.map((query) => ({ query, limit: 50 }));
+  const byName: Search[] = city.landmarks.map((query) => ({ query, limit: 1 }));
+  const byTile: Search[] = gridTiles(
+    city.area,
+    city.grid.rows,
+    city.grid.cols
+  ).flatMap((viewbox) =>
+    TILE_KINDS.map((query) => ({ query, limit: TILE_LIMIT, viewbox }))
+  );
+  const searches = landmarksOnly
+    ? byName
+    : grid
+      ? byTile
+      : [...byKind, ...byName];
   for (let i = 0; i < searches.length; i++) {
-    const { query, limit } = searches[i];
+    const { query, limit, viewbox } = searches[i];
     console.log(`[${i + 1}/${searches.length}] "${query}"`);
-    const results = await fetchFromOsm(query, limit);
+    const results = await fetchFromOsm(query, limit, viewbox);
 
     let added = 0;
     for (const item of results) {
