@@ -157,6 +157,14 @@ export default function PlaceExplorer({
     setFocusedPlace(null);
   }, []);
 
+  const handleSelectPlace = useCallback(
+    (id: string) => {
+      const place = allPlaces.find((item) => item.id === id);
+      if (place) openReviewModal(place);
+    },
+    [allPlaces, openReviewModal]
+  );
+
   const handleFocusPlace = useCallback((place: PlaceItem) => {
     setFocusedPlace(place);
     setSearchQuery(place.name);
@@ -255,10 +263,7 @@ export default function PlaceExplorer({
         selectedCityId={selectedCityId}
         activeCityName={activeCityName}
         onSelectCity={handleSelectCity}
-        onSelectPlace={(id) => {
-          const place = allPlaces.find((item) => item.id === id);
-          if (place) openReviewModal(place);
-        }}
+        onSelectPlace={handleSelectPlace}
         onFocusPlace={handleFocusPlace}
         onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
         onMapMove={handleMapMove}

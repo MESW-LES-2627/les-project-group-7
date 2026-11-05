@@ -122,7 +122,7 @@ export default function MapExplorerCard({
         )}
 
         {/* 2. Search & Category Filters */}
-        <div className="mt-3.5 flex flex-col items-stretch gap-2.5 lg:flex-row lg:items-center">
+        <div className="mt-3.5 flex flex-col items-stretch gap-2.5">
           <PlaceSearchAutocomplete
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}

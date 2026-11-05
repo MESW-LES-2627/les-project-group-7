@@ -10,7 +10,7 @@
  * - Memoized SVG pins & Canvas rendering (preferCanvas) for rock-solid 60 FPS.
  */
 
-import { useEffect, useState, useMemo } from "react";
+import { memo, useEffect, useState, useMemo } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -148,6 +148,64 @@ function MapFlyController({
   return null;
 }
 
+// memo: when a Popup re-renders, it runs its auto-pan again. The pan fires moveend,
+// moveend re-renders the map, and opening a pin near the edge loops forever.
+const PlacePin = memo(function PlacePin({
+  place,
+  onSelectPlace,
+}: {
+  place: MapPlace;
+  onSelectPlace?: (placeId: string) => void;
+}) {
+  return (
+    <Marker
+      position={[place.latitude, place.longitude]}
+      icon={getCategoryIcon(place.category)}
+    >
+      <Popup>
+        <div className="min-w-[190px] p-1">
+          {place.isDiscovered && (
+            <span className="mb-1 inline-block rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">
+              OSM Discovered
+            </span>
+          )}
+          <h4 className="text-sm font-bold leading-tight text-slate-900">
+            {place.name}
+          </h4>
+
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-600">
+            <span className="inline-flex items-center gap-0.5 font-semibold text-amber-600">
+              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+              {place.rating ? place.rating.toFixed(1) : "—"}
+            </span>
+            <span>•</span>
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px]">
+              {formatPriceLevel(place.priceLevel)}
+            </span>
+            <span>•</span>
+            <span className="text-slate-500">
+              {getCategoryConfig(place.category).label}
+            </span>
+          </div>
+
+          {onSelectPlace && (
+            <Button
+              size="sm"
+              onClick={() => onSelectPlace(place.id)}
+              className="mt-2.5 h-7 w-full gap-1 text-xs"
+            >
+              <Star className="h-3 w-3 fill-white" />
+              {place.isDiscovered
+                ? "Be first to rate"
+                : "See details and reviews"}
+            </Button>
+          )}
+        </div>
+      </Popup>
+    </Marker>
+  );
+});
+
 export default function MapComponent({
   places = [],
   center = [41.147, -8.615],
@@ -249,52 +307,11 @@ export default function MapComponent({
 
         {/* 2. Render Single Spot Pins */}
         {singlePins.map((place) => (
-          <Marker
+          <PlacePin
             key={place.id}
-            position={[place.latitude, place.longitude]}
-            icon={getCategoryIcon(place.category)}
-          >
-            <Popup>
-              <div className="min-w-[190px] p-1">
-                {place.isDiscovered && (
-                  <span className="mb-1 inline-block rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700">
-                    OSM Discovered
-                  </span>
-                )}
-                <h4 className="text-sm font-bold leading-tight text-slate-900">
-                  {place.name}
-                </h4>
-
-                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-600">
-                  <span className="inline-flex items-center gap-0.5 font-semibold text-amber-600">
-                    <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                    {place.rating ? place.rating.toFixed(1) : "—"}
-                  </span>
-                  <span>•</span>
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px]">
-                    {formatPriceLevel(place.priceLevel)}
-                  </span>
-                  <span>•</span>
-                  <span className="text-slate-500">
-                    {getCategoryConfig(place.category).label}
-                  </span>
-                </div>
-
-                {onSelectPlace && (
-                  <Button
-                    size="sm"
-                    onClick={() => onSelectPlace(place.id)}
-                    className="mt-2.5 h-7 w-full gap-1 text-xs"
-                  >
-                    <Star className="h-3 w-3 fill-white" />
-                    {place.isDiscovered
-                      ? "Be first to rate"
-                      : "See details and reviews"}
-                  </Button>
-                )}
-              </div>
-            </Popup>
-          </Marker>
+            place={place}
+            onSelectPlace={onSelectPlace}
+          />
         ))}
       </MapContainer>
     </div>
