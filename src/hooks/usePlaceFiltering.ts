@@ -54,22 +54,13 @@ export function usePlaceFiltering({
 
   // 2. Filter by city, search query and domain filters
   const matchingPlaces = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
     const cityAndSearchMatches = allPlaces.filter((place) => {
       const matchesCity = !selectedCityId || place.cityId === selectedCityId;
       if (!matchesCity) {
         return false;
       }
 
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return (
-        place.name.toLowerCase().includes(normalizedQuery) ||
-        place.address.toLowerCase().includes(normalizedQuery)
-      );
+      return placeMatchesSearch(place, searchQuery);
     });
 
     return filterPlaces(cityAndSearchMatches, filters);
