@@ -122,6 +122,14 @@ export default function ReviewModal({
             <Badge variant="outline" className="text-[11px]">
               {formatPriceLevel(place.priceLevel)}
             </Badge>
+            {place.isVisited && (
+              <Badge
+                variant="outline"
+                className="border-emerald-200 bg-emerald-50 text-[11px] text-emerald-700"
+              >
+                Visited
+              </Badge>
+            )}
           </div>
           <DialogTitle className="mt-1 text-base">{place.name}</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
