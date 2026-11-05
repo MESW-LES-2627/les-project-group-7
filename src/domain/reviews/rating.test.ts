@@ -20,6 +20,14 @@ describe("Rating calculations", () => {
     expect(calculateAverageRating([1, 2])).toBe(1.5);
   });
 
+  it("rounds half up, also where the decimal cannot be stored exactly", () => {
+    // 13 ratings of 4 and 7 of 5: the mean is exactly 4.35
+    const ratings = [...Array(13).fill(4), ...Array(7).fill(5)];
+    expect(calculateAverageRating(ratings)).toBe(4.4);
+    expect(calculateAverageRating([4, 5, 4, 4])).toBe(4.3); // 4.25
+    expect(calculateAverageRating([1, 1, 2])).toBe(1.3); // 1.33
+  });
+
   it("filters out invalid ratings outside 1..5 range", () => {
     expect(calculateAverageRating([0, 5, 6])).toBe(5.0);
     expect(calculateAverageRating([])).toBeNull();

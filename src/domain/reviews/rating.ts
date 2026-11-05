@@ -55,7 +55,9 @@ export function calculateAverageRating(
     return null;
   }
 
-  return Number((sum / count).toFixed(1));
+  // Whole numbers until the last step: (sum / count).toFixed(1) turns 4.35 into 4.3, because 4.35
+  // cannot be stored exactly, and the rule is to round half up (4.4).
+  return Math.round((sum * 10) / count) / 10;
 }
 
 /**
