@@ -95,6 +95,44 @@ every migration that changes or fills existing tables.
 
 Done on 31 Oct 2026 for the Better Auth migration (ADR-009).
 
+### A migration that deletes data: one review per user and place (US-C1-01, #37)
+
+`20261105190000_unique_review_per_user_and_place` adds a unique index on the user and the place of a
+review. The index cannot be created while a database holds two reviews of one user on one place, and the
+old demo seed wrote such reviews (dev and prod were seeded with it). So the migration first deletes them,
+keeping the oldest review of each user and place, and recalculates the stored average rating and review
+count of the places it touched. It does not touch their price level: the next review or the seed does.
+On a database without repeated reviews it changes nothing.
+
+It runs on prod when `dev` is merged into `main`, before the seed of prod, so it deletes data there and
+needs the team's agreement. Check before how many reviews it would delete:
+
+```sql
+SELECT count(*) AS repeated_pairs, coalesce(sum(n - 1), 0) AS reviews_to_delete
+FROM (SELECT count(*) AS n FROM "Review" GROUP BY "userId", "placeId" HAVING count(*) > 1) d;
+```
+
+Tested on 5 Nov 2026 on a copy of the old local database (117 reviews, 7 repeated pairs: 106 reviews
+left, the oldest of each pair kept, the 2 places recalculated, nothing else changed, a second run does
+nothing) and on a copy of dev with the demo data (no repeated reviews, nothing changed).
+
+Tested the same day on a Neon branch of dev, with the direct string as the workflow uses it. Dev has no
+repeated reviews, so 15 were added to the branch (12 pairs, 9 places) to test the deletion: 93 reviews
+became 78, the oldest of each pair stayed, the 9 places have the right count and average, no other place
+or price level changed, the index is the one of the schema, and a second `migrate deploy` does nothing.
+The app on the pooled string of the branch then answered 409 to a second review of a user on a place, and
+two requests at once saved only one. On dev itself: 0 repeated reviews, so the migration deletes nothing
+there.
+
+Tested the same day on a Neon branch of prod (a copy, prod itself was not touched), applying all the
+migrations that prod does not have yet (trip day hours, Better Auth, the drop of `passwordHash` and this one)
+with the direct string, as the deploy will do. Prod holds 535 places, 7 cities, 2 demo users and 95 reviews,
+with 20 repeated pairs: the migration deleted 49 reviews (95 became 46, all written by the two demo users),
+left no repeated pair, every place has the right count and average, and users, places, cities and visits
+are unchanged. The 2 demo users got their `name` and `displayUsername` from Better Auth, but **have no
+`Account` (0 accounts), so nobody can log in on prod until the seed has been run**. A second
+`migrate deploy` does nothing.
+
 ## One-off data cleanups
 
 The seed and the import only add and update: they never delete, and they leave the price level

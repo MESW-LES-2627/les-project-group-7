@@ -8,6 +8,10 @@ import {
   isPriceLevel,
 } from "@/domain/reviews/rating";
 import { validateReviewInput } from "@/domain/reviews/review-validation";
+import {
+  ALREADY_REVIEWED_MESSAGE,
+  isRepeatedReviewError,
+} from "@/domain/reviews/one-review-rule";
 import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
 
 /**
@@ -66,7 +70,8 @@ export async function GET(request: Request) {
  * Creates a review, updates place average rating, and marks place visited.
  * Automatically enforces Domain Policy:
  * 1. Upserts place dynamically from OpenStreetMap if discovered on-the-fly.
- * 2. Persists the user review with star rating and optional comments.
+ * 2. Persists the user review with star rating and optional comments (409 if the user already
+ *    reviewed the place: one review per user and place).
  * 3. Triggers Visit Policy: Automatically marks the place as visited by the author.
  * 4. Recalculates arithmetic average rating and review counts.
  */
@@ -179,6 +184,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Place not found" }, { status: 404 });
     }
 
+    // A user reviews a place only once (US-C1-01): the unique index of the database is the guarantee,
+    // this check gives the clear answer first
+    const alreadyReviewed = await prisma.review.findUnique({
+      where: { userId_placeId: { userId: authorId, placeId: targetPlaceId } },
+      select: { id: true },
+    });
+    if (alreadyReviewed) {
+      return NextResponse.json(
+        { error: ALREADY_REVIEWED_MESSAGE },
+        { status: 409 }
+      );
+    }
+
     // Step 3: Create the Review record
     const newReview = await prisma.review.create({
       data: {
@@ -248,6 +266,13 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
+    // Two requests of the same user at once both pass the check above: the index refuses the second
+    if (isRepeatedReviewError(error)) {
+      return NextResponse.json(
+        { error: ALREADY_REVIEWED_MESSAGE },
+        { status: 409 }
+      );
+    }
     console.error("Failed to post review:", error);
 
     return NextResponse.json(

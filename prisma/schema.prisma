@@ -119,6 +119,9 @@ model Review {
 
   placeId    String
   place      Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  // A user reviews a place only once (US-C1-01): the database refuses a second review
+  @@unique([userId, placeId])
 }
 
 model Visit {
