@@ -140,12 +140,17 @@ DELETE FROM "Place" WHERE "osmId" IN (
   'node/45299496', 'node/45299497', 'node/45299498', 'node/45299500',
   'node/65299496', 'node/65299497', 'node/65299498', 'node/65299499'
 );
+-- Old imported places of Porto outside the zone (Perafita to Vilar do Paraíso) and without reviews
+DELETE FROM "Place" p
+WHERE p."cityId" = 'city-porto' AND p.source = 'IMPORTED'
+  AND (p.latitude NOT BETWEEN 41.08 AND 41.24 OR p.longitude NOT BETWEEN -8.73 AND -8.56)
+  AND NOT EXISTS (SELECT 1 FROM "Review" r WHERE r."placeId" = p.id);
 COMMIT;
 ```
 
 Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
 
-Status: tried on a copy of dev on 5 Nov 2026 (3,006 places, 2,234 reviews and 30 demo users afterwards).
+Status: tried on a copy of dev on 5 Nov 2026 (2,969 places, 2,234 reviews and 30 demo users afterwards).
 Not run on dev or prod yet.
 
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
