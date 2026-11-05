@@ -145,7 +145,7 @@ COMMIT;
 
 Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Place" p ON p."cityId" = c.id GROUP BY c.name;`
 
-Status: tried on a copy of dev on 5 Nov 2026 (2,555 places, 1,871 reviews and 30 demo users afterwards).
+Status: tried on a copy of dev on 5 Nov 2026 (3,006 places, 2,234 reviews and 30 demo users afterwards).
 Not run on dev or prod yet.
 
 **Lisbon, Madrid, Rome and London (US-B2-01, #21).** The prototype seed created these four cities
