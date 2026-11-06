@@ -194,7 +194,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 
 ### Place Page (MVP)
 
-- **Definition:** The page `/places/[id]` of a place of the catalog: name, type, address with city and country, description (or a placeholder), average rating, number of reviews, price level (or "Price unknown") and its reviews, newest first, with author, rating, date, price level and text. A place without reviews says "No reviews yet" and offers "Write the first review". An unknown id shows a not-found page. The opening hours are not shown yet.
+- **Definition:** The page `/places/[id]` of a place of the catalog: name, type, address with city and country, description (or a placeholder), average rating, number of reviews, price level (or "Price unknown"), opening hours and its reviews, newest first, with author, rating, date, price level and text. A place without reviews says "No reviews yet" and offers "Write the first review". The opening hours are the OpenStreetMap `opening_hours` text written out for reading (`Mo-Fr 09:00-18:00` becomes "Monday–Friday: 09:00–18:00", `24/7` becomes "Open 24 hours, every day"), or "Unknown" when the place has none; a rule that the formatter does not recognise is shown as it was written, never guessed. An unknown id shows a not-found page.
 - **Behavior:** the names in the ranking table and the cards link to it. A place discovered live and not yet saved has no page, so it is not linked. The OpenStreetMap attribution is shown on the page.
 
 ### Live Discovery (Stretch, built in the tracer bullet)
