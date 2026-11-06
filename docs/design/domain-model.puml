@@ -40,6 +40,8 @@ class User #F5F5F5 {
 note bottom of User
   A user with role ADMIN is also the
   moderator of place suggestions.
+  Passwords and sessions are kept by the
+  authentication library, not in the model.
 end note
 
 enum PriceLevel <<enumeration>> #FFFFFF {
@@ -51,10 +53,11 @@ enum PriceLevel <<enumeration>> #FFFFFF {
 note right of PriceLevel
   The numbers are cost points. A place or review
   without a level is unknown and not counted.
-  Only a place can be FREE. A review and the trip
-  budget level only use € to €€€. The budget level is the target
-  average of the whole trip: the mean of the cost
-  points of its stops with a known price.
+  A place and a review can be FREE. A review gives
+  one of the four levels (required when it is
+  posted). The trip budget level only uses € to €€€:
+  it is the target average of the whole trip, the mean
+  of the cost points of its stops with a known price.
 end note
 
 enum PlaceCategory <<enumeration>> #FFFFFF {
@@ -85,11 +88,15 @@ class Place #FFF3C4 {
   /priceLevel : PriceLevel [0..1]
   /averageRating
   /reviewCount
+  /ratingScore
 }
 note right of Place
-  /priceLevel: free if OpenStreetMap says no fee,
-  otherwise the most common level in its reviews.
+  /priceLevel: free if OpenStreetMap says no fee, and it
+  stays free until 2 reviews give a paid price; otherwise
+  the most common level in its reviews.
   /averageRating and /reviewCount: from its reviews.
+  /ratingScore: weighted rating used to rank places, so
+  that one review cannot outrank many (ADR-008).
 end note
 
 class PlaceSuggestion <<post-MVP>> #F3E0A8 {
@@ -103,10 +110,17 @@ class PlaceSuggestion <<post-MVP>> #F3E0A8 {
 
 class Review #D6ECFA {
   rating : 1..5
-  priceLevel : € | €€ | €€€ [0..1]
+  priceLevel : PriceLevel
   text
   createdAt
 }
+
+note right of Review
+  A user can review a given place only once.
+  Different users can each review the same place.
+  The price level is required when a review is
+  posted (a review written before that may have none).
+end note
 
 class Visit #FFF3C4 {
   visitedAt
@@ -150,7 +164,15 @@ class TripConstraints <<value object>> #FFE3CC {
   endDate
   budgetLevel : € | €€ | €€€
   allowedCategories : PlaceCategory [*]
+  dayStart : HH:mm
+  dayEnd : HH:mm
 }
+note right of TripConstraints
+  dayStart and dayEnd: the hours of the day.
+  Default 09:00 to 20:00, from 08:00 to 23:00
+  at the widest. Only the generator is limited
+  by them; manual planning is free.
+end note
 
 class Day #FFE3CC {
   dayNumber

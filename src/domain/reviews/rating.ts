@@ -18,8 +18,18 @@ export function isPriceLevel(value: unknown): value is PriceLevel {
 }
 
 /**
+ * The text shown for a price level. A place without one is "Price unknown": it is never shown as
+ * free or as a price that nobody gave (the price comes from OpenStreetMap's `fee=no` or from reviews).
+ */
+export function formatPriceLevel(level: string | null | undefined): string {
+  if (!isPriceLevel(level)) {
+    return "Price unknown";
+  }
+  return level === "FREE" ? "Free" : level;
+}
+
+/**
  * Calculates the arithmetic mean rating rounded to 1 decimal place.
- * Employs single-pass O(N) iteration with O(1) memory overhead.
  * Returns null if no valid ratings in range [1, 5] are provided.
  */
 export function calculateAverageRating(
@@ -45,14 +55,51 @@ export function calculateAverageRating(
     return null;
   }
 
-  return Number((sum / count).toFixed(1));
+  // Whole numbers until the last step: (sum / count).toFixed(1) turns 4.35 into 4.3, because 4.35
+  // cannot be stored exactly, and the rule is to round half up (4.4).
+  return Math.round((sum * 10) / count) / 10;
 }
 
 /**
- * Calculates the statistical mode (most frequent value) of review price levels.
+ * Weight of the prior in the rating score (ADR-008): a place needs about this many reviews before
+ * its own average counts as much as the prior. Revisit it, and C, when the catalog gets many more
+ * reviews (see "Revisit" in ADR-008).
+ */
+export const RATING_SCORE_M = 6;
+
+/** The prior of the rating score (ADR-008): the rating that a place with no reviews is assumed to have. */
+export const RATING_SCORE_C = 4.0;
+
+/**
+ * The number that ranks places (ADR-008, the weighted rating, a Bayesian average):
+ * `(n / (n + m)) * average + (m / (n + m)) * C`, rounded to 2 decimals. One review cannot outrank
+ * many: 1 review of 5 scores 4.14, and 50 reviews averaging 4.8 score 4.71.
+ */
+export function ratingScore(
+  average: number | null | undefined,
+  count: number | null | undefined
+): number | null {
+  if (
+    average == null ||
+    count == null ||
+    !Number.isFinite(average) ||
+    !Number.isFinite(count) ||
+    count < 1 ||
+    average < 1 ||
+    average > 5
+  ) {
+    return null;
+  }
+
+  const weight = count / (count + RATING_SCORE_M);
+  const score = weight * average + (1 - weight) * RATING_SCORE_C;
+  return Number(score.toFixed(2));
+}
+
+/**
+ * Calculates the statistical mode of review price levels.
  * In case of a tie between equally frequent levels, the lower price level is
- * chosen (conservative estimate).
- * O(N) single-pass frequency count without intermediate array allocations.
+ * chosen.
  */
 export function calculatePriceLevelMode(
   levels?: readonly (string | null | undefined)[] | null
@@ -100,9 +147,41 @@ export function calculatePriceLevelMode(
 }
 
 /**
+ * How many reviews with a paid price it takes to change a free place (tagged `fee=no` in
+ * OpenStreetMap) into a paid one. One review is not enough: it may be a mistake, and the tag is data.
+ */
+export const PAID_REVIEWS_TO_LEAVE_FREE = 2;
+
+/**
+ * The price level a place has after its reviews changed (US-C1-01): the most common price level of
+ * its reviews, except that a FREE place stays FREE until at least PAID_REVIEWS_TO_LEAVE_FREE reviews
+ * give a paid price. With no review that gives a price, the place keeps the level it had.
+ */
+export function calculatePlacePriceLevel(
+  currentLevel: string | null | undefined,
+  reviewLevels?: readonly (string | null | undefined)[] | null
+): PriceLevel | null {
+  const fromReviews = calculatePriceLevelMode(reviewLevels);
+
+  if (
+    currentLevel === "FREE" &&
+    fromReviews !== null &&
+    fromReviews !== "FREE"
+  ) {
+    const paidReviews = (reviewLevels ?? []).filter(
+      (level) => isPriceLevel(level) && level !== "FREE"
+    ).length;
+    if (paidReviews < PAID_REVIEWS_TO_LEAVE_FREE) {
+      return "FREE";
+    }
+  }
+
+  return fromReviews ?? (isPriceLevel(currentLevel) ? currentLevel : null);
+}
+
+/**
  * Calculates the average cost points for a set of stops on a day.
- * Single-pass accumulator with O(1) memory overhead.
- * Safe type narrowing using `isPriceLevel` type guard (no `as PriceLevel` cast).
+ * Safe type narrowing using `isPriceLevel` type guard.
  */
 export function calculateAverageCostPoints(
   stops?: readonly { readonly priceLevel?: string | null }[] | null

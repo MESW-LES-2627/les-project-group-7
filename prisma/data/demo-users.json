@@ -1,0 +1,152 @@
+[
+  {
+    "id": "demo-user-1",
+    "username": "viajante_porto",
+    "email": "demo@tripbook.pt"
+  },
+  {
+    "id": "demo-user-2",
+    "username": "ana_exploradora",
+    "email": "ana@tripbook.pt"
+  },
+  {
+    "id": "demo-user-3",
+    "username": "rui_gastronomo",
+    "email": "rui_gastronomo@tripbook.pt"
+  },
+  {
+    "id": "demo-user-4",
+    "username": "marta_lisboa",
+    "email": "marta_lisboa@tripbook.pt"
+  },
+  {
+    "id": "demo-user-5",
+    "username": "pedro_andarilho",
+    "email": "pedro_andarilho@tripbook.pt"
+  },
+  {
+    "id": "demo-user-6",
+    "username": "ines_fotografa",
+    "email": "ines_fotografa@tripbook.pt"
+  },
+  {
+    "id": "demo-user-7",
+    "username": "tiago_mochila",
+    "email": "tiago_mochila@tripbook.pt"
+  },
+  {
+    "id": "demo-user-8",
+    "username": "carla_viajante",
+    "email": "carla_viajante@tripbook.pt"
+  },
+  {
+    "id": "demo-user-9",
+    "username": "bruno_cultura",
+    "email": "bruno_cultura@tripbook.pt"
+  },
+  {
+    "id": "demo-user-10",
+    "username": "sofia_cafes",
+    "email": "sofia_cafes@tripbook.pt"
+  },
+  {
+    "id": "demo-user-11",
+    "username": "miguel_trilhos",
+    "email": "miguel_trilhos@tripbook.pt"
+  },
+  {
+    "id": "demo-user-12",
+    "username": "helena_museus",
+    "email": "helena_museus@tripbook.pt"
+  },
+  {
+    "id": "demo-user-13",
+    "username": "joana_miradouros",
+    "email": "joana_miradouros@tripbook.pt"
+  },
+  {
+    "id": "demo-user-14",
+    "username": "andre_petiscos",
+    "email": "andre_petiscos@tripbook.pt"
+  },
+  {
+    "id": "demo-user-15",
+    "username": "beatriz_arte",
+    "email": "beatriz_arte@tripbook.pt"
+  },
+  {
+    "id": "demo-user-16",
+    "username": "diogo_rotas",
+    "email": "diogo_rotas@tripbook.pt"
+  },
+  {
+    "id": "demo-user-17",
+    "username": "filipa_jardins",
+    "email": "filipa_jardins@tripbook.pt"
+  },
+  {
+    "id": "demo-user-18",
+    "username": "goncalo_mapas",
+    "email": "goncalo_mapas@tripbook.pt"
+  },
+  {
+    "id": "demo-user-19",
+    "username": "teresa_bairros",
+    "email": "teresa_bairros@tripbook.pt"
+  },
+  {
+    "id": "demo-user-20",
+    "username": "nuno_noites",
+    "email": "nuno_noites@tripbook.pt"
+  },
+  {
+    "id": "demo-user-21",
+    "username": "claudia_sabores",
+    "email": "claudia_sabores@tripbook.pt"
+  },
+  {
+    "id": "demo-user-22",
+    "username": "ricardo_pontes",
+    "email": "ricardo_pontes@tripbook.pt"
+  },
+  {
+    "id": "demo-user-23",
+    "username": "patricia_rios",
+    "email": "patricia_rios@tripbook.pt"
+  },
+  {
+    "id": "demo-user-24",
+    "username": "vasco_ruas",
+    "email": "vasco_ruas@tripbook.pt"
+  },
+  {
+    "id": "demo-user-25",
+    "username": "lara_museus",
+    "email": "lara_museus@tripbook.pt"
+  },
+  {
+    "id": "demo-user-26",
+    "username": "hugo_sunsets",
+    "email": "hugo_sunsets@tripbook.pt"
+  },
+  {
+    "id": "demo-user-27",
+    "username": "mariana_cafe",
+    "email": "mariana_cafe@tripbook.pt"
+  },
+  {
+    "id": "demo-user-28",
+    "username": "fabio_trilhos",
+    "email": "fabio_trilhos@tripbook.pt"
+  },
+  {
+    "id": "demo-user-29",
+    "username": "rita_viagens",
+    "email": "rita_viagens@tripbook.pt"
+  },
+  {
+    "id": "demo-user-30",
+    "username": "simao_bairros",
+    "email": "simao_bairros@tripbook.pt"
+  }
+]

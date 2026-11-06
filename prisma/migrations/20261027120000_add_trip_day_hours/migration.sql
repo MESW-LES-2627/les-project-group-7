@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Trip" ADD COLUMN     "dayEnd" TEXT NOT NULL DEFAULT '20:00',
+ADD COLUMN     "dayStart" TEXT NOT NULL DEFAULT '09:00';

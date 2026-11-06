@@ -2,8 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   haversineDistanceKm,
   estimateWalkingMinutes,
-  isPointInsideBounds,
-  type GeoBoundingBox,
+  filterPlacesByBounds,
 } from "./geo";
 
 describe("Geographical calculations", () => {
@@ -43,37 +42,54 @@ describe("Geographical calculations", () => {
     expect(estimateWalkingMinutes(0)).toBe(0);
     expect(estimateWalkingMinutes(-1)).toBe(0);
   });
+});
 
-  describe("Bounding box containment (isPointInsideBounds)", () => {
-    const portoBounds: GeoBoundingBox = {
-      south: 41.14,
-      north: 41.16,
-      west: -8.63,
-      east: -8.6,
-    };
+describe("Viewport culling", () => {
+  const bounds = {
+    south: 41.14,
+    west: -8.62,
+    north: 41.15,
+    east: -8.61,
+  };
 
-    it("returns true for a point strictly inside the bounding box", () => {
-      expect(isPointInsideBounds(clerigos.lat, clerigos.lon, portoBounds)).toBe(
-        true
-      );
-      expect(isPointInsideBounds(lello.lat, lello.lon, portoBounds)).toBe(true);
-    });
+  const places = [
+    { id: "1", latitude: 41.145, longitude: -8.615 },
+    { id: "2", latitude: 41.151, longitude: -8.615 },
+    { id: "3", latitude: 41.16, longitude: -8.63 },
+    { id: "4", latitude: 41.139, longitude: -8.615 },
+  ];
 
-    it("returns true for a point exactly on the boundary edges", () => {
-      expect(isPointInsideBounds(41.14, -8.615, portoBounds)).toBe(true);
-      expect(isPointInsideBounds(41.15, -8.63, portoBounds)).toBe(true);
-      expect(isPointInsideBounds(41.16, -8.6, portoBounds)).toBe(true);
-    });
+  it("includes places inside the viewport", () => {
+    const result = filterPlacesByBounds(places, bounds);
 
-    it("returns false for points outside the bounding box", () => {
-      // Lisbon point (south of Porto)
-      expect(isPointInsideBounds(38.7223, -9.1393, portoBounds)).toBe(false);
-      // North of Porto
-      expect(isPointInsideBounds(41.17, -8.61, portoBounds)).toBe(false);
-      // East of Porto
-      expect(isPointInsideBounds(41.15, -8.59, portoBounds)).toBe(false);
-      // West of Porto
-      expect(isPointInsideBounds(41.15, -8.64, portoBounds)).toBe(false);
-    });
+    expect(result.map((place) => place.id)).toContain("1");
+  });
+
+  it("includes places within the 15% margin", () => {
+    const result = filterPlacesByBounds(places, bounds);
+
+    expect(result.map((place) => place.id)).toContain("2");
+    expect(result.map((place) => place.id)).toContain("4");
+  });
+
+  it("excludes places outside the viewport and margin", () => {
+    const result = filterPlacesByBounds(places, bounds);
+
+    expect(result.map((place) => place.id)).not.toContain("3");
+  });
+
+  it("supports filtering without a margin", () => {
+    const result = filterPlacesByBounds(places, bounds, 0);
+
+    expect(result.map((place) => place.id)).toEqual(["1"]);
+  });
+
+  it("returns an empty array when no places are visible", () => {
+    const result = filterPlacesByBounds(
+      [{ id: "5", latitude: 40, longitude: -9 }],
+      bounds
+    );
+
+    expect(result).toEqual([]);
   });
 });

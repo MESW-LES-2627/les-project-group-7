@@ -1,7 +1,6 @@
 import type { PlaceCategory } from "@prisma/client";
 
 export interface PlaceItem {
-    
   id: string;
   cityId?: string | null;
   osmId?: string | null;
@@ -16,7 +15,7 @@ export interface PlaceItem {
   averageRating: number | null;
   reviewCount: number;
   city?: { name: string; country: string };
-  
+
   isVisited?: boolean;
   isDiscovered?: boolean;
 }

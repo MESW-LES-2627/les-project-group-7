@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Loads the Leaflet map (MapComponent) only in the browser, because Leaflet needs `window`,
+ * and shows a placeholder while it loads.
+ */
+
 import dynamic from "next/dynamic";
 import type { MapPlace, BoundingBox } from "./MapComponent";
 
@@ -8,6 +13,7 @@ export interface MapWrapperProps {
   center?: [number, number];
   zoom?: number;
   selectedCenter?: [number, number] | null;
+  selectedCityCenter?: [number, number] | null;
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
 }

@@ -1,6 +1,6 @@
 /**
  * Pure domain module providing geographical calculations, geodesic distances,
- * walking travel estimates and bounding box spatial containment tests.
+ * walking travel estimates and the bounding box type of the map.
  */
 
 export interface GeoBoundingBox {
@@ -8,22 +8,6 @@ export interface GeoBoundingBox {
   west: number;
   north: number;
   east: number;
-}
-
-/**
- * Determines whether a geographical coordinate point falls within a bounding box.
- */
-export function isPointInsideBounds(
-  lat: number,
-  lon: number,
-  bounds: GeoBoundingBox
-): boolean {
-  return (
-    lat >= bounds.south &&
-    lat <= bounds.north &&
-    lon >= bounds.west &&
-    lon <= bounds.east
-  );
 }
 
 /**
@@ -80,4 +64,30 @@ export function estimateWalkingMinutes(
 
 function toRad(degrees: number): number {
   return (degrees * Math.PI) / 180;
+}
+
+/**
+ * Filters places to those inside the map viewport plus a configurable margin.
+ *
+ * The margin reduces marker updates while panning near viewport boundaries.
+ * A margin of 0.15 adds 15% of the viewport size on each side.
+ */
+export function filterPlacesByBounds<
+  T extends { latitude: number; longitude: number },
+>(places: T[], bounds: GeoBoundingBox, margin = 0.15): T[] {
+  const latBuffer = Math.abs(bounds.north - bounds.south) * margin;
+  const lonBuffer = Math.abs(bounds.east - bounds.west) * margin;
+
+  const minLat = bounds.south - latBuffer;
+  const maxLat = bounds.north + latBuffer;
+  const minLon = bounds.west - lonBuffer;
+  const maxLon = bounds.east + lonBuffer;
+
+  return places.filter(
+    (place) =>
+      place.latitude >= minLat &&
+      place.latitude <= maxLat &&
+      place.longitude >= minLon &&
+      place.longitude <= maxLon
+  );
 }

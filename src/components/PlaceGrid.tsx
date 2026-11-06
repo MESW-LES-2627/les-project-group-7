@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * The ranking as cards: the same places as PlaceDataTable (category banner, name, price, rating,
+ * map and rate buttons) with the same page controls.
+ */
+
+import Link from "next/link";
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +17,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import type { PlaceItem } from "./PlaceExplorer";
-import { formatPrice } from "./ReviewModal";
+import { formatPriceLevel } from "@/domain/reviews/rating";
+import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 
@@ -36,6 +43,14 @@ export default function PlaceGrid({
   onSelectMapCenter,
   onOpenReview,
 }: PlaceGridProps) {
+  if (paginatedPlaces.length === 0) {
+    return (
+      <p className="py-12 text-center text-sm text-slate-500">
+        No places found with the current filters.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -73,18 +88,35 @@ export default function PlaceGrid({
                         OSM
                       </Badge>
                     )}
+                    {place.isVisited && (
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700 shadow-sm"
+                      >
+                        Visited
+                      </Badge>
+                    )}
                     <Badge
                       variant="secondary"
                       className="font-mono text-[11px] shadow-sm"
                     >
-                      {formatPrice(place.priceLevel)}
+                      {formatPriceLevel(place.priceLevel)}
                     </Badge>
                   </div>
                 </div>
 
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="line-clamp-1 text-sm font-semibold text-slate-900">
-                    {place.name}
+                    {!place.isDiscovered ? (
+                      <Link
+                        href={`/places/${place.id}`}
+                        className="hover:underline"
+                      >
+                        {place.name}
+                      </Link>
+                    ) : (
+                      place.name
+                    )}
                   </CardTitle>
                   <CardDescription className="mt-1 line-clamp-2 text-xs text-slate-500">
                     {place.description || place.address}
@@ -97,9 +129,7 @@ export default function PlaceGrid({
                   <div className="flex items-center gap-1.5 text-xs">
                     <span className="inline-flex items-center gap-0.5 font-bold text-amber-600">
                       <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                      {place.averageRating
-                        ? place.averageRating.toFixed(1)
-                        : "—"}
+                      {formatAverageRating(place.averageRating)}
                     </span>
                     <span className="text-slate-400">
                       ({place.reviewCount}{" "}

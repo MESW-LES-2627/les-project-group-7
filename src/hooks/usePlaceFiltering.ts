@@ -1,28 +1,31 @@
 import { useMemo } from "react";
 import type { PlaceItem } from "@/types/place";
 import type { MapPlace } from "@/components/MapComponent";
-import { isPointInsideBounds, type GeoBoundingBox } from "@/domain/catalog/geo";
+import {
+  filterPlaces,
+  sortPlacesByRating,
+  type PlaceFilters,
+} from "@/domain/catalog/filters";
+import { placeMatchesSearch } from "@/domain/catalog/place-search";
 
 interface UsePlaceFilteringProps {
   places: readonly PlaceItem[];
   osmPlaces: readonly PlaceItem[];
   selectedCityId: string | null;
-  selectedCategory: string;
+  filters: PlaceFilters;
   searchQuery: string;
   currentPage: number;
   pageSize: number;
-  mapBounds?: GeoBoundingBox | null;
 }
 
 export function usePlaceFiltering({
   places,
   osmPlaces,
   selectedCityId,
-  selectedCategory,
+  filters,
   searchQuery,
   currentPage,
   pageSize,
-  mapBounds,
 }: UsePlaceFilteringProps) {
   // 1. Single-pass merge of DB places and OSM places
   const allPlaces = useMemo(() => {
@@ -46,50 +49,25 @@ export function usePlaceFiltering({
     return merged;
   }, [places, osmPlaces]);
 
-  // 2. Filter by city, category and search query
+  // 2. Filter by city, search query and domain filters
   const matchingPlaces = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    return allPlaces.filter((place) => {
+    const cityAndSearchMatches = allPlaces.filter((place) => {
       const matchesCity = !selectedCityId || place.cityId === selectedCityId;
       if (!matchesCity) {
         return false;
       }
 
-      const matchesCategory =
-        selectedCategory === "ALL" || place.category === selectedCategory;
-      if (!matchesCategory) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return (
-        place.name.toLowerCase().includes(normalizedQuery) ||
-        place.address.toLowerCase().includes(normalizedQuery)
-      );
+      return placeMatchesSearch(place, searchQuery);
     });
-  }, [allPlaces, selectedCityId, selectedCategory, searchQuery]);
 
-  // 3. Filter by map viewport bounds and sort by rating descending
-  const filteredPlaces = useMemo(() => {
-    const inViewport = mapBounds
-      ? matchingPlaces.filter((place) =>
-          isPointInsideBounds(place.latitude, place.longitude, mapBounds)
-        )
-      : matchingPlaces;
+    return filterPlaces(cityAndSearchMatches, filters);
+  }, [allPlaces, selectedCityId, filters, searchQuery]);
 
-    return [...inViewport].sort((a, b) => {
-      const ratingA = a.averageRating ?? -1;
-      const ratingB = b.averageRating ?? -1;
-      if (ratingB !== ratingA) {
-        return ratingB - ratingA;
-      }
-      return (b.reviewCount ?? 0) - (a.reviewCount ?? 0);
-    });
-  }, [matchingPlaces, mapBounds]);
+  // 3. The ranking: every matching place, best rating score first, wherever the map is
+  const filteredPlaces = useMemo(
+    () => sortPlacesByRating(matchingPlaces),
+    [matchingPlaces]
+  );
 
   // 4. Pagination calculations
   const totalPages = Math.max(1, Math.ceil(filteredPlaces.length / pageSize));
@@ -114,7 +92,7 @@ export function usePlaceFiltering({
           id: p.id,
           name: p.name,
           category: p.category,
-          priceLevel: p.priceLevel || "€",
+          priceLevel: p.priceLevel ?? null,
           rating: p.averageRating,
           latitude: p.latitude,
           longitude: p.longitude,

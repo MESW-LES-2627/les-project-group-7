@@ -43,11 +43,19 @@ enum ItineraryMode {
 // -------------------------------------------------------------
 model User {
   id           String       @id @default(uuid())
-  username     String       @unique
-  email        String       @unique
-  passwordHash String
+  username     String       @unique   // stored in lower case; displayUsername keeps what the person typed
+  email        String       @unique   // stored in lower case
   role         Role         @default(USER)
   registeredAt DateTime     @default(now())
+
+  // Columns required by the authentication library (Better Auth, ADR-009)
+  name            String                 // set to the username
+  emailVerified   Boolean   @default(false)
+  image           String?
+  updatedAt       DateTime  @updatedAt
+  displayUsername String?
+  sessions        Session[]
+  accounts        Account[]
 
   reviews      Review[]
   visits       Visit[]
@@ -79,8 +87,8 @@ model Place {
   address       String
   latitude      Float
   longitude     Float
-  openingHours  String?       // OSM opening_hours string or "unknown"
-  priceLevel    String?       // "FREE" | "€" | "€€" | "€€€" (FREE if OSM fee=no, else the mode of the reviews)
+  openingHours  String?       // OSM opening_hours string; null when OpenStreetMap has none (unknown)
+  priceLevel    String?       // "FREE" | "€" | "€€" | "€€€" (the mode of the reviews; FREE if OSM fee=no, until 2 reviews give a paid price)
   averageRating Float?        // 1.0 .. 5.0
   reviewCount   Int           @default(0)
   source        String        @default("IMPORTED") // "IMPORTED" | "SUGGESTED" | "LAZY_OSM"
@@ -101,7 +109,7 @@ model Place {
 model Review {
   id         String   @id @default(uuid())
   rating     Int      // 1 .. 5
-  priceLevel String?  // "€" | "€€" | "€€€"
+  priceLevel String?  // "FREE" | "€" | "€€" | "€€€" (the app requires it on a new review; one written before that rule may have none)
   text       String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -111,6 +119,9 @@ model Review {
 
   placeId    String
   place      Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  // A user reviews a place only once (US-C1-01): the database refuses a second review
+  @@unique([userId, placeId])
 }
 
 model Visit {
@@ -174,6 +185,8 @@ model Trip {
   startDate         DateTime
   endDate           DateTime
   budgetLevel       String    // "€" | "€€" | "€€€"
+  dayStart          String    @default("09:00") // "HH:mm", the day starts at 08:00 or later
+  dayEnd            String    @default("20:00") // "HH:mm", the day ends at 23:00 or earlier
   allowedCategories String    // Stored as JSON or comma-separated PlaceCategories
   createdAt         DateTime  @default(now())
 
@@ -223,4 +236,62 @@ model ItineraryStop {
 
   placeId      String
   place        Place     @relation(fields: [placeId], references: [id])
+}
+
+// -------------------------------------------------------------
+// 6. Authentication (Better Auth, ADR-009). Created and read by the library.
+// -------------------------------------------------------------
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// The password of a user is here (providerId "credential"), as a salted scrypt hash.
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// Counters of the login rate limit, stored in the database because memory does not suit serverless.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
 }

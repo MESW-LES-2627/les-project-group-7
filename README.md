@@ -8,10 +8,11 @@ A web application that combines place reviews and community rankings (TripAdviso
 
 ## Documentation & Architecture
 
-All Iteration 0 design deliverables and domain specifications are stored in this repository:
+All design deliverables and domain specifications are stored in this repository:
 
 - **[Vision](docs/vision.md):** The long-term product vision and feature roadmap.
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.
+- **[User stories](docs/user-stories.md):** One user story per MVP and Stretch feature, with acceptance criteria and the issues each is split into.
 - **[Design & Architecture](docs/design.md):** Overview of EventStorming, Domain Model, and Component Diagram.
 - **[Domain Glossary & Rules (Ubiquitous Language)](docs/GLOSSARY.md):** Canonical definitions of `Place`, `Review`, `Visit`, `Wishlist`, `Bookmark`, `Trip`, `Itinerary`, cost points, and budget calculations.
 - **[Deployment](docs/deployment.md):** How the app reaches the two sites (Vercel and Neon), the backup steps before a release and the known problems.
@@ -36,6 +37,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 | **Framework & App** | Next.js 15 (App Router) + React 19 + TypeScript | Full-stack architecture, SSR & Client components              |
 | **Styling & UI**    | Tailwind CSS + Shadcn UI + Lucide Icons         | Accessible, responsive component design system                |
 | **ORM & Database**  | Prisma ORM + PostgreSQL 18 (Docker locally, Neon in the cloud) | Relational persistence, migrations, and type-safe queries |
+| **Authentication**  | Better Auth (e-mail and password, username, database sessions) | Accounts, login, sessions and login rate limiting (ADR-009) |
 | **Testing**         | Vitest                                          | Fast unit testing for domain algorithms (`/tdd`)              |
 | **Mapping**         | Leaflet (`react-leaflet`) + OpenStreetMap tiles | Interactive city map with markers, popups, and rating trigger |
 
@@ -51,23 +53,29 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 │   └── design/             # UML diagrams and EventStorming artifacts
 ├── prisma/
 │   ├── schema.prisma       # Relational PostgreSQL database schema
-│   ├── seed.ts             # Seed: the 7 MVP cities, their places, demo users and sample reviews
+│   ├── seed.ts             # Seed: the cities, their places, demo users and sample reviews
 │   ├── data/               # JSON data used by the seed
 │   └── migrations/         # Prisma migration history (never edit an applied migration)
 ├── scripts/
-│   ├── import-osm.ts       # Imports Porto places from OpenStreetMap
+│   ├── import-osm.ts       # Imports the places of one MVP city (Porto, Paris, Berlin) from OpenStreetMap
 │   └── validate-docs.ts    # Checks the links and anchors in docs/ (npm run lint:docs)
 └── src/
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
+    │   ├── api/register/   # POST /api/register (creates the account and logs the person in)
+    │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
     │   ├── api/health/     # GET /api/health
+    │   ├── places/[id]/    # Place page (details and reviews)
+    │   ├── register/       # Registration page
+    │   ├── login/          # Login page
+    │   ├── layout.tsx      # Page shell: top bar (SiteHeader) and theme
     │   └── page.tsx        # Main tracer bullet UI
-    ├── components/         # MapComponent, MapWrapper, PlaceExplorer, ui/ (Shadcn)
-    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog)
+    ├── components/         # Map and place explorer (PlaceExplorer, ReviewModal, ...), SiteHeader, LogoutButton, ThemeToggle, ui/ (Shadcn)
+    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog, identity)
     ├── hooks/              # React hooks (place filtering, place reviews)
-    ├── lib/                # Prisma client singleton & cn utility (clsx + twMerge)
+    ├── lib/                # Prisma client singleton, Better Auth setup (auth.ts), the write-endpoint guard (guard.ts), registration rate limit & cn utility
     └── types/              # Shared TypeScript types
 ```
 
@@ -86,19 +94,23 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
 # Clone the repository and install dependencies
 npm install
 
-# Copy environment variables
+# Copy environment variables, then set BETTER_AUTH_SECRET in .env (for example with `openssl rand -base64 32`)
 cp .env.example .env
 
 # Start local PostgreSQL container
 docker compose up -d
 
-# Apply database migrations and seed data (7 cities, their places, demo users and sample reviews)
+# Apply database migrations and seed data (the cities, their places, demo users and sample reviews)
 npm run prisma:generate
 npm run prisma:migrate
 npm run seed
 ```
 
-`npm run import:osm` additionally imports Porto places from OpenStreetMap (optional).
+`npm run import:osm -- <city>` (`porto`, `paris` or `berlin`) imports the places of one city from OpenStreetMap into the database and into `prisma/data/<city>-places.json`. It is optional: the committed files already hold the places. `--dry-run` only shows what it would save, `--landmarks-only` adds the famous places by name and `--grid` searches the city tile by tile. Nothing is saved unless OpenStreetMap answered every request.
+
+**Demo places and reviews.** The seed loads the places of the three cities from the snapshots in `prisma/data` (Porto 940, Paris 967, Berlin 989, all real OpenStreetMap places) and writes sample reviews on 30% of the places of each city, from 1 to 25 reviews each, from `prisma/data/reviews-<city>.json`. It also marks each place as visited for the users who reviewed it and recalculates the rating, review count and price level of each reviewed place with the functions that the app uses.
+
+**Demo users.** The seed creates 30 users that log in like any other (the list is in `prisma/data/demo-users.json`), all with the password `tripbook-demo`; each sample review of a place is written by a different one. To use another password, set `DEMO_PASSWORD` (8 to 128 characters): `DEMO_PASSWORD=another-password npm run seed`. The seed can be run again at any time: it duplicates nothing, it puts the demo password back, and it replaces only the sample reviews that it wrote itself.
 
 ### 2. Running Tests
 
@@ -125,7 +137,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run build` / `npm start`           | Production build (runs `prisma generate` first) and server      |
 | `npm run test:watch` / `test:report`    | Vitest in watch mode / verbose report                           |
 | `npm run prisma:studio`                 | Opens Prisma Studio to browse the database                      |
-| `npm run import:osm`                    | Imports Porto places from OpenStreetMap                         |
+| `npm run import:osm -- <city>`          | Imports the places of one city from OpenStreetMap (see above) |
 | `npm run format` / `format:check`       | Prettier on `src/` (write / check only)                         |
 | `npm run lint:docs` / `format:docs`     | Checks the links and anchors in `docs/` / formats `docs/*.md`   |
 | `npm run knip`                          | Finds unused files, exports and dependencies                    |
@@ -134,10 +146,20 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Key Features in Tracer Bullet
+## Known issues
 
-- **Interactive Rating System:** Submit 1–5 star ratings and comments for any spot with instant UI updates.
-- **Dummy User Session:** Active switchable demo accounts (`@viajante_porto` and `@ana_exploradora`) persisting reviews and visit markers to PostgreSQL. Real registration, login and per-user permissions are not implemented yet.
-- **Rating Recalculation:** Posting a review recalculates the place's average rating and review count in PostgreSQL and records a visit for the author. Not built yet: price level on reviews and its recalculation, showing visited places after a page reload, and editing or deleting a review.
-- **OpenStreetMap Places:** Interactive Leaflet map with places loaded into PostgreSQL by the seed and import scripts, plus places discovered live from OpenStreetMap, which are saved when first reviewed.
-- **Local POI Search & Filter:** Instant text search and category filtering over the local PostgreSQL points of interest.
+- E-mail addresses are only checked for their format and are never verified, and there is no password reset. Both are out of scope for the MVP (US-A1-01). A mistyped e-mail or a forgotten password cannot be recovered.
+- The site sends no HTTP security headers yet (for example a Content-Security-Policy or protection against being embedded in another page).
+- `npm audit` reports vulnerable packages in `next`, `prisma` and their dependencies that are not fixed yet.
+
+---
+
+## Key Features
+
+- **Reviews:** A 1–5 star rating, a price level and a text, all required and with nothing preselected. A user can review a place only once (a second review gets a 409 and a notice; the database refuses it too). Posting a review recalculates the place's average rating, review count and price level, and records a visit. Not built yet: editing or deleting a review.
+- **Accounts:** Registration (`/register`), login by username or e-mail (`/login`) and logout, with Better Auth. Posting a review needs a logged-in user, and the author is always the user of the session.
+- **Visited:** A "Visited" badge on the places the logged-in user reviewed, in the list, the cards, the review dialog and the place page.
+- **Search & Filter:** A city search and a place search (ignoring case and accents), with filters for type, price level and minimum rating. The list shows every matching place of the city, best rating score first, wherever the map is.
+- **Map:** Leaflet map of the places in PostgreSQL, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
+- **Place page:** `/places/[id]` shows a place's details, rating, price level and reviews, newest first, and lets a logged-in user write a review. The opening hours are shown in a readable form, or as "Unknown" when the place has none.
+- **Dark mode:** The site opens in dark mode; the top bar button switches the theme and the browser remembers it.

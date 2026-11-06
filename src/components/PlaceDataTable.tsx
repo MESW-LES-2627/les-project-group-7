@@ -1,10 +1,18 @@
 "use client";
 
+/**
+ * The ranking as a table: one row per place with its rank, name and address, category, price
+ * and rating, a button to show it on the map, a button to rate it, and the page controls. It only
+ * shows the page of places it is given.
+ */
+
+import Link from "next/link";
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { PlaceItem } from "./PlaceExplorer";
-import { formatPrice } from "./ReviewModal";
+import { formatPriceLevel } from "@/domain/reviews/rating";
+import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 
@@ -87,7 +95,16 @@ export default function PlaceDataTable({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="line-clamp-1 font-semibold text-slate-900">
-                            {place.name}
+                            {!place.isDiscovered ? (
+                              <Link
+                                href={`/places/${place.id}`}
+                                className="hover:underline"
+                              >
+                                {place.name}
+                              </Link>
+                            ) : (
+                              place.name
+                            )}
                           </span>
                           {place.isDiscovered && (
                             <Badge
@@ -95,6 +112,14 @@ export default function PlaceDataTable({
                               className="shrink-0 border-sky-200 bg-sky-50 text-[10px] text-sky-700"
                             >
                               OSM
+                            </Badge>
+                          )}
+                          {place.isVisited && (
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700"
+                            >
+                              Visited
                             </Badge>
                           )}
                         </div>
@@ -122,7 +147,7 @@ export default function PlaceDataTable({
                           variant="secondary"
                           className="font-mono text-xs shadow-none"
                         >
-                          {formatPrice(place.priceLevel)}
+                          {formatPriceLevel(place.priceLevel)}
                         </Badge>
                       </td>
 
@@ -131,9 +156,7 @@ export default function PlaceDataTable({
                         <div className="flex items-center gap-1.5">
                           <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
                             <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                            {place.averageRating
-                              ? place.averageRating.toFixed(1)
-                              : "—"}
+                            {formatAverageRating(place.averageRating)}
                           </span>
                           <span className="text-xs text-slate-400">
                             ({place.reviewCount}{" "}

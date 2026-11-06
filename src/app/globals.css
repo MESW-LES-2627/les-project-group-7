@@ -2,12 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Channels as "r g b" so Tailwind can add opacity (bg-slate-50/80). Light values are Tailwind's own. */
 :root {
-  --foreground-rgb: 15, 23, 42;
-  --background-rgb: 248, 250, 252;
+  --surface: 255 255 255;
+  --slate-50: 248 250 252;
+  --slate-100: 241 245 249;
+  --slate-200: 226 232 240;
+  --slate-300: 203 213 225;
+  --slate-400: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-600: 71 85 105;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+  --slate-900: 15 23 42;
+  --slate-950: 2 6 23;
+  --emerald-50: 236 253 245;
+  --emerald-200: 167 243 208;
+  --emerald-700: 4 120 87;
+  --emerald-800: 6 95 70;
+  --amber-50: 255 251 235;
+  --amber-100: 254 243 199;
+  --amber-200: 253 230 138;
+  --amber-700: 180 83 9;
+  --amber-800: 146 64 14;
+  --indigo-50: 238 242 255;
+  --indigo-200: 199 210 254;
+}
+
+/* Dark is the default (class on <html>). The slate scale is flipped, with the muted greys kept
+ * readable. color-scheme: dark also tells Chrome the page is already dark, so its "force dark
+ * mode" flag leaves the colours alone. */
+.dark {
+  color-scheme: dark;
+  --surface: 15 23 42;
+  --slate-50: 2 6 23;
+  --slate-100: 30 41 59;
+  --slate-200: 51 65 85;
+  --slate-300: 71 85 105;
+  --slate-400: 100 116 139;
+  --slate-500: 148 163 184;
+  --slate-600: 203 213 225;
+  --slate-700: 226 232 240;
+  --slate-800: 241 245 249;
+  --slate-900: 248 250 252;
+  --slate-950: 248 250 252;
+  --emerald-50: 2 44 34;
+  --emerald-200: 6 95 70;
+  --emerald-700: 110 231 183;
+  --emerald-800: 167 243 208;
+  --amber-50: 69 26 3;
+  --amber-100: 120 53 15;
+  --amber-200: 146 64 14;
+  --amber-700: 252 211 77;
+  --amber-800: 253 230 138;
+  --indigo-50: 30 27 75;
+  --indigo-200: 55 48 163;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  color: rgb(var(--slate-900));
+  background: rgb(var(--slate-50));
+}
+
+/* Shades that also paint buttons (indigo 600/700) are not themed above, so the text uses of them
+ * and the error red are lightened here for contrast on dark backgrounds. */
+.dark .text-indigo-600 {
+  color: rgb(129 140 248);
+}
+.dark .text-indigo-700 {
+  color: rgb(165 180 252);
+}
+.dark .text-red-600 {
+  color: rgb(248 113 113);
+}
+
+/* Leaflet draws its popups with its own white background. */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: rgb(var(--surface));
 }

@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * The icon of a place category. `type` is the icon name given by the category configuration
+ * (src/domain/catalog/categories); an unknown name shows a map pin.
+ */
+
 import {
   Landmark,
   Utensils,

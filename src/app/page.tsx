@@ -1,4 +1,5 @@
-import { Compass } from "lucide-react";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PlaceExplorer from "@/components/PlaceExplorer";
 
@@ -36,6 +37,26 @@ export default async function Home() {
     orderBy: { name: "asc" },
   });
 
+  // A database failure must not take down the page: treat the visitor as logged out.
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch((error) => {
+      console.error("getSession failed:", error);
+      return null;
+    });
+  const currentUsername = session
+    ? (session.user.displayUsername ?? session.user.username ?? null)
+    : null;
+
+  // Places the logged-in user has visited (a visit is saved with each review)
+  const visits = session
+    ? await prisma.visit.findMany({
+        where: { userId: session.user.id },
+        select: { placeId: true },
+      })
+    : [];
+  const visitedPlaceIds = new Set(visits.map((visit) => visit.placeId));
+
   // 3. Map to the clean interface expected by the UI component
   const places = dbPlaces.map((place) => ({
     id: place.id,
@@ -50,6 +71,7 @@ export default async function Home() {
     averageRating: place.averageRating,
     reviewCount: place.reviewCount,
     city: place.city,
+    isVisited: visitedPlaceIds.has(place.id),
   }));
 
   const cities = dbCities.map((city) => ({
@@ -63,15 +85,12 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-10 text-center">
-        <div className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
-          <Compass className="h-4 w-4" />
-          Tripbook
-        </div>
-      </header>
-
       <main>
-        <PlaceExplorer initialPlaces={places} initialCities={cities} />
+        <PlaceExplorer
+          initialPlaces={places}
+          initialCities={cities}
+          currentUsername={currentUsername}
+        />
       </main>
     </div>
   );

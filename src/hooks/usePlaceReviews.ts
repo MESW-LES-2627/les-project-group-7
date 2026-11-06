@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import type { ReviewItem } from "@/components/ReviewModal";
-import type { SessionUser } from "@/components/UserSessionBar";
+import type { PriceLevel } from "@/domain/reviews/rating";
 
 interface UsePlaceReviewsOptions {
-  currentUser: SessionUser;
+  currentUsername: string | null;
   onPlaceUpdated: (updatedPlace: PlaceItem, createdReview?: ReviewItem) => void;
 }
 
 export function usePlaceReviews({
-  currentUser,
+  currentUsername,
   onPlaceUpdated,
 }: UsePlaceReviewsOptions) {
   const [activeReviewPlace, setActiveReviewPlace] = useState<PlaceItem | null>(
@@ -23,7 +23,9 @@ export function usePlaceReviews({
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
-  const fetchReviewsForPlace = async (placeId: string) => {
+  // Both stay the same between renders (useCallback): openReviewModal reaches the
+  // memoized map pins, and a new function on every render would re-render them.
+  const fetchReviewsForPlace = useCallback(async (placeId: string) => {
     setIsLoadingReviews(true);
 
     try {
@@ -40,14 +42,17 @@ export function usePlaceReviews({
     } finally {
       setIsLoadingReviews(false);
     }
-  };
+  }, []);
 
-  const openReviewModal = (place: PlaceItem) => {
-    setActiveReviewPlace(place);
-    setSubmitSuccess(null);
-    setErrorMsg(null);
-    fetchReviewsForPlace(place.id);
-  };
+  const openReviewModal = useCallback(
+    (place: PlaceItem) => {
+      setActiveReviewPlace(place);
+      setSubmitSuccess(null);
+      setErrorMsg(null);
+      fetchReviewsForPlace(place.id);
+    },
+    [fetchReviewsForPlace]
+  );
 
   const closeReviewModal = () => {
     setActiveReviewPlace(null);
@@ -55,7 +60,11 @@ export function usePlaceReviews({
     setErrorMsg(null);
   };
 
-  const handleSubmitReview = async (rating: number, comment: string) => {
+  const handleSubmitReview = async (
+    rating: number,
+    comment: string,
+    priceLevel: PriceLevel
+  ) => {
     if (!activeReviewPlace) {
       return;
     }
@@ -72,7 +81,7 @@ export function usePlaceReviews({
           placeId: activeReviewPlace.id,
           rating,
           text: comment,
-          userId: currentUser.id,
+          priceLevel,
           place: {
             name: activeReviewPlace.name,
             address: activeReviewPlace.address,
@@ -98,10 +107,16 @@ export function usePlaceReviews({
       const createdReview = (data as { review: ReviewItem }).review;
 
       onPlaceUpdated(updatedPlace, createdReview);
+      // The server just saved a visit with the review
+      setActiveReviewPlace({ ...updatedPlace, isVisited: true });
 
       if (createdReview) {
         setReviewsList((prev) => [
-          { ...createdReview, user: { username: currentUser.username } },
+          {
+            ...createdReview,
+            priceLevel: createdReview.priceLevel ?? priceLevel,
+            user: { username: currentUsername ?? "" },
+          },
           ...prev,
         ]);
       }
