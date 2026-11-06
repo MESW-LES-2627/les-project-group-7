@@ -31,4 +31,4 @@ to the AI tool or written in the repository.
 | Gonçalo (GalaxyXYZ888) | Claude Code | Code, tests and docs of the issues #11, #14, #17, #19, #20, #21, #37 and #107, the fixes in #129, deployment and data tooling. |
 | João (joaopachecowork1) | Claude Code| Code, tests, browser checks and pull request texts of #35 and #38 and the fixes in #130. |
 | Mariana (mclcavalcante) | to be filled | to be filled |
-| Jorge (JorgeCaldas78) | to be filled | to be filled |
+| Jorge (JorgeCaldas78) | ChatGPT (OpenAI) | Coding guidance, unit tests and debugging for issues #83, #30 and #33. |
