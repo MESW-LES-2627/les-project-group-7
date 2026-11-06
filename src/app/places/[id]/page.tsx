@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Star, MapPin } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getCategoryConfig } from "@/domain/catalog/categories";
@@ -14,6 +14,7 @@ import {
 } from "@/domain/catalog/place-details";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import WriteReviewButton from "./WriteReviewButton";
+import { formatOpeningHours } from "@/domain/osm/opening-hours";
 
 export const dynamic = "force-dynamic";
 
@@ -153,6 +154,15 @@ export default async function PlacePage({ params }: PlacePageProps) {
           <p className="text-base text-slate-700 dark:text-slate-300">
             {place.description ?? "No description yet."}
           </p>
+          <div className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+            <div>
+              <p className="font-semibold">Opening hours</p>
+              <p className="mt-1 whitespace-pre-line">
+                {formatOpeningHours(place.openingHours)}
+              </p>
+            </div>
+          </div>
         </section>
 
         <section
