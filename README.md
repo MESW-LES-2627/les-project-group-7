@@ -161,5 +161,5 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Visited:** A "Visited" badge on the places the logged-in user reviewed, in the list, the cards, the review dialog and the place page.
 - **Search & Filter:** A city search and a place search (ignoring case and accents), with filters for type, price level and minimum rating. The list shows every matching place of the city, best rating score first, wherever the map is.
 - **Map:** Leaflet map of the places in PostgreSQL, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
-- **Place page:** `/places/[id]` shows a place's details, rating, price level and reviews, newest first, and lets a logged-in user write a review. The opening hours are not shown yet.
+- **Place page:** `/places/[id]` shows a place's details, rating, price level and reviews, newest first, and lets a logged-in user write a review. The opening hours are shown in a readable form, or as "Unknown" when the place has none.
 - **Dark mode:** The site opens in dark mode; the top bar button switches the theme and the browser remembers it.
