@@ -8,7 +8,7 @@ A web application that combines place reviews and community rankings (TripAdviso
 
 ## Documentation & Architecture
 
-All Iteration 0 design deliverables and domain specifications are stored in this repository:
+All design deliverables and domain specifications are stored in this repository:
 
 - **[Vision](docs/vision.md):** The long-term product vision and feature roadmap.
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.
@@ -154,7 +154,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Key Features in Tracer Bullet
+## Key Features
 
 - **Reviews:** A 1–5 star rating, a price level and a text, all required and with nothing preselected. A user can review a place only once (a second review gets a 409 and a notice; the database refuses it too). Posting a review recalculates the place's average rating, review count and price level, and records a visit. Not built yet: editing or deleting a review.
 - **Accounts:** Registration (`/register`), login by username or e-mail (`/login`) and logout, with Better Auth. Posting a review needs a logged-in user, and the author is always the user of the session.

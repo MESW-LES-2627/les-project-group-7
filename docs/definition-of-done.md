@@ -1,6 +1,6 @@
 # Definition of Done
 
-Group 7 · MESW LES 2026-27 · Iteration 0
+Group 7 · MESW LES 2026-27
 
 Work is **Done** only when every rule that applies to it is true. Work that does not
 meet the rules goes back to the backlog. The rules are short on purpose: we can check

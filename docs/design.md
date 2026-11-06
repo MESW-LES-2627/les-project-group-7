@@ -1,8 +1,8 @@
-# Design – Iteration 0
+# Design
 
 Group 7 · MESW LES / DOO 2026-27
 
-This page is the entry point for the design deliverables of Iteration 0. Every
+This page is the entry point for the design deliverables. Every
 deliverable below is stored in this repository and linked from here.
 
 | Deliverable                          | Status | Location                                                                     |
