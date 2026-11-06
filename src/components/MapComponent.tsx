@@ -7,7 +7,7 @@
  * - Viewport Culling: Only places within map bounds + 15% margin are computed.
  * - Distance Grid Clustering: Nearby spots cluster into numbered badges when zoomed out.
  * - Click-to-Zoom: Clicking a cluster smoothly flies in and expands the spots.
- * - Memoized SVG pins & Canvas rendering (preferCanvas) for rock-solid 60 FPS.
+ * - Memoized SVG pins & Canvas rendering (preferCanvas).
  */
 
 import { memo, useEffect, useState, useMemo } from "react";
@@ -25,7 +25,10 @@ import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { clusterPlaces } from "@/domain/catalog/clustering";
-import { type GeoBoundingBox } from "@/domain/catalog/geo";
+import {
+  filterPlacesByBounds,
+  type GeoBoundingBox,
+} from "@/domain/catalog/geo";
 import { formatPriceLevel } from "@/domain/reviews/rating";
 import MapClusterMarker from "./MapClusterMarker";
 
@@ -61,6 +64,7 @@ function getCategoryIcon(category: string): L.DivIcon {
   }
 
   const color = CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER;
+
   const icon = L.divIcon({
     className: "custom-map-pin",
     iconSize: [28, 38],
@@ -77,6 +81,7 @@ function getCategoryIcon(category: string): L.DivIcon {
   });
 
   ICON_CACHE.set(category, icon);
+
   return icon;
 }
 
@@ -92,6 +97,7 @@ function MapEventHandler({
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds();
+
       const bbox: BoundingBox = {
         south: bounds.getSouth(),
         west: bounds.getWest(),
@@ -103,6 +109,7 @@ function MapEventHandler({
       onZoomChange?.(map.getZoom());
       onMapMove?.(bbox);
     },
+
     zoomend: () => {
       onZoomChange?.(map.getZoom());
     },
@@ -110,6 +117,7 @@ function MapEventHandler({
 
   useEffect(() => {
     const bounds = map.getBounds();
+
     const bbox: BoundingBox = {
       south: bounds.getSouth(),
       west: bounds.getWest(),
@@ -120,6 +128,7 @@ function MapEventHandler({
     onBoundsChange?.(bbox);
     onZoomChange?.(map.getZoom());
     onMapMove?.(bbox);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -148,8 +157,9 @@ function MapFlyController({
   return null;
 }
 
-// memo: when a Popup re-renders, it runs its auto-pan again. The pan fires moveend,
-// moveend re-renders the map, and opening a pin near the edge loops forever.
+// memo: when a Popup re-renders, it runs its auto-pan again.
+// The pan fires moveend, moveend re-renders the map,
+// and opening a pin near the edge can otherwise loop forever.
 const PlacePin = memo(function PlacePin({
   place,
   onSelectPlace,
@@ -169,6 +179,7 @@ const PlacePin = memo(function PlacePin({
               OSM Discovered
             </span>
           )}
+
           <h4 className="text-sm font-bold leading-tight text-slate-900">
             {place.name}
           </h4>
@@ -178,11 +189,15 @@ const PlacePin = memo(function PlacePin({
               <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
               {place.rating ? place.rating.toFixed(1) : "—"}
             </span>
+
             <span>•</span>
+
             <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px]">
               {formatPriceLevel(place.priceLevel)}
             </span>
+
             <span>•</span>
+
             <span className="text-slate-500">
               {getCategoryConfig(place.category).label}
             </span>
@@ -195,6 +210,7 @@ const PlacePin = memo(function PlacePin({
               className="mt-2.5 h-7 w-full gap-1 text-xs"
             >
               <Star className="h-3 w-3 fill-white" />
+
               {place.isDiscovered
                 ? "Be first to rate"
                 : "See details and reviews"}
@@ -224,45 +240,27 @@ export default function MapComponent({
   onMapMove?: (bounds: BoundingBox) => void;
 }) {
   const [mounted, setMounted] = useState(false);
+
   const [currentBounds, setCurrentBounds] = useState<BoundingBox | null>(null);
+
   const [currentZoom, setCurrentZoom] = useState<number>(zoom);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 1. Viewport Culling: Filters spots within the visible screen + 15% margin
+  // 1. Viewport Culling:
+  // Only process places inside the visible map bounds + 15% margin.
   const visiblePlaces = useMemo(() => {
     if (!currentBounds) {
-      return places;
+      return [];
     }
 
-    const latBuffer =
-      Math.abs(currentBounds.north - currentBounds.south) * 0.15;
-    const lonBuffer = Math.abs(currentBounds.east - currentBounds.west) * 0.15;
-
-    const minLat = currentBounds.south - latBuffer;
-    const maxLat = currentBounds.north + latBuffer;
-    const minLon = currentBounds.west - lonBuffer;
-    const maxLon = currentBounds.east + lonBuffer;
-
-    const culled: MapPlace[] = [];
-    for (let i = 0; i < places.length; i++) {
-      const place = places[i];
-      if (
-        place.latitude >= minLat &&
-        place.latitude <= maxLat &&
-        place.longitude >= minLon &&
-        place.longitude <= maxLon
-      ) {
-        culled.push(place);
-      }
-    }
-
-    return culled;
+    return filterPlacesByBounds(places, currentBounds);
   }, [places, currentBounds]);
 
-  // 2. Spatial Grid Clustering: Groups nearby spots into numbered bubbles when zoomed out
+  // 2. Spatial Grid Clustering:
+  // Group nearby visible places into numbered badges when zoomed out.
   const { singlePins, clusters } = useMemo(() => {
     return clusterPlaces(visiblePlaces, currentZoom);
   }, [visiblePlaces, currentZoom]);
@@ -296,16 +294,17 @@ export default function MapComponent({
           onZoomChange={setCurrentZoom}
         />
 
-        {/* Smooth Fly-To Controller */}
+        {/* Smooth Fly-To Controllers */}
         <MapFlyController targetCenter={selectedCenter} zoom={PLACE_ZOOM} />
+
         <MapFlyController targetCenter={selectedCityCenter} zoom={CITY_ZOOM} />
 
-        {/* 1. Render Clustered Badges */}
+        {/* Render Clustered Badges */}
         {clusters.map((cluster) => (
           <MapClusterMarker key={cluster.id} cluster={cluster} />
         ))}
 
-        {/* 2. Render Single Spot Pins */}
+        {/* Render Single Spot Pins */}
         {singlePins.map((place) => (
           <PlacePin
             key={place.id}
