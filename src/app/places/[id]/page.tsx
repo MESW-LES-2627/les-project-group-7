@@ -101,9 +101,9 @@ export default async function PlacePage({ params }: PlacePageProps) {
           </Link>
         </div>
 
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               {place.name}
             </h1>
 
@@ -126,7 +126,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-1.5 text-sm text-slate-600">
             <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
             <span>
               {place.address}, {place.city.name}, {place.city.country}
@@ -134,24 +134,22 @@ export default async function PlacePage({ params }: PlacePageProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 font-medium text-slate-900 dark:text-slate-100">
+            <div className="flex items-center gap-1.5 font-medium text-slate-900">
               <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
 
               <span>{formattedRating}</span>
               <span className="text-slate-400">•</span>
-              <span className="text-slate-600 dark:text-slate-400">
-                {formattedCount}
-              </span>
+              <span className="text-slate-600">{formattedCount}</span>
             </div>
 
-            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <span className="text-slate-300">|</span>
 
-            <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
               {formattedPrice}
             </span>
           </div>
 
-          <p className="text-base text-slate-700 dark:text-slate-300">
+          <p className="text-base text-slate-700">
             {place.description ?? "No description yet."}
           </p>
           <div className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -167,20 +165,18 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
         <section
           aria-labelledby="reviews-heading"
-          className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+          className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2
                 id="reviews-heading"
-                className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100"
+                className="text-xl font-bold tracking-tight text-slate-900"
               >
                 Reviews
               </h2>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {formattedCount}
-              </p>
+              <p className="text-xs text-slate-500">{formattedCount}</p>
             </div>
 
             <WriteReviewButton
@@ -191,17 +187,17 @@ export default async function PlacePage({ params }: PlacePageProps) {
           </div>
 
           {orderedReviews.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center">
+              <p className="text-sm font-medium text-slate-600">
                 No reviews yet
               </p>
 
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+              <p className="mt-1 text-xs text-slate-400">
                 Be the first to share your experience with this place.
               </p>
             </div>
           ) : (
-            <ol className="divide-y divide-slate-100 dark:divide-slate-800">
+            <ol className="divide-y divide-slate-100">
               {orderedReviews.map((rev) => {
                 const author =
                   rev.user.displayUsername ?? rev.user.username ?? "Anonymous";
@@ -213,7 +209,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
                   <li key={rev.id} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 dark:text-slate-100">
+                        <span className="font-semibold text-slate-900">
                           {author}
                         </span>
 
@@ -226,7 +222,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
                         </span>
 
                         {hasPrice && (
-                          <span className="inline-flex rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <span className="inline-flex rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
                             {formatPriceLevel(rev.priceLevel)}
                           </span>
                         )}
@@ -234,16 +230,14 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
                       <time
                         dateTime={rev.createdAt.toISOString()}
-                        className="text-xs text-slate-400 dark:text-slate-500"
+                        className="text-xs text-slate-400"
                       >
                         {rev.createdAt.toLocaleDateString("en-GB")}
                       </time>
                     </div>
 
                     {hasText && (
-                      <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                        {rev.text}
-                      </p>
+                      <p className="mt-2 text-sm text-slate-700">{rev.text}</p>
                     )}
                   </li>
                 );

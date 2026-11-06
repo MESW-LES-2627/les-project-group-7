@@ -1,6 +1,6 @@
 export default function OpenStreetMapAttribution() {
   return (
-    <p className="text-center text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+    <p className="text-center text-xs leading-relaxed text-slate-600">
       Place data ©{" "}
       <a
         href="https://www.openstreetmap.org/copyright"

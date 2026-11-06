@@ -30,7 +30,7 @@ export default function RootLayout({
 
         <div className="flex-1">{children}</div>
 
-        <footer className="border-t border-slate-200 px-4 py-4 dark:border-slate-700">
+        <footer className="border-t border-slate-200 px-4 py-4">
           <OpenStreetMapAttribution />
         </footer>
       </body>

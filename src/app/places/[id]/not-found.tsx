@@ -7,11 +7,11 @@ import { ArrowLeft } from "lucide-react";
 export default function NotFound() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 text-center">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      <h1 className="text-2xl font-bold tracking-tight text-slate-900">
         Place not found
       </h1>
 
-      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+      <p className="mt-2 text-sm text-slate-600">
         This place is not in the catalog.
       </p>
 
