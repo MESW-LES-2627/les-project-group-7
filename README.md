@@ -152,7 +152,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Key Features in Tracer Bullet
+## Key Features
 
 - **Interactive Rating System:** Submit a 1–5 star rating, a price level and a text for any spot, with instant UI updates. The form has no preselected rating or price level, and all three are required.
 - **Accounts:** Registration (`/register`, `POST /api/register`), login by username or e-mail (`/login`) and logout, with Better Auth behind them. The top bar shows the logged-in username. The review form shows the logged-in username and asks logged-out visitors to log in. Posting a review needs a logged-in user, and the author is always the user of the session (the reviews endpoint ignores any `userId` sent by the client).
