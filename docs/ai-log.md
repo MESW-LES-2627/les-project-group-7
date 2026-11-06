@@ -6,10 +6,30 @@ This log says how the team used AI. It has one section per iteration.
 
 ## Responsibility
 
-Everything produced with AI was approved by the team, all code was checked by the team, and all code in the
-repository is owned by the team. The team decides the scope, the product rules and what is merged, and nothing
+Everything produced with AI was approved by the team, all code was checked by at least two members of the team, and all code in the repository is owned by the team. The team decides the scope, the product rules and what is merged, and nothing
 runs on dev or prod without the explicit decision of a team member. Secrets and connection strings are not given
 to the AI tool or written in the repository.
+
+## Conventions - what and how it is allowed to use
+
+1. **Tools.** Members can use the AI tools listed in this log. A new tool is added to the log in the iteration it is
+   first used.
+2. **Allowed uses.** AI can be used for code, tests, database migrations, scripts, debugging, documents, brainstorming
+   and planning.
+3. **Decisions.** AI can suggest options, but a team member chooses. Scope and product rules are decided by the team.
+4. **Understanding.** The author must understand everything they submit and be able to explain it. Code that the
+   author cannot explain is not submitted.
+5. **Review.** Work made with AI follows the same review as any other work: the author checks it first, then one
+   teammate other than the author reviews and approves the pull request.
+6. **Tests.** Code made with AI must pass build, lint and tests like any other code. The author checks that tests
+   written with AI really test the rule, and a test is not changed only to make it pass.
+7. **Secrets and personal data.** Passwords, tokens, connection strings, `.env` files and personal data of real users
+   are not given to the AI tool or written in the repository.
+8. **Environments.** AI does not merge, deploy or change data on dev or prod without the explicit decision of a team
+   member, who checks the command or change first.
+9. **Checking facts.** Libraries, APIs and facts suggested by AI are checked against their official source. A new
+   dependency must exist, be maintained and have a licence the project can use.
+
 
 ## Iteration 1 (23 Oct to 6 Nov 2026)
 
@@ -23,12 +43,4 @@ to the AI tool or written in the repository.
 
 - Claude Code (Anthropic)
 - GitHub Copilot
-
-### What each member used
-
-| Member | Tool | For what |
-| :---- | :---- | :---- |
-| Gonçalo (GalaxyXYZ888) | Claude Code | Code, tests and docs of the issues #11, #14, #17, #19, #20, #21, #37 and #107, the fixes in #129, deployment and data tooling. |
-| João (joaopachecowork1) | Claude Code| Code, tests, browser checks and pull request texts of #35 and #38 and the fixes in #130. |
-| Mariana (mclcavalcante) | to be filled | to be filled |
-| Jorge (JorgeCaldas78) | ChatGPT (OpenAI) | Coding guidance, unit tests and debugging for issues #83, #30 and #33. |
+- ChatGPT
