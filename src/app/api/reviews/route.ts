@@ -145,6 +145,7 @@ export async function POST(request: Request) {
             country: "Portugal",
             latitude: 41.1496,
             longitude: -8.6109,
+            timezone: "Europe/Lisbon",
           },
         });
       }

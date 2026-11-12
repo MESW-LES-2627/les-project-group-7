@@ -210,6 +210,7 @@ const CITIES = [
     country: "Portugal",
     latitude: 41.1579,
     longitude: -8.6291,
+    timezone: "Europe/Lisbon",
   },
   {
     key: "paris",
@@ -218,6 +219,7 @@ const CITIES = [
     country: "France",
     latitude: 48.8566,
     longitude: 2.3522,
+    timezone: "Europe/Paris",
   },
   {
     key: "berlin",
@@ -226,6 +228,7 @@ const CITIES = [
     country: "Germany",
     latitude: 52.52,
     longitude: 13.405,
+    timezone: "Europe/Berlin",
   },
 ];
 
@@ -242,13 +245,14 @@ async function main() {
   for (const city of CITIES) {
     await prisma.city.upsert({
       where: { id: city.id },
-      update: {},
+      update: { timezone: city.timezone },
       create: {
         id: city.id,
         name: city.name,
         country: city.country,
         latitude: city.latitude,
         longitude: city.longitude,
+        timezone: city.timezone,
       },
     });
   }
