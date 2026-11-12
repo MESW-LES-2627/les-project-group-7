@@ -54,14 +54,14 @@ iteration: the order is decided at each sprint planning.
 
 | ID | Feature | The user can… |
 |---|---|---|
-| E1 | Create a trip | Choose a city, dates, budget level (€ / €€ / €€€, the target average price for the whole trip), preferred types and the hours of the day (when the day starts and ends); days are created from the dates |
-| E2 | Change a trip | Edit the constraints (including the hours of the day); days are added or removed to match |
+| E1 | Create a trip | Choose a city and dates and give the trip a name; the days are created from the dates, together with an empty itinerary |
+| E2 | Change a trip | Edit the dates; days are added or removed to match |
 | E3 | Delete a trip | Delete a trip with its days, itinerary and stops |
-| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times (any time, also outside the hours of the day) |
+| E4 | Manual itinerary | Build an itinerary by hand: assign places to days, remove them, set visit times (any time of the day). Optionally set a budget level and hour limits for yourself: they only warn |
 | E5 | Nearby suggestions | While planning a stop, see the best-ranked places nearby (for example lunch after a landmark) |
-| E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known), and see the trip's average price level next to the budget level, with a warning when it is above |
+| E6 | Plan warnings | Get a warning when a visit time is outside the place's opening hours (only where hours are known) or outside the hour limits the user set, and, when a budget level is set, see the trip's average price level next to it, with a warning when it is above |
 | E7 | Travel-time estimate | See "≈ N min walk" between consecutive stops, estimated from straight-line distance |
-| E8 | Basic generator | Press "Generate itinerary": per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. Each stop gets a visit time inside the hours of the day, and a place whose opening hours are known is never given a time when it is closed (places with unknown hours can go anywhere). It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one |
+| E8 | Basic generator | Press "Generate itinerary" and give a budget level (required), hour limits and the types of place: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. Each stop gets a visit time inside the hour limits, and a place whose opening hours are known is never given a time when it is closed (places with unknown hours can go anywhere). It keeps the trip's average price at or near the budget level (see section 4) and always includes the user's wishlist places. The result can be edited like a manual one |
 
 ### Platform
 
@@ -123,10 +123,23 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
   `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 6` and
   `C = 4.0`. The plain average and the number of reviews are still shown.
-- **Hours of the day:** every trip has a time when the day starts and a time when it
-  ends (default 09:00 to 20:00; the earliest start is 08:00 and the latest end is
-  23:00). The generator keeps every stop inside these hours. When the user plans by
-  hand, any visit time is allowed.
+- **Hour limits (optional):** an itinerary can have a time from which and a time until the
+  visits should be (both are optional, and empty means no limit). They are the person's own
+  limits and they only warn: in a manual itinerary a visit time outside them is accepted and
+  shows a warning. The only hard limit is the day itself, so a visit time is any time from
+  00:00 to 23:59. When both are set, the start is before the end. The generator keeps every
+  stop inside them (the Generate panel suggests 09:00 to 20:00).
+- **Trip dates and length:** a trip is a name, a city and dates. It has one day for each date
+  from its start date to its end date, both included, and at most **14 days**. The start date is
+  today or later, and the end date is not before the start date. Every trip is created together
+  with an **empty itinerary** (exactly one, with no stops and no settings): the person then adds
+  places by hand or generates the itinerary.
+- **Time zone:** the dates and the times of a trip (the hour limits, the visit times) are local
+  to the **city of the trip**, whatever the time zone of the person: someone in Australia who plans
+  a trip in the US enters US dates and times, and "today" is today in the US city. Each city has
+  its time zone (`Europe/Lisbon` for Porto, `Europe/Paris`, `Europe/Berlin`). The hour limits
+  are wall-clock times of the city, so the change to summer time never moves them; only the length
+  of that one day (23 or 25 hours) matters for the generator.
 - **Budget level:** it is a soft target for the **whole trip**, not a limit per place
   or per day, and not an amount in euros (we have no real prices, and a trip total
   would include flights and hotels, which the app does not model).
@@ -140,6 +153,14 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
     are always included and count towards the average, so the other stops adjust.
   - It is soft: if a city has too few cheap places the generator still fills the
     days with the closest fit, and the plan shows the average as a warning.
+  - It is an optional setting of the itinerary. In a manual itinerary it can be empty: the
+    average is shown and there is nothing to compare, so no warning. To generate, it is required.
+- **Generating:** to generate, the person gives a budget level (required), the hour limits
+  (09:00 to 20:00 suggested) and at least one type of place (all seven suggested, also
+  `OTHER`). The types are used only for that generation and are not saved. The budget level
+  and the hour limits are saved as the settings of the itinerary. Generating again asks first,
+  because it replaces the stops. After a generation the itinerary is edited like a manual
+  one, and the generator is not involved any more.
 
 ## 5. Non-functional requirements
 
@@ -164,10 +185,10 @@ The MVP is shown, at each sprint review and at the final release, with this scen
 3. Post a review with a price level; see the rating and top-rated list change and
    the place appear in "visited".
 4. Add a place to the wishlist and to a custom list.
-5. Create a 3-day trip to Paris with a budget level, preferred types and the hours of the day.
-6. Generate an itinerary, then edit it: move a place, set a visit time outside
-   opening hours and see the warning, check the travel-time estimates and the
-   trip's average price against the budget level.
+5. Create a 3-day trip to Paris (a name, the city and the dates).
+6. Generate an itinerary with a budget level, hour limits and types, then edit it: move a
+   place, set a visit time outside opening hours and see the warning, check the
+   travel-time estimates and the trip's average price against the budget level.
 7. Change the trip dates and see the days update.
 8. Delete the trip.
 

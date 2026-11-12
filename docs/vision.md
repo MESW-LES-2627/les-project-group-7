@@ -107,12 +107,12 @@ in the [MVP](mvp.md). Each idea is tagged:
 
 | Idea | Tier |
 |---|---|
-| Create a trip with city, dates, budget level, preferred place types and the hours of the day | MVP |
+| Create a trip with a city and dates; it starts with an empty itinerary and one empty day for each date | MVP |
 | Days created automatically from the dates and kept in sync when they change | MVP |
-| Build an itinerary manually: assign places to days, set visit times | MVP |
-| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. Stops get visit times inside the hours of the day and avoid the times when a place is known to be closed. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP |
+| Build an itinerary manually: assign places to days, set visit times, with an optional budget level and hour limits that only warn | MVP |
+| **Basic itinerary generator**: per day, top-rated places of the chosen types, grouped by distance, with a lunch place near the morning stop. The user gives a budget level, hour limits and types. Stops get visit times inside the hour limits and avoid the times when a place is known to be closed. It keeps the trip's average price near the chosen budget level and always includes the wishlist places | MVP |
 | Suggest the best-ranked places nearby (for example lunch after the Eiffel Tower) | MVP |
-| Warn when a planned visit time is outside the place's opening hours, and show the trip's average price level against the budget level | MVP |
+| Warn when a planned visit time is outside the place's opening hours or the user's hour limits, and show the trip's average price level against the budget level (when one is set) | MVP |
 | Estimated travel time between stops ("≈ 12 min walk", from straight-line distance) | MVP |
 | **Smart generator**: also uses real travel times, and balances the budget more precisely | Stretch |
 | Optional budget in euros per day, from price levels mapped to rough amounts | Stretch |
