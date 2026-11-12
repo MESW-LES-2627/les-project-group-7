@@ -85,7 +85,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 
 - The board is conceptual. A trip owns its days and its itinerary, so Day and
   Itinerary are not separate aggregates. The rules about days, assigned places,
-  opening hours, the hours of the day and budget live inside Trip, so they are not policies.
+  opening hours, the hour limits and budget live inside Trip (its itinerary), so they are not policies.
 - Places come from OpenStreetMap through the import and seed scripts for three cities
   (Porto, Paris and Berlin). Live discovery on the map, where a discovered place is
   saved to the catalog when it is first reviewed, is built in the tracer bullet but is
@@ -119,7 +119,7 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
 - The budget level is a soft target for the average price of the whole trip. Places
   have cost points (free 0, € 1, €€ 2, €€€ 3). The generator keeps the running average
   near the budget level and always includes wishlist places; the planner shows the
-  average and warns when it is above. There is no euro amount. See [mvp.md](mvp.md#4-data-for-the-mvp).
+  average and warns when it is above. The budget level is optional in a manual itinerary and required to generate. There is no euro amount. See [mvp.md](mvp.md#4-data-for-the-mvp).
 - A place can be in several lists, and a list can hold any bookmarked place.
 - A published itinerary is a copy, so it survives the deletion of the original trip.
 
@@ -152,23 +152,22 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | Class                          | Aggregate           | Key attributes                                                                               | Main associations                                                                         |
 | ------------------------------ | ------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | User                           | User                | username, email, role (USER / ADMIN)                                                         | writes Reviews, makes Visits, saves Places, owns Lists, plans Trips. An ADMIN is also the moderator of suggestions |
-| City                           | Place               | name, country, latitude, longitude                                                           | contains Places, destination of Trips                                                     |
+| City                           | Place               | name, country, latitude, longitude, timezone                                                           | contains Places, destination of Trips                                                     |
 | Place                          | Place               | name, description, category, address, latitude, longitude, openingHours (optional), /priceLevel, /averageRating, /reviewCount | belongs to a City, has Reviews and Visits                       |
 | Visit                          | Place               | visitedAt                                                                                    | links a User to a Place (at most one per pair); created when the user posts a review      |
 | PlaceSuggestion (post-MVP)     | Place suggestion    | proposedName, proposedCategory, proposedAddress, status, suggestedAt, decidedAt (optional)   | suggested by a User, decided by a moderator (ADMIN), proposed in a City, approved as a Place |
 | Review                         | Review              | rating (1..5), priceLevel (FREE, €, €€ or €€€; required when posted), text, createdAt                                        | written by a User about a Place (a user reviews a given place at most once)               |
 | SavedPlace                     | Saved places        | type (WISHLIST / BOOKMARK)                                                                   | a User saves a Place                                                                      |
 | SavedList                      | List                | name                                                                                         | owned by a User, contains bookmarked SavedPlaces                                          |
-| Trip                           | Trip                | name, /averageCostPoints                                                                     | owned by a User, goes to a City, has TripConstraints, Days and an Itinerary               |
-| TripConstraints (value object) | Trip                | startDate, endDate, budgetLevel (€, €€ or €€€: target average price of the whole trip), allowedCategories, dayStart, dayEnd (hours of the day) | part of a Trip                                                  |
+| Trip                           | Trip                | name, startDate, endDate                                                                     | owned by a User, goes to a City, has Days and one Itinerary                               |
 | Day                            | Trip                | dayNumber, date                                                                              | part of a Trip, one per date between the start and end date                               |
-| Itinerary                      | Trip                | mode (MANUAL / GENERATED)                                                                    | part of a Trip (0..1), schedules ItineraryStops                                           |
+| Itinerary                      | Trip                | mode (MANUAL / GENERATED), budgetLevel (optional, €, €€ or €€€: target average price of the whole trip), dayStart and dayEnd (optional hour limits), /averageCostPoints | part of a Trip (exactly one, created empty with it), schedules ItineraryStops |
 | ItineraryStop                  | Trip                | visitTime (optional), position, /outsideOpeningHours, /travelTimeFromPreviousStop            | on a Day, visits a Place                                                                  |
 | Reminder (post-MVP)            | Reminder            | sentAt                                                                                       | reminds of an ItineraryStop; created when the visit time is near                          |
 | PublishedItinerary (post-MVP)  | Published itinerary | title, publishedAt                                                                           | published by a User, bookmarked by Users, has PublishedStops (a copy of an itinerary)     |
 | PublishedStop (post-MVP)       | Published itinerary | dayNumber, visitTime (optional), position                                                    | visits a Place                                                                            |
-| PriceLevel (enumeration)       | shared              | FREE = 0, € = 1, €€ = 2, €€€ = 3 (cost points)                                               | used by Place and Review (all four values); the trip budget level uses € to €€€; unknown is not counted                         |
-| PlaceCategory (enumeration)    | shared              | RESTAURANT, MUSEUM, MONUMENT, PARK, CAFE, BAR, OTHER                                         | used by Place, PlaceSuggestion and TripConstraints                                        |
+| PriceLevel (enumeration)       | shared              | FREE = 0, € = 1, €€ = 2, €€€ = 3 (cost points)                                               | used by Place and Review (all four values); the budget level of an itinerary uses € to €€€; unknown is not counted                         |
+| PlaceCategory (enumeration)    | shared              | RESTAURANT, MUSEUM, MONUMENT, PARK, CAFE, BAR, OTHER                                         | used by Place and PlaceSuggestion (the types chosen for a generation are not saved)                                        |
 
 Design notes:
 
@@ -226,8 +225,8 @@ not in the MVP.
 | Place Catalog (built) | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
 | Reviews (post built; edit and delete not yet) | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog (ADR-010 puts both policies in one function)                                            | Place Catalog                                                           |
 | Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
-| Trip Planner         | Trips, days, itineraries, visit times, travel-time estimates, opening-hours and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
-| Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average, the wishlist, the hours of the day and known opening hours.                           | Place Catalog, Saved Places                                             |
+| Trip Planner         | Trips, days, itineraries with their optional budget level and hour limits, visit times, travel-time estimates, opening-hours, hour-limit and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
+| Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average, the wishlist, the hour limits given for the generation and known opening hours.                           | Place Catalog, Saved Places                                             |
 | Import and seed scripts (built) | The command line side of Place Catalog: imports the places of a city from OpenStreetMap into a snapshot and the database, and loads the demo users, places and sample reviews. They are run by hand and reuse the rules of `src/domain` | Database, Geocoding service (external), Place Catalog rules |
 | Publishing (Stretch) | Published itineraries, sharing, bookmarks                                                                                                                                    | Trip Planner                                                            |
 | Reminders (Stretch)  | Scheduler that sends visit reminders                                                                                                                                         | Trip Planner, Notification service (external)                           |

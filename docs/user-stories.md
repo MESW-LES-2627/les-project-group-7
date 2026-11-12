@@ -620,54 +620,55 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E1 Create a trip
 - **As a:** Planner
 
-**I want** to create a trip by choosing a city, dates, a budget level, preferred types and the hours of the day,
+**I want** to create a trip by choosing a city and dates,
 
 **So that** I can start planning what to visit each day.
 
 **Acceptance criteria**
 
-1. **Given** I am logged in, **when** I create a trip with a name, a city, start and end dates, a budget level and at least one place type, **then** the trip is saved with one day for each date from start to end.
+1. **Given** I am logged in, **when** I create a trip with a name, a city and start and end dates, **then** the trip is saved with one day for each date from start to end, and with an empty itinerary (no stops).
 2. **Given** a trip of 3 days, **when** I open it, **then** I see Day 1, Day 2 and Day 3 with their dates.
 3. **Given** the end date is before the start date, **when** I send, **then** I see an error and nothing is saved.
-4. **Given** I leave the hours of the day empty, **when** I create the trip, **then** the day starts at 09:00 and ends at 20:00.
-5. **Given** the fields for the hours of the day, **when** the day start is before 08:00, the day end is after 23:00, or the start is not before the end, **then** I see an error and nothing is saved. This only limits these two fields; the visit time of a single stop is not limited (US-E4-01).
+4. **Given** the start date is before today in the city of the trip, **when** I send, **then** I see an error and nothing is saved.
+5. **Given** a trip longer than 14 days, **when** I send, **then** I see an error and nothing is saved.
 6. **Given** a trip, **when** I open "My trips", **then** it is in the list, and other users cannot see it.
 7. **Given** the form is incomplete, **when** I send, **then** I see which fields are missing.
 
 **Business rules**
 
 - Number of days = number of dates from start to end, inclusive. Unit tested.
-- Budget level is `€`, `€€` or `€€€`. It is the target average price for the **whole trip** ([mvp.md](mvp.md) section 4).
-- Hours of the day: `dayStart` and `dayEnd` (HH:mm), default 09:00 and 20:00, earliest start 08:00, latest end 23:00, start before end. Unit tested.
-- The hours of the day only limit the generator (US-E8-01). In a manual itinerary any visit time is allowed, also outside them (US-E4-01).
-- A trip has a maximum length (the team decides, for example 14 days).
+- A trip is a name (1 to 100 characters), a city, a start date and an end date, and it belongs to the user who created it. Nothing else is asked: the budget level and the hour limits are optional settings of the itinerary (US-E4-01), and the types of place are an input of the generator (US-E8-01).
+- Every trip is created together with its days and one empty itinerary (mode `MANUAL`, no stops, no settings). The person then adds places by hand (US-E4-01) or generates the itinerary (US-E8-01).
+- A trip has at most 14 days (decided by the team).
+- The start date is today or later, where "today" is today in the time zone of the trip's city, not where the person is (each city has its time zone, `City.timezone`). All dates and times of a trip are local to its city. Unit tested with several time zones.
 - Trips are private to their owner.
 
 **Out of scope**
 
 - Several cities in one trip (S13).
-- Different hours for different days.
 
 **Notes**
 
-- The database columns `dayStart` and `dayEnd` already exist in the schema (migration `20261027120000_add_trip_day_hours`). Existing and new trips get the defaults.
+- The trip used to ask also for a budget level, preferred types and the hours of the day. Decided on 12 Nov 2026: the budget level and the hour limits are now optional settings of the itinerary, and the types are only an input of the generator. The columns moved with the migration `20261112110000_move_trip_settings_to_itinerary`.
 
 **Issues**
 
-1. **Trip creation API with day creation and hours of the day** · covers AC1, AC2, AC3, AC4, AC5, AC7 · depends on: Session and write-endpoint guard (US-A1-02)
+1. **Trip creation API with its days and an empty itinerary** · covers AC1, AC2, AC3, AC4, AC5, AC7 · depends on: Session and write-endpoint guard (US-A1-02)
    - Day-count function with unit tests
-   - Validation of the hours of the day with unit tests
-2. **Create trip form and trip page** · covers AC1 to AC5, AC7 · depends on: Trip creation API with day creation and hours of the day
-3. **My trips list** · covers AC6 · depends on: Trip creation API with day creation and hours of the day
+   - Validation of the trip form with unit tests (dates, length, "today" in the time zone of the city)
+   - Time zone of each city (`City.timezone`) with its migration
+   - Creation of the trip with its days and an empty itinerary, in one write
+2. **Create trip form and trip page** · covers AC1, AC2, AC3, AC4, AC5, AC7 · depends on: Trip creation API with its days and an empty itinerary
+3. **My trips list** · covers AC6 · depends on: Trip creation API with its days and an empty itinerary
 
 ## E2 Change a trip
 
-### US-E2-01 Change a trip's dates and constraints
+### US-E2-01 Change a trip's dates
 
 - **MVP feature:** E2 Change a trip
 - **As a:** Planner
 
-**I want** to edit the dates, budget level, types and hours of the day of a trip,
+**I want** to edit the dates of a trip,
 
 **So that** I can adapt it when my plans change.
 
@@ -676,18 +677,22 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 1. **Given** a trip, **when** I extend the end date, **then** new empty days are added at the end.
 2. **Given** a trip with stops on day 3, **when** I shorten it so day 3 disappears, **then** I am warned first and, if I accept, the day and its stops are removed.
 3. **Given** I move the start date, **when** I save, **then** the dates of all days change and the stops stay on their day numbers.
-4. **Given** I change the budget level, types or hours of the day, **when** I save, **then** the existing itinerary is unchanged until I generate again.
-5. **Given** an invalid change, **when** I save, **then** I see an error and nothing changes.
+4. **Given** an invalid change, **when** I save, **then** I see an error and nothing changes.
 
 **Business rules**
 
 - `syncDays()`: the days always match start to end, inclusive. Days are added or removed at the end, never in the middle. Unit tested.
-- The hours of the day follow the same rules as when the trip is created (US-E1-01).
+- The dates follow the same rules as when the trip is created (US-E1-01): the end date is not before the start date and a trip has at most 14 days.
+- The start date is checked against today (in the time zone of the trip's city) only when the person changes it. Extending the end date of a trip that has already started is allowed.
+
+**Notes**
+
+- The budget level, the hour limits and the types of place are not part of the trip any more, so they are not edited here: the budget level and the hour limits are optional settings of the itinerary (US-E4-01), and the types are asked each time the itinerary is generated (US-E8-01). Changing them leaves the stops as they are.
 
 **Issues**
 
-1. **Day synchronisation with unit tests** · covers AC1, AC2, AC3 · depends on: Trip creation API (US-E1-01)
-2. **Edit trip API and UI with confirmation** · covers AC1 to AC5 · depends on: Day synchronisation with unit tests
+1. **Day synchronisation with unit tests** · covers AC1 to AC3 · depends on: none
+2. **Edit trip API and UI with confirmation** · covers AC1 to AC4 · depends on: Day synchronisation with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
 
 ## E3 Delete a trip
 
@@ -721,9 +726,9 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E4 Manual itinerary
 - **As a:** Planner
 
-**I want** to assign places to the days of a trip, remove them and set visit times,
+**I want** to assign places to the days of a trip, remove them and set visit times, and to set a budget level and hour limits if I want them,
 
-**So that** I plan exactly what I want.
+**So that** I plan exactly what I want, and I am warned when the plan goes beyond my own limits.
 
 **Acceptance criteria**
 
@@ -733,24 +738,38 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 4. **Given** a stop, **when** I remove it, **then** the place is not in the day any more and the other stops keep their order.
 5. **Given** the same place already on the trip, **when** I add it again, **then** I am told it is already planned.
 6. **Given** a place from another city, **when** I try to add it, **then** it is refused.
-7. **Given** the hours of the day are 09:00 to 20:00, **when** I set the visit time of a stop to 22:30 or 00:00, **then** it is accepted. The hours of the day only limit the generator.
+7. **Given** no hour limits are set, **when** I set the visit time of a stop to 22:30 or 00:00, **then** it is accepted. The only hard limit is the day itself, from 00:00 to 23:59.
+8. **Given** I set hour limits of 09:00 to 20:00, **when** I set the visit time of a stop to 22:30, **then** it is accepted (the warning is part of US-E6-01).
+9. **Given** an itinerary, **when** I set a budget level (`€`, `€€` or `€€€`) or hour limits, **then** they are saved, and when I clear them they are empty again. All of them are optional.
+10. **Given** hour limits where the start is not before the end, or a time that is not a time of the day, **when** I save them, **then** I see an error and nothing changes.
 
 **Business rules**
 
 - Positions in a day are 1, 2, 3 without gaps after any change. Unit tested.
 - A place appears at most once per trip.
-- Any visit time is allowed in a manual itinerary. The hours of the day only limit the generator.
-- A trip has at most one itinerary (`MANUAL` when built by hand).
+- Any visit time is allowed in a manual itinerary, as long as it is a time of the day (00:00 to 23:59). The hour limits and the budget level are the person's own settings: they only warn, they never block.
+- The settings are `budgetLevel` (`€`, `€€` or `€€€`) and `dayStart` and `dayEnd` (HH:mm). All of them are optional, and empty means no limit. When both hours are set the start is before the end. Unit tested.
+- A trip has exactly one itinerary. It is created empty together with the trip (US-E1-01) and is `MANUAL` until the generator fills it (US-E8-01).
 
 **Out of scope**
 
 - Drag and drop (S7).
+- Different hour limits for different days.
+
+**Notes**
+
+- The budget level, the hour limits and the types of place used to be asked when the trip was created. The budget level and the hour limits are now optional settings of the itinerary. The types are not stored: they are only an input of the generator (US-E8-01).
+- UI suggestion for when the itinerary page is built: a small collapsed "Limits" box with the optional budget level and the two hours.
 
 **Issues**
 
-1. **Stop ordering rules with unit tests** · covers AC2, AC4, AC5, AC6 · depends on: Trip creation API (US-E1-01)
-2. **Stops API (add, move, set time, remove)** · covers AC1 to AC7 · depends on: Stop ordering rules with unit tests
+1. **Stop ordering rules with unit tests** · covers AC2, AC4, AC5, AC6 · depends on: none
+2. **Stops API (add, move, set time, remove)** · covers AC1 to AC8 · depends on: Stop ordering rules with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
 3. **Itinerary editing UI (day columns, add place, buttons to move)** · covers AC1 to AC5 · depends on: Stops API
+4. **Itinerary settings API: optional budget level and hour limits, with validation and unit tests** · covers AC9, AC10 · depends on: Trip creation API with its days and an empty itinerary (US-E1-01)
+   - Validation of the settings with unit tests (budget level `€`, `€€` or `€€€` or empty; hour limits as HH:mm from 00:00 to 23:59, the start before the end when both are set; each one can be empty)
+   - API to read, save and clear the settings of the itinerary of a trip (only its owner: 401 without a login, 404 for the trip of someone else)
+5. **Itinerary settings box (optional budget level and hour limits)** · covers AC9, AC10 · depends on: Itinerary settings API, Itinerary editing UI (day columns, add place, buttons to move)
 
 ## E5 Nearby suggestions
 
@@ -783,14 +802,14 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 ## E6 Plan warnings
 
-### US-E6-01 Warn when a visit is outside opening hours
+### US-E6-01 Warn when a visit is outside opening hours or my hour limits
 
 - **MVP feature:** E6 Plan warnings
 - **As a:** Planner
 
-**I want** a warning when a visit time is outside the place's opening hours,
+**I want** a warning when a visit time is outside the place's opening hours or outside the hour limits I set,
 
-**So that** I do not arrive at a closed place.
+**So that** I do not arrive at a closed place, and I keep to the hours I want.
 
 **Acceptance criteria**
 
@@ -799,19 +818,26 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 3. **Given** a place with unknown opening hours, **when** I set a time, **then** there is no warning and the stop says hours are unknown.
 4. **Given** I change the time to a valid one, **when** I save, **then** the warning disappears.
 5. **Given** opening hours that depend on the weekday, **when** I check, **then** the day of the visit is used.
+6. **Given** I set hour limits of 09:00 to 20:00, **when** I set a visit time of 21:30, **then** the stop shows a warning.
+7. **Given** hour limits are set, **when** I set a time inside them, **then** there is no warning.
+8. **Given** no hour limits are set, or only one of them, **when** I set a time, **then** there is no warning for the limit that is not set.
 
 **Business rules**
 
 - `isOutsideOpeningHours(openingHours, date, time)`; unknown hours never warn. Unit tests with real OpenStreetMap `opening_hours` examples (weekdays, `24/7`, ranges that cross midnight, closed days).
+- `isOutsideHourLimits(dayStart, dayEnd, time)`; a limit that is not set never warns. Unit tested.
+- The hour limits are the optional settings of the itinerary (US-E4-01).
 
 **Out of scope**
 
-- Blocking the user; the warning is only information.
+- Blocking the user; the warnings are only information.
 
 **Issues**
 
 1. **Opening-hours check with unit tests** · covers AC1 to AC5 · depends on: Opening hours display (US-B4-01)
-2. **Warning on the stop** · covers AC1 to AC4 · depends on: Opening-hours check with unit tests, Stops API (US-E4-01)
+2. **Hour-limits check with unit tests** · covers AC6 to AC8 · depends on: none
+   - `isOutsideHourLimits(dayStart, dayEnd, time)` with unit tests (inside, outside, on the limit, only one limit set, no limit set)
+3. **Warning on the stop** · covers AC1, AC2, AC3, AC4, AC6, AC7, AC8 · depends on: Opening-hours check with unit tests, Hour-limits check with unit tests, Stops API (US-E4-01), Itinerary settings API (US-E4-01)
 
 ### US-E6-02 Compare the trip's average price with the budget
 
@@ -824,20 +850,22 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Acceptance criteria**
 
-1. **Given** a trip with stops, **when** I open it, **then** I see the average price level and the budget level together.
-2. **Given** the average is above the budget level, **when** I look, **then** I see a warning.
+1. **Given** a trip with stops, **when** I open it, **then** I see the average price level, and the budget level too if I set one.
+2. **Given** a budget level is set and the average is above it, **when** I look, **then** I see a warning.
 3. **Given** some stops have no known price, **when** I look, **then** they are marked "price unknown" and not counted.
 4. **Given** no stop has a known price, **when** I look, **then** the average shows as unknown.
 5. **Given** I add or remove a stop, **when** it saves, **then** the average updates.
+6. **Given** no budget level is set, **when** I look, **then** I see the average and no warning.
 
 **Business rules**
 
-- Cost points: free 0, € 1, €€ 2, €€€ 3. The average is the mean of the known points ([mvp.md](mvp.md) section 4, ADR-003). Warning when the average is above the budget points. Unit tested.
+- Cost points: free 0, € 1, €€ 2, €€€ 3. The average is the mean of the known points ([mvp.md](mvp.md) section 4, ADR-003). Warning when a budget level is set and the average is above its points; without a budget level there is nothing to compare and no warning. Unit tested.
+- The budget level is an optional setting of the itinerary (US-E4-01). It is required only to generate (US-E8-01).
 
 **Issues**
 
-1. **Trip average with unit tests** · covers AC2, AC3, AC4 · depends on: none
-2. **Average and warning in the trip view** · covers AC1 to AC5 · depends on: Trip average, Stops API (US-E4-01)
+1. **Trip average with unit tests** · covers AC2, AC3, AC4, AC6 · depends on: none
+2. **Average and warning in the trip view** · covers AC1 to AC6 · depends on: Trip average, Stops API (US-E4-01), Itinerary settings API (US-E4-01)
 
 ## E7 Travel-time estimate
 
@@ -876,29 +904,34 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E8 Basic generator
 - **As a:** Planner
 
-**I want** to press "Generate itinerary" and get a plan,
+**I want** to press "Generate itinerary", give my budget level, hour limits and types of place, and get a plan,
 
 **So that** I get a good starting point in a few seconds.
 
 **Acceptance criteria**
 
-1. **Given** a trip, **when** I press "Generate itinerary", **then** each day gets stops chosen from the top-rated places of the preferred types, and every stop has a visit time.
+1. **Given** a trip, **when** I press "Generate itinerary", **then** I give a budget level, hour limits and types of place, each day gets stops chosen from the top-rated places of those types, and every stop has a visit time.
 2. **Given** places are chosen, **when** a day is built, **then** its stops are grouped by distance and a lunch place is near the morning stop, at lunch time.
 3. **Given** the trip has wishlist places in the city, **when** I generate, **then** all of them are included.
-4. **Given** the budget level, **when** I generate, **then** the average price of the stops is at or near the level, and the plan shows the average (a warning if above).
+4. **Given** the budget level I gave, **when** I generate, **then** the average price of the stops is at or near the level, and the plan shows the average (a warning if above).
 5. **Given** the city has too few cheap places, **when** I generate, **then** the days are still filled with the closest fit.
 6. **Given** a place with known opening hours, **when** I generate, **then** it is never given a visit time at which it is closed. A place with unknown hours can be given any time.
-7. **Given** the hours of the day of the trip, **when** I generate, **then** every stop, with its visit and the walk to it, falls inside them.
+7. **Given** the hour limits I gave, **when** I generate, **then** every stop, with its visit and the walk to it, falls inside them.
 8. **Given** a generated itinerary, **when** I edit it, **then** it behaves like a manual one.
 9. **Given** a trip already has stops, **when** I generate again, **then** I am asked before they are replaced.
+10. **Given** the Generate panel, **when** I open it, **then** the hour limits are filled in with 09:00 and 20:00 and all the types are chosen, and I can change them. The budget level has no default: while it is not chosen I cannot generate.
+11. **Given** hour limits that are not valid (the start is not before the end, or not a time of the day) or no type chosen, **when** I generate, **then** I see an error and nothing is generated.
+12. **Given** a generation, **when** it is done, **then** the itinerary is `GENERATED` and keeps the budget level and the hour limits as its settings. The types are not saved.
 
 **Business rules**
 
+- The budget level is required to generate. The hour limits and the types have a default (09:00 to 20:00 and all seven types, also `OTHER`) that the person can change. At least one type is needed.
 - Picks the best-ranked places first; skips or replaces a pick that would push the running average above the budget level. Wishlist places are always included and count towards the average.
-- The first stop starts at `dayStart`. A stop is placed only if its visit and the walk to it end by `dayEnd`. This replaces the prototype's `maxHoursPerDay`.
+- The first stop starts at the first hour limit (`dayStart`, 09:00 by default). A stop is placed only if its visit and the walk to it end by the second (`dayEnd`, 20:00 by default). This replaces the prototype's `maxHoursPerDay`.
 - Visit duration per category and the lunch time (for example 12:00 to 14:30) are named constants chosen by the team.
 - If a place is known to be closed at a time, the generator tries another time or another place. If hours are unknown it does not check.
 - The same input gives the same result (deterministic). Unit tested.
+- The types are used only for that generation and are not saved. The budget level and the hour limits are saved as the settings of the itinerary. After a generation the itinerary is edited like a manual one and the generator is not involved any more.
 
 **Out of scope**
 
@@ -906,14 +939,18 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 **Notes**
 
-- Change the existing function (`src/domain/itinerary/itinerary.ts`) from a per-day budget to the trip average, from `maxHoursPerDay` to the hours of the day, and add the opening-hours check from US-E6-01.
+- Change the existing function (`src/domain/itinerary/itinerary.ts`) from a per-day budget to the trip average, from `maxHoursPerDay` to the hour limits of the generation, and add the opening-hours check from US-E6-01.
+- The input of a generation is validated on the server with the same rules as the itinerary settings (US-E4-01).
 
 **Issues**
 
-1. **Generator rules: trip-average budget, wishlist, lunch** · covers AC2, AC3, AC4, AC5 · depends on: Trip average (US-E6-02)
+1. **Generator rules: trip-average budget, wishlist, lunch** · covers AC2 to AC5 · depends on: Trip average (US-E6-02)
    - Adjust `itinerary.ts` and its tests
-2. **Visit times inside the hours of the day and opening hours** · covers AC1, AC6, AC7 · depends on: Generator rules, Opening-hours check with unit tests (US-E6-01), Trip creation API with day creation and hours of the day (US-E1-01)
-3. **Generate button, replace confirmation and saving** · covers AC1, AC8, AC9 · depends on: Generator rules, Stops API (US-E4-01)
+2. **Visit times inside the hour limits and opening hours** · covers AC1, AC6, AC7 · depends on: Generator rules, Opening-hours check with unit tests (US-E6-01), Trip creation API with its days and an empty itinerary (US-E1-01)
+3. **Generation input: budget level, hour limits and types, validated and saved** · covers AC10 to AC12 · depends on: Itinerary settings API (US-E4-01)
+   - Validation of the input of a generation with unit tests (budget level required; hour limits as in the itinerary settings; at least one type)
+   - Saving of the budget level and the hour limits as the settings of the itinerary and of the mode `GENERATED`; the types are not saved
+4. **Generate button, replace confirmation and saving** · covers AC1, AC8, AC9, AC10, AC11 · depends on: Generator rules, Stops API (US-E4-01), Generation input
 
 ## P1 to P3 Platform
 
@@ -1007,7 +1044,7 @@ at sprint planning, with the same template.
 ### US-S1-01 Generate with real travel times and finer budget balance
 
 - **As a:** Planner
-- **Notes:** The basic generator (US-E8-01) already respects the hours of the day and known opening hours.
+- **Notes:** The basic generator (US-E8-01) already respects the hour limits and known opening hours.
 
 **I want** the generator to use real travel times and balance the budget more precisely,
 
@@ -1015,7 +1052,7 @@ at sprint planning, with the same template.
 
 **Acceptance criteria**
 
-1. **Given** real travel times, **when** I generate, **then** the day's visits plus travel fit in the hours of the day.
+1. **Given** real travel times, **when** I generate, **then** the day's visits plus travel fit in the hour limits.
 2. **Given** a budget level, **when** I generate, **then** the average price is closer to the level than the basic generator's.
 3. **Given** the same input, **when** I generate twice, **then** the result is the same.
 

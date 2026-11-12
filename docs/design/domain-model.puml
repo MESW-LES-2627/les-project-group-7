@@ -55,9 +55,10 @@ note right of PriceLevel
   without a level is unknown and not counted.
   A place and a review can be FREE. A review gives
   one of the four levels (required when it is
-  posted). The trip budget level only uses € to €€€:
-  it is the target average of the whole trip, the mean
-  of the cost points of its stops with a known price.
+  posted). The optional budget level of an itinerary
+  only uses € to €€€: it is the target average of the
+  whole trip, the mean of the cost points of its stops
+  with a known price.
 end note
 
 enum PlaceCategory <<enumeration>> #FFFFFF {
@@ -75,7 +76,12 @@ class City #FFF3C4 {
   country
   latitude
   longitude
+  timezone
 }
+note right of City
+  The time zone (for example Europe/Lisbon) of the city.
+  The dates and times of a trip are local to it.
+end note
 
 class Place #FFF3C4 {
   name
@@ -151,27 +157,13 @@ end note
 
 class Trip #FFE3CC {
   name
-  /averageCostPoints
-}
-note right of Trip
-  /averageCostPoints: mean of the cost points
-  of its stops with a known price. The trip is
-  over budget when it is above the budget level.
-end note
-
-class TripConstraints <<value object>> #FFE3CC {
   startDate
   endDate
-  budgetLevel : € | €€ | €€€
-  allowedCategories : PlaceCategory [*]
-  dayStart : HH:mm
-  dayEnd : HH:mm
 }
-note right of TripConstraints
-  dayStart and dayEnd: the hours of the day.
-  Default 09:00 to 20:00, from 08:00 to 23:00
-  at the widest. Only the generator is limited
-  by them; manual planning is free.
+note right of Trip
+  A trip is only a name, a city and dates. At most
+  14 days, and the start date is today or later in
+  the time zone of the city.
 end note
 
 class Day #FFE3CC {
@@ -185,7 +177,22 @@ end note
 
 class Itinerary #FFE3CC {
   mode : MANUAL | GENERATED
+  budgetLevel : € | €€ | €€€ [0..1]
+  dayStart : HH:mm [0..1]
+  dayEnd : HH:mm [0..1]
+  /averageCostPoints
 }
+note right of Itinerary
+  Created empty together with the trip: exactly one.
+  The budget level and the hour limits are optional
+  and only warn, never block. The only hard limit of
+  a visit time is the day (00:00 to 23:59).
+  To generate, the budget level is required, and the
+  types of place are asked: they are not saved.
+  /averageCostPoints: mean of the cost points of its
+  stops with a known price. Over budget when it is
+  above the budget level, if one is set.
+end note
 
 class ItineraryStop #FFE3CC {
   visitTime [0..1]
@@ -238,9 +245,8 @@ SavedList "*" -- "*" SavedPlace : contains bookmarks >
 ' --- Trip ---
 User "1" -- "*" Trip : plans >
 Trip "*" -- "1" City : goes to >
-Trip *-- "1" TripConstraints : has >
 Trip *-- "*" Day : is divided into >
-Trip *-- "0..1" Itinerary : has >
+Trip *-- "1" Itinerary : has >
 Itinerary *-- "*" ItineraryStop : schedules >
 ItineraryStop "*" -- "1" Day : on >
 ItineraryStop "*" -- "1" Place : visits >

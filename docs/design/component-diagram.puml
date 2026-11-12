@@ -40,8 +40,8 @@ package "Backend" as backend {
   component "Place Catalog\n(places, city and place search,\nfilters, opening hours, visited,\nrating, top-rated)" as catalog <<built>>
   component "Reviews\n(post: built;\nedit, delete: not yet;\nprice level)" as reviews <<built>>
   component "Saved Places\n(wishlist, bookmarks, lists)" as saved
-  component "Trip Planner\n(trips, days, itinerary,\nvisit times, hours of the day,\ntravel time, opening-hours\nand budget warnings)" as planner
-  component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist,\nhours of the day,\nopening hours)" as generator
+  component "Trip Planner\n(trips, days, itinerary,\nvisit times, optional budget\nand hour limits, travel time,\nopening-hours, hour-limit\nand budget warnings)" as planner
+  component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist,\nhour limits given,\nopening hours)" as generator
   component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing #EEEEEE
   component "Reminders\n(scheduler)" as reminders #EEEEEE
 }

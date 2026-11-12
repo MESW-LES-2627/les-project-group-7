@@ -26,7 +26,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### City
 
 - **Definition:** The geographical boundary containing places and serving as the destination for a trip.
-- **Key Attributes:** `id`, `name`, `country`, `latitude`, `longitude`.
+- **Key Attributes:** `id`, `name`, `country`, `latitude`, `longitude`, `timezone` (the IANA name of the city's time zone, for example `Europe/Lisbon`: the dates and times of a trip are local to it).
 
 ### PlaceCategory
 
@@ -95,34 +95,35 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### Trip
 
 - **Definition:** A planning aggregate representing a planned travel experience to a specific destination `City`. `Day` and `Itinerary` are part of it, not separate aggregates.
-- **Key Attributes:** `id`, `userId`, `cityId`, `name`, `createdAt`.
-- **Associations:** Owns `1 TripConstraints`, `* Day`s, and `0..1 Itinerary`.
-- **Commands:** _Create trip_, _Change trip constraints_, _Generate itinerary_, _Edit itinerary_ (assign or remove a place, set a visit time), _Delete trip_. Deleting a trip removes its days, itinerary and assigned places.
-
-### TripConstraints (Value Object)
-
-- **Definition:** The parameters that bound and shape a trip plan.
-- **Attributes:** `startDate`, `endDate`, `budgetLevel` (`€` | `€€` | `€€€`), `allowedCategories` (Set of PlaceCategory), `dayStart` and `dayEnd` (HH:mm, the hours of the day).
+- **Key Attributes:** `id`, `userId`, `cityId`, `name`, `startDate`, `endDate`, `createdAt`.
+- **Associations:** Owns `* Day`s and `1 Itinerary`.
 - **Rules:**
-  - `dayStart` and `dayEnd` default to 09:00 and 20:00. `dayStart` is 08:00 or later, `dayEnd` is 23:00 or earlier, and `dayStart` is before `dayEnd`. The generator keeps every stop inside them; manual planning is not restricted.
-  - Modifying `startDate` or `endDate` triggers `syncDays()` on the `Trip`. The result is the events _Days added_ or _Days removed_.
+  - A trip is a name (1 to 100 characters), a city, a start date and an end date. Nothing else is asked when it is created. It is private to its owner, and the owner is always the user of the session.
+  - `startDate` is today or later, `endDate` is not before `startDate`, and a trip has at most 14 days. "Today" is today in the time zone of the trip's city, not where the person is.
+  - All dates and times of a trip are local to its city: `startDate`, `endDate`, the hour limits and the visit times. A date has no time zone, and the hour limits are wall-clock times, so the change to summer time never moves them.
+  - Modifying `startDate` or `endDate` triggers `syncDays()` on the `Trip`. The result is the events _Days added_ or _Days removed_. The start date is checked against today only when it is changed.
+- **Commands:** _Create trip_ (`POST /api/trips`: the trip is saved together with one `Day` for each date and an empty `Itinerary`, or nothing is saved and each wrong field gets a message), _Change trip dates_, _Generate itinerary_, _Edit itinerary_ (assign or remove a place, set a visit time, set the optional budget level and hour limits), _Delete trip_. Deleting a trip removes its days, itinerary and assigned places.
 
 ### Day
 
 - **Definition:** A single calendar day within a `Trip`, owned by the trip.
 - **Attributes:** `id`, `tripId`, `dayNumber` (1-based index: 1, 2, ... N), `date` (YYYY-MM-DD).
 - **Invariants & Cascade:**
-  - The number of days strictly equals `(endDate - startDate) + 1`.
+  - The number of days strictly equals `(endDate - startDate) + 1`. A trip that starts and ends on the same date has 1 day. The dates are calendar dates, so a change of the clock never adds or removes a day.
   - If a trip is shortened, truncated `Day`s are deleted along with all their scheduled `ItineraryStop`s. This happens inside the `Trip` aggregate, it is not a policy.
 
 ### Itinerary
 
 - **Definition:** The concrete schedule of visits for a `Trip`.
-- **Key Attributes:** `id`, `tripId`, `mode` (`MANUAL` | `GENERATED`), `createdAt`.
-- **Cardinality:** Exactly `0..1` per `Trip` in the MVP.
+- **Key Attributes:** `id`, `tripId`, `mode` (`MANUAL` | `GENERATED`), `createdAt`, and three optional settings: `budgetLevel` (`€` | `€€` | `€€€`) and `dayStart` and `dayEnd` (HH:mm, the hour limits).
+- **Cardinality:** Exactly `1` per `Trip`. It is created empty together with the trip: mode `MANUAL`, no stops and no settings.
 - **Behavior:**
-  - _Generate itinerary_ populates `ItineraryStop`s. A manual itinerary is built with _Edit itinerary_.
-  - Once generated, the itinerary is freely editable (stops can be moved, deleted, or added manually).
+  - _Generate itinerary_ populates `ItineraryStop`s and sets the mode to `GENERATED`. A manual itinerary is built with _Edit itinerary_.
+  - Once generated, the itinerary is freely editable (stops can be moved, deleted, or added manually) and the generator is not involved any more.
+- **Settings (all optional, soft):**
+  - `budgetLevel`, `dayStart` and `dayEnd` can each be empty, and empty means no limit. They never block anything, they only produce warnings: the trip's average price above the budget level, and a visit time outside the hour limits.
+  - The hour limits are times from 00:00 to 23:59, and when both are set `dayStart` is before `dayEnd`. The only hard limit of a visit time is the day itself, so any time of the day is accepted in a manual itinerary.
+  - To generate, the budget level is required. The hour limits (09:00 to 20:00 suggested) and the types of place (all seven suggested, also `OTHER`, at least one) are asked at the same time. The types are used only for that generation and are not saved. The budget level and the hour limits are saved as the settings of the itinerary.
 
 ### ItineraryStop
 
@@ -153,14 +154,14 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 - A `€` budget trip targets an average of about **1.0**.
 - A `€€` budget trip targets an average of about **2.0**.
 - A `€€€` budget trip targets an average of about **3.0**.
-- The trip's average is the mean of the cost points of its stops that have a known price. The planner shows it next to the budget level and warns when it is above.
+- The trip's average is the mean of the cost points of its stops that have a known price. The planner shows it next to the budget level, when one is set, and warns when it is above.
 
 ### Generator Rules with Cost Points:
 
 1. **Wishlist Priority:** Wishlist places are always included, count toward the trip's average, and the remaining stops adapt around them.
 2. **Compensation:** Free places (0 cost points) pull the trip's average down, allowing higher-rated `€€` or `€€€` stops (e.g. a nice dinner) while keeping the average near the budget level.
 3. **Soft Degradation / Fallback:** If the trip cannot meet the target because the city lacks cheaper options, the generator selects the closest fit rather than leaving an empty slot, and the plan shows the average as a warning.
-4. **Hours of the Day and Opening Hours:** Every generated stop gets a visit time inside the trip's `dayStart` and `dayEnd`. A place whose `openingHours` are known is never given a time when it is closed; a place with unknown hours can be given any time.
+4. **Hour Limits and Opening Hours:** Every generated stop gets a visit time inside the hour limits given for the generation (`dayStart` and `dayEnd`, 09:00 to 20:00 suggested). A place whose `openingHours` are known is never given a time when it is closed; a place with unknown hours can be given any time.
 
 ---
 
