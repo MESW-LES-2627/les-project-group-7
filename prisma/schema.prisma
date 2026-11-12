@@ -73,6 +73,7 @@ model City {
   country   String
   latitude  Float
   longitude Float
+  timezone  String   @default("UTC") // IANA name of the city's time zone, for example "Europe/Lisbon". The dates and times of a trip are local to it.
 
   places    Place[]
   trips     Trip[]
@@ -182,12 +183,8 @@ model ListEntry {
 model Trip {
   id                String    @id @default(uuid())
   name              String
-  startDate         DateTime
+  startDate         DateTime  // A calendar date in the time zone of the city. One Day for each date, start to end.
   endDate           DateTime
-  budgetLevel       String    // "€" | "€€" | "€€€"
-  dayStart          String    @default("09:00") // "HH:mm", the day starts at 08:00 or later
-  dayEnd            String    @default("20:00") // "HH:mm", the day ends at 23:00 or earlier
-  allowedCategories String    // Stored as JSON or comma-separated PlaceCategories
   createdAt         DateTime  @default(now())
 
   userId            String
@@ -213,8 +210,13 @@ model Day {
 
 model Itinerary {
   id        String        @id @default(uuid())
-  mode      ItineraryMode @default(MANUAL)
+  mode      ItineraryMode @default(MANUAL) // MANUAL until the generator fills it; created empty together with the trip
   createdAt DateTime      @default(now())
+
+  // Optional settings of the person (all can be empty). They only warn, they never block.
+  budgetLevel String?     // "€" | "€€" | "€€€": the target average price of the whole trip
+  dayStart    String?     // "HH:mm": the earliest visit time the person wants (empty: no limit)
+  dayEnd      String?     // "HH:mm": the latest visit time the person wants (empty: no limit)
 
   tripId    String        @unique
   trip      Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)

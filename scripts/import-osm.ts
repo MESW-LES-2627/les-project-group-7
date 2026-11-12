@@ -29,6 +29,8 @@ interface CityConfig {
   country: string;
   latitude: number;
   longitude: number;
+  /** The IANA time zone of the city: the dates and times of a trip are local to it. */
+  timezone: string;
   area: CityArea;
   searches: string[];
   /** Famous places, searched by name: a search by kind returns only 50 places and misses many. */
@@ -58,6 +60,7 @@ const CITIES: Record<string, CityConfig> = {
     country: "Portugal",
     latitude: 41.1579,
     longitude: -8.6291,
+    timezone: "Europe/Lisbon",
     // The zone that the app covers: from Perafita in the north to Vilar do Paraíso in the south, with
     // the Douro and the coast, and no more (the airport, Maia or Valongo are outside)
     area: {
@@ -107,6 +110,7 @@ const CITIES: Record<string, CityConfig> = {
     country: "France",
     latitude: 48.8566,
     longitude: 2.3522,
+    timezone: "Europe/Paris",
     area: {
       name: "Paris",
       minLat: 48.815,
@@ -162,6 +166,7 @@ const CITIES: Record<string, CityConfig> = {
     country: "Germany",
     latitude: 52.52,
     longitude: 13.405,
+    timezone: "Europe/Berlin",
     area: {
       name: "Berlin",
       minLat: 52.44,
@@ -407,13 +412,14 @@ async function main() {
   // 3. The database: the same OpenStreetMap id is the same place, so a second run duplicates nothing
   const row = await prisma.city.upsert({
     where: { id: city.id },
-    update: {},
+    update: { timezone: city.timezone },
     create: {
       id: city.id,
       name: city.name,
       country: city.country,
       latitude: city.latitude,
       longitude: city.longitude,
+      timezone: city.timezone,
     },
   });
 
