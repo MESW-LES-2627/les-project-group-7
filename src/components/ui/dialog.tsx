@@ -17,6 +17,9 @@ interface DialogProps {
 }
 
 function Dialog({ open, onOpenChange, children }: DialogProps) {
+  // Lets the focus effect find this dialog's own content, not another dialog in the page.
+  const rootRef = React.useRef<HTMLDivElement>(null);
+
   // Escape closes the dialog.
   React.useEffect(() => {
     if (!open) return;
@@ -34,7 +37,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
   React.useEffect(() => {
     if (!open) return;
     const opener = document.activeElement;
-    document.querySelector<HTMLElement>('[role="dialog"]')?.focus();
+    rootRef.current?.querySelector<HTMLElement>('[role="dialog"]')?.focus();
     return () => {
       if (opener instanceof HTMLElement) opener.focus();
     };
@@ -44,6 +47,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
 
   return (
     <div
+      ref={rootRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="presentation"
     >

@@ -24,6 +24,13 @@ export default function CreateTripDialog({
   loggedIn,
 }: CreateTripDialogProps) {
   const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  // Escape, the backdrop, the X and Cancel all close the dialog the same way, but not while
+  // the trip is being sent: closing then would still end on the trip page.
+  const close = () => {
+    if (!sending) setOpen(false);
+  };
 
   if (!loggedIn) {
     return (
@@ -43,8 +50,11 @@ export default function CreateTripDialog({
         Plan a trip
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent aria-label="Plan a trip" onClose={() => setOpen(false)}>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => (next ? setOpen(true) : close())}
+      >
+        <DialogContent aria-label="Plan a trip" onClose={close}>
           <DialogHeader>
             <DialogTitle>Plan a trip</DialogTitle>
             <DialogDescription className="text-balance text-sm">
@@ -59,7 +69,11 @@ export default function CreateTripDialog({
                 later.
               </p>
             ) : (
-              <TripForm cities={cities} onCancel={() => setOpen(false)} />
+              <TripForm
+                cities={cities}
+                onCancel={close}
+                onSendingChange={setSending}
+              />
             )}
           </div>
         </DialogContent>

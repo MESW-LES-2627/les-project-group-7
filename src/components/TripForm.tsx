@@ -13,6 +13,8 @@ interface TripFormProps {
   initialErrors?: TripErrors;
   /** When the form is inside a dialog, a Cancel button closes it. */
   onCancel?: () => void;
+  /** True while the request is in flight, so a dialog can refuse to close in the meantime. */
+  onSendingChange?: (sending: boolean) => void;
 }
 
 /** Form of a new trip: a name, a city and the dates. The server checks everything (AC3 to AC5, AC7). */
@@ -20,6 +22,7 @@ export default function TripForm({
   cities,
   initialErrors = {},
   onCancel,
+  onSendingChange,
 }: TripFormProps) {
   const router = useRouter();
   const [errors, setErrors] = useState<TripErrors>(initialErrors);
@@ -32,6 +35,7 @@ export default function TripForm({
     const field = (key: string) => String(data.get(key) ?? "");
 
     setSubmitting(true);
+    onSendingChange?.(true);
     setErrors({});
     setMessage("");
     const result = await createTrip({
@@ -41,7 +45,11 @@ export default function TripForm({
       endDate: field("endDate"),
     });
 
+    onSendingChange?.(false);
+
     if (result.ok) {
+      // The button stays disabled so a double click cannot create the trip twice. If the
+      // navigation fails, the dialog is free to close, and reopening it gives a fresh form.
       router.push(`/trips/${result.id}`);
       return;
     }
