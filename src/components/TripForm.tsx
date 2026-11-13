@@ -11,12 +11,15 @@ import type { TripErrors } from "@/domain/trips/trip-validation";
 interface TripFormProps {
   cities: { id: string; name: string; country: string }[];
   initialErrors?: TripErrors;
+  /** When the form is inside a dialog, a Cancel button closes it. */
+  onCancel?: () => void;
 }
 
 /** Form of a new trip: a name, a city and the dates. The server checks everything (AC3 to AC5, AC7). */
 export default function TripForm({
   cities,
   initialErrors = {},
+  onCancel,
 }: TripFormProps) {
   const router = useRouter();
   const [errors, setErrors] = useState<TripErrors>(initialErrors);
@@ -60,6 +63,7 @@ export default function TripForm({
         <Input
           id="name"
           name="name"
+          placeholder="Weekend in Porto"
           maxLength={100}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "name-error" : undefined}
@@ -75,7 +79,7 @@ export default function TripForm({
           defaultValue=""
           aria-invalid={!!errors.cityId}
           aria-describedby={errors.cityId ? "cityId-error" : undefined}
-          className="shadow-xs flex h-9 w-full rounded-xl border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
+          className="shadow-xs flex h-9 w-full rounded-xl border border-slate-200 bg-white px-3 py-1 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
         >
           <option value="">Choose a city</option>
           {cities.map((city) => (
@@ -87,35 +91,62 @@ export default function TripForm({
         <FieldError id="cityId-error" text={errors.cityId} />
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="startDate">Start date</Label>
-        <Input
-          id="startDate"
-          name="startDate"
-          type="date"
-          aria-invalid={!!errors.startDate}
-          aria-describedby={errors.startDate ? "startDate-error" : undefined}
-        />
-        <FieldError id="startDate-error" text={errors.startDate} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1">
+          <Label htmlFor="startDate">Start date</Label>
+          <Input
+            id="startDate"
+            name="startDate"
+            type="date"
+            onChange={fillEndDate}
+            aria-invalid={!!errors.startDate}
+            aria-describedby={errors.startDate ? "startDate-error" : undefined}
+          />
+          <FieldError id="startDate-error" text={errors.startDate} />
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="endDate">End date</Label>
+          <Input
+            id="endDate"
+            name="endDate"
+            type="date"
+            aria-invalid={!!errors.endDate}
+            aria-describedby={errors.endDate ? "endDate-error" : undefined}
+          />
+          <FieldError id="endDate-error" text={errors.endDate} />
+        </div>
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="endDate">End date</Label>
-        <Input
-          id="endDate"
-          name="endDate"
-          type="date"
-          aria-invalid={!!errors.endDate}
-          aria-describedby={errors.endDate ? "endDate-error" : undefined}
-        />
-        <FieldError id="endDate-error" text={errors.endDate} />
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" disabled={submitting}>
+          {submitting ? "Creating trip…" : "Create trip"}
+        </Button>
       </div>
-
-      <Button type="submit" disabled={submitting}>
-        {submitting ? "Creating…" : "Create trip"}
-      </Button>
     </form>
   );
+}
+
+// A new start date fills an empty end date, or one before it: a one-day trip needs a single pick.
+function fillEndDate(event: React.ChangeEvent<HTMLInputElement>) {
+  const start = event.currentTarget;
+  const end = start.form?.elements.namedItem("endDate");
+  if (
+    end instanceof HTMLInputElement &&
+    (!end.value || end.value < start.value)
+  ) {
+    end.value = start.value;
+  }
 }
 
 function FieldError({ id, text }: { id: string; text?: string }) {

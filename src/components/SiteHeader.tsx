@@ -33,12 +33,6 @@ export default async function SiteHeader() {
           <ThemeToggle />
           {session ? (
             <div className="flex items-center gap-3">
-              <Link
-                href="/trips/new"
-                className="text-sm font-medium text-indigo-600 hover:underline"
-              >
-                Create trip
-              </Link>
               <span className="text-sm font-medium text-slate-700">
                 @{session.user.displayUsername ?? session.user.username}
               </span>

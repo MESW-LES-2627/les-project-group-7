@@ -17,6 +17,29 @@ interface DialogProps {
 }
 
 function Dialog({ open, onOpenChange, children }: DialogProps) {
+  // Escape closes the dialog.
+  React.useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onOpenChange?.(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onOpenChange]);
+
+  // Focus moves into the dialog when it opens and back to the button that opened it when it closes.
+  // It depends only on `open`: a parent that passes a new onOpenChange on every render must not
+  // pull the focus out of the field being typed in.
+  // shortcut: no focus trap, Tab can still leave the dialog; upgrade to Radix Dialog if that matters.
+  React.useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement;
+    document.querySelector<HTMLElement>('[role="dialog"]')?.focus();
+    return () => {
+      if (opener instanceof HTMLElement) opener.focus();
+    };
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -42,11 +65,13 @@ const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative z-50 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl",
+      "relative z-50 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl outline-none",
       className
     )}
     role="dialog"
     aria-modal="true"
+    // So the dialog itself can take the focus when it opens.
+    tabIndex={-1}
     {...props}
   >
     {onClose && (

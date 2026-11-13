@@ -38,6 +38,16 @@ describe("TripForm", () => {
     expect(html).toContain("End date is required");
   });
 
+  it("has a Cancel button only when it is inside a dialog", () => {
+    const alone = renderToStaticMarkup(<TripForm cities={cities} />);
+    const inDialog = renderToStaticMarkup(
+      <TripForm cities={cities} onCancel={() => {}} />
+    );
+
+    expect(alone).not.toContain("Cancel");
+    expect(inDialog).toContain("Cancel");
+  });
+
   it("links a field to its error for screen readers", () => {
     const html = renderToStaticMarkup(
       <TripForm cities={cities} initialErrors={{ name: "Name is required" }} />
