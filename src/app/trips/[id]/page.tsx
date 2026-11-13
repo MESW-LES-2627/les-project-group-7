@@ -25,9 +25,11 @@ export default async function TripPage({ params }: TripPageProps) {
       city: { select: { name: true, country: true } },
     },
   });
-  if (!record || !record.itinerary) notFound();
+  // A trip is always created with its itinerary; the check also narrows the optional relation.
+  const itinerary = record?.itinerary;
+  if (!record || !itinerary) notFound();
 
-  const trip = toTripResponse({ ...record, itinerary: record.itinerary });
+  const trip = toTripResponse({ ...record, itinerary });
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">

@@ -18,7 +18,15 @@ export default async function NewTripPage() {
   return (
     <main className="mx-auto max-w-md px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">Create a trip</h1>
-      <TripForm cities={cities} />
+
+      {/* Without cities the form could never succeed, so say why instead of showing it. */}
+      {cities.length === 0 ? (
+        <p className="text-sm text-slate-600">
+          No cities are available yet, so a trip cannot be created.
+        </p>
+      ) : (
+        <TripForm cities={cities} />
+      )}
     </main>
   );
 }

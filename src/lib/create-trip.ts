@@ -1,18 +1,20 @@
-import type { TripErrors } from "@/domain/trips/trip-validation";
+import type { TripErrors, TripField } from "@/domain/trips/trip-validation";
 
-export interface NewTripForm {
-  name: string;
-  cityId: string;
-  startDate: string;
-  endDate: string;
-}
+/** What the form sends: the same fields as the server's trip input, all as text. */
+export type NewTripForm = Record<TripField, string>;
 
 export type CreateTripResult =
   { ok: true; id: string } | { ok: false; errors: TripErrors; message: string };
 
 const GENERIC_MESSAGE = "Could not create the trip. Please try again.";
 
-const FORM_FIELDS = ["name", "cityId", "startDate", "endDate"] as const;
+// `satisfies` makes the compiler fail when the server adds or removes a field, so this list cannot drift.
+const FORM_FIELDS = Object.keys({
+  name: true,
+  cityId: true,
+  startDate: true,
+  endDate: true,
+} satisfies Record<TripField, true>) as TripField[];
 
 // Only these fields have a place on the form: an error for any other key would show nowhere.
 function knownFieldErrors(errors: unknown): TripErrors {
