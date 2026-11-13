@@ -1,0 +1,51 @@
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { toTripResponse } from "@/domain/trips/trip-response";
+import { formatDayLabel } from "@/domain/trips/trip-labels";
+
+export const dynamic = "force-dynamic";
+
+interface TripPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function TripPage({ params }: TripPageProps) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/login");
+
+  const { id } = await params;
+  // A trip of someone else is a 404, the same as a missing one, so nothing leaks.
+  const record = await prisma.trip.findFirst({
+    where: { id, userId: session.user.id },
+    include: {
+      days: true,
+      itinerary: true,
+      city: { select: { name: true, country: true } },
+    },
+  });
+  if (!record || !record.itinerary) notFound();
+
+  const trip = toTripResponse({ ...record, itinerary: record.itinerary });
+
+  return (
+    <main className="mx-auto max-w-2xl px-4 py-8">
+      <h1 className="text-2xl font-bold">{trip.name}</h1>
+      <p className="mb-6 text-sm text-slate-600">
+        {record.city.name}, {record.city.country} · {trip.startDate} to{" "}
+        {trip.endDate}
+      </p>
+      <ul className="space-y-3">
+        {trip.days.map((day) => (
+          <li key={day.id} className="rounded-xl border border-slate-200 p-4">
+            <h2 className="font-semibold">
+              {formatDayLabel(day.dayNumber, day.date)}
+            </h2>
+            <p className="text-sm text-slate-500">No places yet</p>
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
