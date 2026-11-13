@@ -63,6 +63,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
+    │   ├── api/trips/      # POST /api/trips (creates a trip with one day for each date and an empty itinerary)
     │   ├── api/register/   # POST /api/register (creates the account and logs the person in)
     │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
@@ -73,7 +74,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     │   ├── layout.tsx      # Page shell: top bar (SiteHeader) and theme
     │   └── page.tsx        # Main tracer bullet UI
     ├── components/         # Map and place explorer (PlaceExplorer, ReviewModal, ...), SiteHeader, LogoutButton, ThemeToggle, ui/ (Shadcn)
-    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog, identity)
+    ├── domain/             # Pure domain logic & tests (rating, geo, itinerary, osm, catalog, identity, trips)
     ├── hooks/              # React hooks (place filtering, place reviews)
     ├── lib/                # Prisma client singleton, Better Auth setup (auth.ts), the write-endpoint guard (guard.ts), registration rate limit & cn utility
     └── types/              # Shared TypeScript types
