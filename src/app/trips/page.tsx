@@ -59,9 +59,6 @@ export default async function MyTripsPage() {
             You have not planned any trips yet. Start by planning your first
             adventure.
           </p>
-          <div className="mt-6 flex justify-center">
-            <CreateTripDialog cities={dbCities} loggedIn={true} />
-          </div>
         </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2" role="list">
@@ -69,12 +66,12 @@ export default async function MyTripsPage() {
             const startStr = formatDateOnly(trip.startDate);
             const endStr = formatDateOnly(trip.endDate);
             return (
-              <li key={trip.id}>
+              <li key={trip.id} className="min-w-0">
                 <Link
                   href={`/trips/${trip.id}`}
                   className="group block rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                 >
-                  <h2 className="text-lg font-semibold text-slate-900 group-hover:text-indigo-600">
+                  <h2 className="break-words text-lg font-semibold text-slate-900 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                     {trip.name}
                   </h2>
                   <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-600">

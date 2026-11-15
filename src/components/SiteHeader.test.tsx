@@ -41,4 +41,15 @@ describe("SiteHeader", () => {
     expect(html).toContain("@Maria");
     expect(html).not.toContain('href="/login"');
   });
+
+  it("keeps the My trips link readable on hover in dark mode", async () => {
+    getSession.mockResolvedValue({
+      user: { username: "maria", displayUsername: "Maria" },
+    });
+
+    const html = await render();
+
+    // Indigo 600 is 2.8:1 on the dark background: dark mode hovers with indigo 400.
+    expect(html).toContain("dark:hover:text-indigo-400");
+  });
 });

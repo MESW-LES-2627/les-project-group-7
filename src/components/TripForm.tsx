@@ -50,6 +50,9 @@ export default function TripForm({
     if (result.ok) {
       // The button stays disabled so a double click cannot create the trip twice. If the
       // navigation fails, the dialog is free to close, and reopening it gives a fresh form.
+      // The router keeps the page it is leaving (for example "My trips"): refresh it, so that
+      // Back shows the trip that was just created.
+      router.refresh();
       router.push(`/trips/${result.id}`);
       return;
     }

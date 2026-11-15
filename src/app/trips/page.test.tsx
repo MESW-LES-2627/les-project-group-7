@@ -75,6 +75,36 @@ describe("MyTripsPage (AC6)", () => {
     expect(html).toContain("You have not planned any trips yet");
   });
 
+  it("has a single 'Plan a trip' button, the one in the header, also when there are no trips", async () => {
+    findMany.mockResolvedValue([]);
+
+    const html = await render();
+
+    expect(html.match(/Plan a trip/g)).toHaveLength(1);
+  });
+
+  it("keeps the title of a card readable on hover in dark mode, and lets a long name wrap", async () => {
+    // Indigo 600 is 2.8:1 on the dark background, so dark mode hovers with indigo 400. A name that is
+    // one long word has to break, or the card pushes the page wider than a phone.
+    findMany.mockResolvedValue([
+      {
+        id: "trip-1",
+        name: "x".repeat(99),
+        startDate: new Date("2026-12-01T00:00:00Z"),
+        endDate: new Date("2026-12-03T00:00:00Z"),
+        createdAt: new Date("2026-11-14T10:00:00Z"),
+        city: { id: "c1", name: "Paris", country: "France" },
+        days: [{ id: "d1" }, { id: "d2" }, { id: "d3" }],
+      },
+    ]);
+
+    const html = await render();
+
+    expect(html).toContain("dark:group-hover:text-indigo-400");
+    expect(html).toContain("break-words");
+    expect(html).toContain('class="min-w-0"');
+  });
+
   it("redirects unauthenticated users to /login", async () => {
     getSession.mockResolvedValue(null);
 
