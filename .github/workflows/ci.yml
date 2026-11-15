@@ -12,6 +12,8 @@ jobs:
   static-and-unit:
     name: Lint, Types, Tests & Build
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,7 +48,7 @@ jobs:
         run: npm run build
 
       - name: SonarCloud Scan
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -66,7 +68,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres -d tripbook_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
