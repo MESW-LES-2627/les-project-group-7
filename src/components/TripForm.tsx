@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createTrip } from "@/lib/create-trip";
+import { revalidateMyTrips } from "@/app/trips/actions";
 import type { TripErrors } from "@/domain/trips/trip-validation";
 
 interface TripFormProps {
@@ -50,9 +51,9 @@ export default function TripForm({
     if (result.ok) {
       // The button stays disabled so a double click cannot create the trip twice. If the
       // navigation fails, the dialog is free to close, and reopening it gives a fresh form.
-      // The router keeps the page it is leaving (for example "My trips"): refresh it, so that
-      // Back shows the trip that was just created.
-      router.refresh();
+      // The router keeps the "My trips" it showed and gives it back on Back: clear that copy, so
+      // that the list shows the trip that was just created. A failure here must not stop the person.
+      await revalidateMyTrips().catch(() => {});
       router.push(`/trips/${result.id}`);
       return;
     }
