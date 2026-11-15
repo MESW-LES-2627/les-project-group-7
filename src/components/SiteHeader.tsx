@@ -35,7 +35,7 @@ export default async function SiteHeader() {
             <div className="flex items-center gap-4">
               <Link
                 href="/trips"
-                className="text-sm font-medium text-slate-700 hover:text-indigo-600"
+                className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
               >
                 My trips
               </Link>

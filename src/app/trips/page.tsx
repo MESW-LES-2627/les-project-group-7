@@ -72,20 +72,26 @@ export default async function MyTripsPage() {
               <li key={trip.id}>
                 <Link
                   href={`/trips/${trip.id}`}
-                  className="group block rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-sm"
+                  className="group block rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                 >
                   <h2 className="text-lg font-semibold text-slate-900 group-hover:text-indigo-600">
                     {trip.name}
                   </h2>
                   <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-600">
-                    <MapPin className="h-4 w-4 text-slate-400" />
+                    <MapPin
+                      className="h-4 w-4 text-slate-400"
+                      aria-hidden="true"
+                    />
                     <span>
                       {trip.city.name}, {trip.city.country}
                     </span>
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <Calendar
+                        className="h-3.5 w-3.5 text-slate-400"
+                        aria-hidden="true"
+                      />
                       <span>{formatTripDateRange(startStr, endStr)}</span>
                     </div>
                     <span className="font-medium text-slate-600">
