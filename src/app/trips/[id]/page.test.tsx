@@ -14,6 +14,7 @@ vi.mock("next/navigation", () => ({
   redirect: (path: string) => {
     throw new Error(`NEXT_REDIRECT:${path}`);
   },
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession } } }));
@@ -61,6 +62,7 @@ describe("TripPage", () => {
 
     expect(html).toContain("Porto weekend");
     expect(html).toContain("Porto, Portugal");
+    expect(html).toContain("Delete trip");
     expect(html.match(/Day \d+ — [^<]+/g)).toEqual([
       "Day 1 — Tue 1 Dec 2026",
       "Day 2 — Wed 2 Dec 2026",

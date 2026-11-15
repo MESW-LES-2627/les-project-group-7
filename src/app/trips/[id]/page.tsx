@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { toTripResponse } from "@/domain/trips/trip-response";
 import { formatDayLabel } from "@/domain/trips/trip-labels";
+import DeleteTripDialog from "@/components/DeleteTripDialog";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +34,18 @@ export default async function TripPage({ params }: TripPageProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-bold">{trip.name}</h1>
-      <p className="mb-6 text-sm text-slate-600">
-        {record.city.name}, {record.city.country} · {trip.startDate} to{" "}
-        {trip.endDate}
-      </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{trip.name}</h1>
+          <p className="mb-6 text-sm text-slate-600">
+            {record.city.name}, {record.city.country} · {trip.startDate} to{" "}
+            {trip.endDate}
+          </p>
+        </div>
+
+        <DeleteTripDialog tripId={trip.id} tripName={trip.name} />
+      </div>
+
       <ul className="space-y-3">
         {trip.days.map((day) => (
           <li key={day.id} className="rounded-xl border border-slate-200 p-4">
