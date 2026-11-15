@@ -278,6 +278,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
 | ADR-009 | Authentication with Better Auth                           | Accepted              |
 | ADR-010 | One function recomputes the stored values of a place      | Accepted              |
+| ADR-011 | Automated CI Pipeline, Real Postgres Integration Tests, and SonarCloud Quality Gate | Accepted              |
 
 #### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -420,6 +421,21 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
   - _Positive:_ functional coupling becomes contract coupling (a caller only says which place changed), a rule change touches one place, the Place policies leave the review handler as the component diagram says, and the seed cannot miss a policy again.
   - _Trade-offs:_ one more module and one more level of indirection, and the function is tested with a database or a fake client, not as a pure function. Two simultaneous requests can still compute from a stale list of reviews; the new module allows one transaction in one place.
   - _Revisit:_ when the stored values grow (for example the rating score is stored), or when `rating.ts` keeps growing with unrelated rules and must be split.
+
+#### ADR-011: Automated CI Pipeline, Real Postgres Integration Tests, and SonarCloud Quality Gate
+
+- **Status:** Accepted (built with US-P2-01 / #80)
+- **Context:** Previously, pull requests relied exclusively on manual local execution of tests and format checks, and CD (`deploy.yml`) only ran upon direct push to `dev` or `main`. The team needed automated continuous integration on every pull request to enforce code quality, run integration tests against a real PostgreSQL instance (AC5), generate code coverage, and enforce SonarCloud Quality Gates (AC4) prior to merging.
+- **Decision:**
+  1. _Separate CI from CD:_ `.github/workflows/ci.yml` is dedicated strictly to pull requests targeting `dev` and `main`, running static checks and automated tests in parallel. `deploy.yml` remains dedicated exclusively to deployment upon merge to `dev` and `main`.
+  2. _Linting parity:_ Add `eslint` and `eslint-config-next` with the `"lint": "next lint"` script in `package.json`, integrated into CI alongside `tsc --noEmit`, `knip` and `format:check`.
+  3. _Isolated ephemeral database for integration tests:_ Run integration tests in CI against an ephemeral `postgres:16` service container on the GitHub Actions runner. Migrations (`prisma migrate deploy`) and `seed` are executed locally in the container, testing API routes end-to-end without mocking Prisma and without consuming cloud (Neon) quotas.
+  4. _Separation of test suites:_ Keep `npm test` focused on fast, in-memory unit and domain logic tests (running in ~2 seconds without requiring a local database running). Add `"test:integration"` to run the real database test suite.
+  5. _Selective JSDOM for component tests:_ Retain `node` as the default fast test runner environment, configuring JSDOM and `@testing-library/react` per test file (`// @vitest-environment jsdom`) where real DOM browser interactions are validated.
+  6. _SonarCloud integration:_ Instrument Vitest with `@vitest/coverage-v8` to generate LCOV coverage reports (`coverage/lcov.info`) and invoke the official SonarCloud scanner with `sonar-project.properties`.
+- **Consequences:**
+  - _Positive:_ Every PR is verified automatically against compilation, lint, style, and integration constraints; zero risk of breaking production database schemas; fast local test loops remain intact for developers.
+  - _Trade-offs:_ CI execution takes slightly longer (~45-60s) due to PostgreSQL container provisioning; requires maintaining ESLint rules aligned with Prettier.
 
 ## 4. Future change scenarios: coupling, cohesion, and design decisions
 
