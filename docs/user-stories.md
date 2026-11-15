@@ -668,7 +668,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E2 Change a trip
 - **As a:** Planner
 
-**I want** to edit the dates of a trip,
+**I want** to edit the name and the dates of a trip,
 
 **So that** I can adapt it when my plans change.
 
@@ -678,12 +678,14 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** a trip with stops on day 3, **when** I shorten it so day 3 disappears, **then** I am warned first and, if I accept, the day and its stops are removed.
 3. **Given** I move the start date, **when** I save, **then** the dates of all days change and the stops stay on their day numbers.
 4. **Given** an invalid change, **when** I save, **then** I see an error and nothing changes.
+5. **Given** a trip, **when** I change its name, **then** the new name is saved and shown on the trip page and in My trips.
 
 **Business rules**
 
 - `syncDays()`: the days always match start to end, inclusive. Days are added or removed at the end, never in the middle. Unit tested.
 - The dates follow the same rules as when the trip is created (US-E1-01): the end date is not before the start date and a trip has at most 14 days.
 - The start date is checked against today (in the time zone of the trip's city) only when the person changes it. Extending the end date of a trip that has already started is allowed.
+- The name follows the same rule as when the trip is created (US-E1-01): 1 to 100 characters. Changing only the name does not touch the days.
 
 **Notes**
 
@@ -692,7 +694,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Day synchronisation with unit tests** · covers AC1 to AC3 · depends on: none
-2. **Edit trip API and UI with confirmation** · covers AC1 to AC4 · depends on: Day synchronisation with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
+2. **Edit trip API and UI with confirmation** · covers AC1 to AC5 · depends on: Day synchronisation with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
 
 ## E3 Delete a trip
 
