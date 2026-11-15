@@ -7,7 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 /**
  * Top bar on every page. Logged out: links to the login and registration pages.
- * Logged in: the username as typed, and the logout button.
+ * Logged in: link to "My trips", the username as typed, and the logout button.
  */
 export default async function SiteHeader() {
   // A database failure must not take down every page (404s, /register): show the logged-out bar.
@@ -32,7 +32,13 @@ export default async function SiteHeader() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           {session ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/trips"
+                className="text-sm font-medium text-slate-700 hover:text-indigo-600"
+              >
+                My trips
+              </Link>
               <span className="text-sm font-medium text-slate-700">
                 @{session.user.displayUsername ?? session.user.username}
               </span>

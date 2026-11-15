@@ -1,5 +1,9 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { formatDayLabel } from "./trip-labels";
+import {
+  formatDayLabel,
+  formatTripDateRange,
+  formatTripDuration,
+} from "./trip-labels";
 
 describe("formatDayLabel", () => {
   it("gives the day number and the date", () => {
@@ -23,5 +27,28 @@ describe("formatDayLabel", () => {
       process.env.TZ = "America/Los_Angeles";
       expect(formatDayLabel(1, "2027-01-01")).toBe("Day 1 — Fri 1 Jan 2027");
     });
+  });
+});
+
+describe("formatTripDateRange", () => {
+  it("formats range between two dates", () => {
+    expect(formatTripDateRange("2026-12-01", "2026-12-03")).toBe(
+      "1 Dec 2026 – 3 Dec 2026"
+    );
+  });
+
+  it("formats a single day trip", () => {
+    expect(formatTripDateRange("2026-12-01", "2026-12-01")).toBe("1 Dec 2026");
+  });
+});
+
+describe("formatTripDuration", () => {
+  it("formats 1 day singular", () => {
+    expect(formatTripDuration(1)).toBe("1 day");
+  });
+
+  it("formats multiple days plural", () => {
+    expect(formatTripDuration(3)).toBe("3 days");
+    expect(formatTripDuration(14)).toBe("14 days");
   });
 });

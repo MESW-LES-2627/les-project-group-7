@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { toTripResponse, type TripRecord } from "./trip-response";
+import {
+  toTripResponse,
+  toTripSummaryResponse,
+  type TripRecord,
+  type TripSummaryRecord,
+} from "./trip-response";
 
 const record: TripRecord = {
   id: "trip-1",
@@ -80,5 +85,31 @@ describe("toTripResponse", () => {
     expect(response).not.toHaveProperty("budgetLevel");
     expect(response).not.toHaveProperty("dayStart");
     expect(response).not.toHaveProperty("allowedCategories");
+  });
+});
+
+describe("toTripSummaryResponse", () => {
+  const summaryRecord: TripSummaryRecord = {
+    id: "trip-1",
+    name: "Weekend in Paris",
+    city: { id: "c1", name: "Paris", country: "France" },
+    startDate: new Date("2026-12-01T00:00:00.000Z"),
+    endDate: new Date("2026-12-03T00:00:00.000Z"),
+    createdAt: new Date("2026-11-12T10:00:00.000Z"),
+    days: [{ id: "d1" }, { id: "d2" }, { id: "d3" }],
+  };
+
+  it("formats the summary with YYYY-MM-DD dates and day count", () => {
+    const summary = toTripSummaryResponse(summaryRecord);
+
+    expect(summary).toEqual({
+      id: "trip-1",
+      name: "Weekend in Paris",
+      city: { id: "c1", name: "Paris", country: "France" },
+      startDate: "2026-12-01",
+      endDate: "2026-12-03",
+      daysCount: 3,
+      createdAt: "2026-11-12T10:00:00.000Z",
+    });
   });
 });
