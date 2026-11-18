@@ -501,3 +501,65 @@ describe("GET /api/trips/[id]/stops", () => {
     expect((await list()).status).toBe(500);
   });
 });
+
+describe("POST /api/trips/[id]/stops: the stops with a time keep the order of their times", () => {
+  beforeEach(() => {
+    // Day 1: the museum at 10:00 (s1), the castle at 14:00 (s2)
+    data = sampleData([
+      { dayId: "d1", placeId: "p1", position: 1, visitTime: "10:00" },
+      { dayId: "d1", placeId: "p2", position: 2, visitTime: "14:00" },
+    ]);
+    state.prisma = fakePrisma(data);
+    requireUser.mockResolvedValue({ ok: true, user: { id: "u1" } });
+  });
+
+  it("puts a stop with a time among the stops that have a time", async () => {
+    const response = await call({
+      dayId: "d1",
+      placeId: "p3",
+      visitTime: "12:00",
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.stop.position).toBe(2);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "new3", "s2"]);
+    expect(dayPositions(data, "d1")).toEqual([1, 2, 3]);
+    expect(body.stops.map((stop: { id: string }) => stop.id)).toEqual([
+      "s1",
+      "new3",
+      "s2",
+    ]);
+  });
+
+  it("puts a stop without a time at the end, after the stops with a time", async () => {
+    const response = await call({ dayId: "d1", placeId: "p3" });
+
+    expect((await response.json()).stop.position).toBe(3);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s2", "new3"]);
+  });
+
+  it("puts a stop with the earliest time first and one with the latest last", async () => {
+    await call({ dayId: "d1", placeId: "p3", visitTime: "08:00" });
+    await call({ dayId: "d1", placeId: "p4", visitTime: "21:00" });
+
+    expect(dayOrder(data, "d1")).toEqual(["new3", "s1", "s2", "new4"]);
+    expect(dayPositions(data, "d1")).toEqual([1, 2, 3, 4]);
+  });
+
+  it("leaves the stops without a time where they are", async () => {
+    // Day 1 is: the museum 10:00, a café with no time, the castle 14:00
+    data = sampleData([
+      { dayId: "d1", placeId: "p1", position: 1, visitTime: "10:00" },
+      { dayId: "d1", placeId: "p4", position: 2 },
+      { dayId: "d1", placeId: "p2", position: 3, visitTime: "14:00" },
+    ]);
+    state.prisma = fakePrisma(data);
+
+    await call({ dayId: "d1", placeId: "p3", visitTime: "12:00" });
+
+    // 12:00 goes right after the museum, before the café with no time, which does not move
+    expect(dayOrder(data, "d1")).toEqual(["s1", "new4", "s2", "s3"]);
+    expect(dayPositions(data, "d1")).toEqual([1, 2, 3, 4]);
+  });
+});

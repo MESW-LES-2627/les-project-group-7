@@ -363,3 +363,151 @@ describe("DELETE /api/trips/[id]/stops/[stopId] (AC4)", () => {
     expect((await remove("s1")).status).toBe(500);
   });
 });
+
+describe("PATCH /api/trips/[id]/stops/[stopId]: the stops with a time keep the order of their times", () => {
+  beforeEach(() => {
+    // Day 1: the museum at 10:00 (s1), the castle at 14:00 (s2), a café with no time (s3)
+    data = sampleData([
+      { dayId: "d1", placeId: "p1", position: 1, visitTime: "10:00" },
+      { dayId: "d1", placeId: "p2", position: 2, visitTime: "14:00" },
+      { dayId: "d1", placeId: "p3", position: 3 },
+    ]);
+    state.prisma = fakePrisma(data);
+    requireUser.mockResolvedValue({ ok: true, user: { id: "u1" } });
+  });
+
+  it("moves a stop that gets a time to its place among the times", async () => {
+    const response = await patch({ visitTime: "12:00" }, "s3");
+
+    expect(response.status).toBe(200);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s3", "s2"]);
+    expect(dayPositions(data, "d1")).toEqual([1, 2, 3]);
+
+    const body = await response.json();
+    expect(body.stop).toMatchObject({
+      id: "s3",
+      position: 2,
+      visitTime: "12:00",
+    });
+    expect(body.stops.map((stop: { id: string }) => stop.id)).toEqual([
+      "s1",
+      "s3",
+      "s2",
+    ]);
+  });
+
+  it("leaves a stop where it is when its new time still fits", async () => {
+    // Put the café between the museum and the castle, then give it a time that fits there
+    await patch({ position: 2 }, "s3");
+
+    const response = await patch({ visitTime: "11:30" }, "s3");
+
+    expect(response.status).toBe(200);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s3", "s2"]);
+  });
+
+  it("moves a stop whose time is changed past another one", async () => {
+    await patch({ visitTime: "16:00" }, "s1");
+
+    expect(dayOrder(data, "d1")).toEqual(["s2", "s1", "s3"]);
+    expect(dayPositions(data, "d1")).toEqual([1, 2, 3]);
+  });
+
+  it("keeps the stop where it is when its time is cleared", async () => {
+    await patch({ visitTime: null }, "s1");
+
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s2", "s3"]);
+    expect(data.stops.find((stop) => stop.id === "s1")?.visitTime).toBeNull();
+  });
+
+  it("lets a stop without a time be put between the stops with a time, and stay there", async () => {
+    const response = await patch({ position: 2 }, "s3");
+
+    expect(response.status).toBe(200);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s3", "s2"]);
+
+    // moving the museum to the end of the day is refused, the café does not make it possible
+    const refused = await patch({ position: 3 }, "s1");
+    expect(refused.status).toBe(400);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s3", "s2"]);
+  });
+
+  it("refuses to move a stop with a time past a stop with a later or earlier time, and changes nothing", async () => {
+    const before = structuredClone(data.stops);
+
+    const museumLast = await patch({ position: 3 }, "s1");
+    const castleFirst = await patch({ position: 1 }, "s2");
+
+    for (const response of [museumLast, castleFirst]) {
+      const body = await response.json();
+      expect(response.status).toBe(400);
+      expect(body.reason).toBe("TIME_ORDER");
+      expect(body.error).toContain("10:00 cannot come after 14:00");
+    }
+    expect(data.stops).toEqual(before);
+  });
+
+  it("refuses a time together with a position that would break the order, and saves neither", async () => {
+    const before = structuredClone(data.stops);
+
+    // The café at 09:00 in position 3 would be after the 10:00 and 14:00 stops
+    const response = await patch({ position: 3, visitTime: "09:00" }, "s3");
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).reason).toBe("TIME_ORDER");
+    expect(data.stops).toEqual(before);
+  });
+
+  it("accepts a time together with a position that fits", async () => {
+    const response = await patch({ position: 2, visitTime: "12:00" }, "s3");
+
+    expect(response.status).toBe(200);
+    expect(dayOrder(data, "d1")).toEqual(["s1", "s3", "s2"]);
+    expect(data.stops.find((stop) => stop.id === "s3")?.visitTime).toBe(
+      "12:00"
+    );
+  });
+
+  it("moves a stop with a time to another day, to its place among the times", async () => {
+    data.stops.push(
+      {
+        id: "x1",
+        itineraryId: "i1",
+        dayId: "d2",
+        placeId: "p4",
+        position: 1,
+        visitTime: "09:00",
+      },
+      {
+        id: "x2",
+        itineraryId: "i1",
+        dayId: "d2",
+        placeId: "far",
+        position: 2,
+        visitTime: "13:00",
+      }
+    );
+
+    const response = await patch({ dayId: "d2" }, "s1");
+
+    // 10:00 goes between 09:00 and 13:00, not at the end
+    expect(response.status).toBe(200);
+    expect(dayOrder(data, "d2")).toEqual(["x1", "s1", "x2"]);
+    expect(dayOrder(data, "d1")).toEqual(["s2", "s3"]);
+  });
+
+  it("puts a stop without a time at the end of another day", async () => {
+    data.stops.push({
+      id: "x1",
+      itineraryId: "i1",
+      dayId: "d2",
+      placeId: "p4",
+      position: 1,
+      visitTime: "09:00",
+    });
+
+    await patch({ dayId: "d2" }, "s3");
+
+    expect(dayOrder(data, "d2")).toEqual(["x1", "s3"]);
+  });
+});

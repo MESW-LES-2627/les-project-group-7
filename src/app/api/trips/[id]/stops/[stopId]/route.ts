@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/guard";
 import {
   moveStop,
   removeStop,
+  setStopTime,
   type StopRuleFailure,
 } from "@/domain/itinerary/stop-order";
 import { parseVisitTime } from "@/domain/itinerary/visit-time";
@@ -34,14 +35,21 @@ const NOT_IN_ITINERARY: StopRuleFailure = {
  * 403 for a request from another site) and a trip that is the user's.
  *
  * Body, at least one of:
- * - `dayId` and/or `position`: where the stop goes. Without `position` the stop keeps its position
- *   in the same day, or goes last in another day. Without `dayId` it stays on its day. The stops in
- *   between move up or down, so the positions stay 1, 2, 3 without gaps (AC2).
- * - `visitTime`: "HH:mm", any time of the day (AC3, AC7, AC8). `null` clears it.
+ * - `dayId` and/or `position`: where the stop goes. Without `position` the stop stays where it is in
+ *   its own day, and goes last in another day, or, if it has a visit time, to its place among the
+ *   stops that have a time. Without `dayId` it stays on its day. The stops in between move up or
+ *   down, so the positions stay 1, 2, 3 without gaps (AC2).
+ * - `visitTime`: "HH:mm", any time of the day (AC3, AC7, AC8). `null` clears it. The stop stays where it
+ *   is unless the new time puts it out of the order of the times: then it goes to its place among the
+ *   stops that have a time, after the last one with the same or an earlier time.
+ *
+ * The stops that have a time always stay in the order of their times; the stops without a time can be
+ * anywhere between them.
  *
  * - 200 with the `stop` and the `stops` of the trip in order (by day, then by position).
  * - 400 with `errors` for a wrong field, or `reason` when the rules refuse: a day that is not of the
- *   trip (`UNKNOWN_DAY`), or a position that is not from 1 to the end of the day (`INVALID_POSITION`).
+ *   trip (`UNKNOWN_DAY`), a position that is not from 1 to the end of the day (`INVALID_POSITION`),
+ *   or a move that would put a stop with a time out of the order of the times (`TIME_ORDER`).
  * - 404 for a trip that does not exist or is not the user's, and for a stop that is not in it.
  *
  * The hour limits of the itinerary are never read. Everything is saved in one transaction.
@@ -97,32 +105,37 @@ export async function PATCH(request: Request, { params }: Context) {
         return { kind: "no-stop" } as const;
       }
 
-      if (hasDay || hasPosition) {
-        const toDayId = hasDay ? dayId : current.dayId;
-        const toPosition = hasPosition
-          ? (body.position as number)
-          : toDayId === current.dayId
-            ? current.position
-            : state.stops.filter((stop) => stop.dayId === toDayId).length + 1;
+      // The rules see the stop with the time it is going to have.
+      const newTime = hasTime && visitTime.ok ? visitTime.value : null;
+      const stopsWithTime = hasTime
+        ? state.stops.map((stop) =>
+            stop.id === stopId ? { ...stop, visitTime: newTime } : stop
+          )
+        : state.stops;
 
-        const moved = moveStop(
-          state.stops,
-          state.layout,
-          stopId,
-          toDayId,
-          toPosition
-        );
-        if (!moved.ok) {
-          return { kind: "refused", failure: moved } as const;
-        }
+      const decision =
+        hasDay || hasPosition
+          ? moveStop(
+              stopsWithTime,
+              state.layout,
+              stopId,
+              hasDay ? dayId : current.dayId,
+              hasPosition ? (body.position as number) : undefined
+            )
+          : hasTime
+            ? setStopTime(state.stops, stopId, newTime)
+            : ({ ok: true, changes: [] } as const);
 
-        await savePlacements(tx, moved.changes);
+      if (!decision.ok) {
+        return { kind: "refused", failure: decision } as const;
       }
 
-      if (hasTime && visitTime.ok) {
+      await savePlacements(tx, decision.changes);
+
+      if (hasTime) {
         await tx.itineraryStop.update({
           where: { id: stopId },
-          data: { visitTime: visitTime.value },
+          data: { visitTime: newTime },
         });
       }
 

@@ -124,6 +124,7 @@ const REFUSAL_STATUS: Record<StopRefusal, number> = {
   INVALID_POSITION: 400,
   OTHER_CITY: 400,
   ALREADY_PLANNED: 409,
+  TIME_ORDER: 400,
 };
 
 /** The answer for a change that the rules refuse. Nothing was saved. */

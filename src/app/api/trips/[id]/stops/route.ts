@@ -57,7 +57,10 @@ export async function GET(
 /**
  * POST /api/trips/[id]/stops
  *
- * Adds a place to a day of a trip as the last stop of that day (US-E4-01, #60). Needs a logged-in user
+ * Adds a place to a day of a trip (US-E4-01, #60): as the last stop of the day, or, if it has a visit time,
+ * among the stops that have a time, after the last one with the same or an earlier time (so the stops
+ * with a time stay in the order of their times; the stops without a time stay where they are, and
+ * the stops after the new one move down). Needs a logged-in user
  * (401 without one, 403 for a request from another site) and a trip that is the user's.
  *
  * Body: `dayId`, `placeId` and, if wanted, `visitTime` ("HH:mm").
@@ -152,7 +155,8 @@ export async function POST(
         state.stops,
         state.layout,
         place ?? { id: placeId, cityId: state.layout.cityId },
-        dayId
+        dayId,
+        visitTime.value
       );
       if (!placed.ok) {
         return { kind: "refused", failure: placed } as const;
