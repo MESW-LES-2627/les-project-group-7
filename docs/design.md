@@ -94,9 +94,9 @@ yellow (small) = actor, yellow (tall) = aggregate, pink = open issue, grey = not
   opening hours, the hour limits and budget live inside Trip (its itinerary), so they are not policies.
 - Places come from OpenStreetMap through the import and seed scripts for three cities
   (Porto, Paris and Berlin). Live discovery on the map, where a discovered place is
-  saved to the catalog when it is first reviewed, is built in the tracer bullet but is
-  Stretch (see ADR-002). The board does not show it yet: treat the saving as part of
-  _Post review_ until the board is updated. User suggestions with moderation (Place
+  saved to the catalog when it is first reviewed or first added to a trip, is built in the
+  tracer bullet but is Stretch (see ADR-002). The board does not show it yet: treat the saving
+  as part of _Post review_ and _Edit itinerary_ until the board is updated. User suggestions with moderation (Place
   suggestion) are designed but not in the MVP.
 - Posting a review is the only way a place is marked as visited. Deleting the
   review does not unmark it.
@@ -297,12 +297,12 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 - **Context:** Reviews (`Review`), visits (`Visit`) and itinerary stops (`ItineraryStop`) need referential integrity with `Place.id` in the relational database. The public Overpass API servers have strict rate limits (HTTP 429), unpredictable latency (3 s to 60 s) and frequent failures (HTTP 502), so the app must keep working when they do not answer.
 - **Decision:** The catalog is the `Place` table in PostgreSQL. Places enter it in three ways:
   - _Scripts (`source = IMPORTED`):_ `scripts/import-osm.ts` is the _Import places_ command and loads the places of one MVP city (`npm run import:osm -- porto`, `paris` or `berlin`) from OpenStreetMap (Nominatim) into a snapshot per city. `prisma/seed.ts` creates the MVP cities (Porto, Paris and Berlin), loads the three snapshots, creates the demo users and the sample reviews (data files in `prisma/data`, not code), and recalculates the ratings and price levels from them. The demo data is not marked in the schema.
-  - _Live discovery (`source = LAZY_OSM`, Stretch):_ when the map moves, `GET /api/osm` asks Overpass for the places in the visible area (small areas only, at most 40 places, three mirrors tried in turn with a 2 s timeout, 15 minute in-memory cache). If Overpass does not answer, the map shows the places already in PostgreSQL. A discovered place is saved to PostgreSQL by `POST /api/reviews` when a user posts the first review for it.
+  - _Live discovery (`source = LAZY_OSM`, Stretch):_ when the map moves, `GET /api/osm` asks Overpass for the places in the visible area (small areas only, at most 40 places, three mirrors tried in turn with a 2 s timeout, 15 minute in-memory cache). If Overpass does not answer, the map shows the places already in PostgreSQL. A discovered place is saved to PostgreSQL by `POST /api/reviews` when a user posts the first review for it, or by `POST /api/trips/[id]/stops` when a user adds it to a trip (US-E4-01). The trip route saves it in the city of the trip, and only if its position is inside the area of that city (`src/domain/osm/city-areas.ts`, the same areas as the import of the places); a place outside it is refused. If the catalog already has a place with the same OpenStreetMap id, that one is used instead of saving a second copy.
   - _Suggestions (`source = SUGGESTED`):_ approved place suggestions, once they exist (Dream).
 - **Alternatives considered:** only the import script, with no live calls. It was the first version of this decision: the demos then need no external network, but a place that was not imported cannot be reviewed.
 - **Consequences:**
-  - _Positive:_ with live discovery any place on the map can be reviewed, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
-  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. A place saved on the fly is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities.
+  - _Positive:_ with live discovery any place on the map can be reviewed or added to a trip, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
+  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. A place saved by `POST /api/reviews` is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities. The trip route does not have this problem: it uses the city of the trip and the city areas.
 
 #### ADR-003: Soft budget metric based on cost points
 
@@ -326,7 +326,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
   - Results are shown in two groups: _Local catalog_ and _Found on OpenStreetMap_.
 - **Consequences:**
   - _Positive:_ any public place in the world can be found and shown on the map.
-  - _Trade-offs:_ it adds a Geocoding service to the external systems and depends on the network outside the catalog. A place found this way is saved to the catalog when it is first reviewed (see ADR-002).
+  - _Trade-offs:_ it adds a Geocoding service to the external systems and depends on the network outside the catalog. A place found this way is saved to the catalog when it is first reviewed or first added to a trip (see ADR-002).
 
 #### ADR-005: Honest symbolic places and a Ranking DataTable
 
