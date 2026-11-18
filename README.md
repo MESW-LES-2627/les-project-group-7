@@ -63,7 +63,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
-    │   ├── api/trips/      # POST /api/trips (creates a trip with one day for each date and an empty itinerary)
+    │   ├── api/trips/      # POST & GET /api/trips, DELETE /api/trips/[id]; POST /api/trips/[id]/stops and PATCH & DELETE /api/trips/[id]/stops/[stopId] (add, move, set the time of and remove the stops of the itinerary)
     │   ├── api/register/   # POST /api/register (creates the account and logs the person in)
     │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
