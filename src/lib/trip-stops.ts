@@ -28,12 +28,24 @@ export interface ItineraryState {
   stops: StopRecord[];
 }
 
-const STOP_SELECT = {
+/** What is read of a stop: where it is, its time and the place as a day of the itinerary shows it. */
+export const STOP_SELECT = {
   id: true,
   dayId: true,
   placeId: true,
   position: true,
   visitTime: true,
+  place: {
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      address: true,
+      latitude: true,
+      longitude: true,
+      priceLevel: true,
+    },
+  },
 } as const;
 
 /**
@@ -122,6 +134,11 @@ export function refusalResponse(failure: StopRuleFailure): Response {
   );
 }
 
+/** The stops of a trip, in order, for a read that changes nothing. */
+export function stopsListResponse(stops: readonly StopRecord[]): Response {
+  return NextResponse.json({ stops: stops.map(toStopResponse) });
+}
+
 export function tripNotFound(): Response {
   return NextResponse.json({ error: "Trip not found" }, { status: 404 });
 }
@@ -139,10 +156,12 @@ export function stopsResponse(
 
 /**
  * The answer for an error that was not expected. Two changes at the same time can make the database
- * refuse one of them (code P2034): nothing was saved and the person can try again.
+ * refuse one of them (P2034, or P2002 when both save the same new place): nothing was saved and the
+ * person can try again.
  */
 export function stopsFailure(error: unknown, what: string): Response {
-  if ((error as { code?: unknown } | null)?.code === "P2034") {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (code === "P2034" || code === "P2002") {
     return NextResponse.json(
       {
         error:

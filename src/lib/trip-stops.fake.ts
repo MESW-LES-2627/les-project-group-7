@@ -13,29 +13,55 @@ export interface FakeStop {
   visitTime: string | null;
 }
 
+export interface FakePlace {
+  id: string;
+  osmId?: string | null;
+  name: string;
+  category: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  priceLevel: string | null;
+  cityId: string;
+  source?: string;
+}
+
 export interface FakeData {
   /** The one trip: it belongs to `userId`, is in `cityId` and has these days and this itinerary. */
   trip: { id: string; userId: string; cityId: string; itineraryId: string };
   days: { id: string; dayNumber: number }[];
-  places: { id: string; cityId: string }[];
+  places: FakePlace[];
   stops: FakeStop[];
 }
 
-/** A trip "t1" of user "u1" in "porto", with days d1, d2 and d3, and three places in Porto. */
+function place(id: string, cityId: string, index: number): FakePlace {
+  return {
+    id,
+    osmId: null,
+    name: `Place ${id}`,
+    category: "MONUMENT",
+    address: `${index} Rua do Teste`,
+    latitude: Number((41.15 + index / 1000).toFixed(3)),
+    longitude: -8.62,
+    priceLevel: null,
+    cityId,
+  };
+}
+
+/** A trip "t1" of user "u1" in "city-porto", with days d1, d2 and d3, and three places in Porto. */
 export function sampleData(stops: Partial<FakeStop>[] = []): FakeData {
   return {
-    trip: { id: "t1", userId: "u1", cityId: "porto", itineraryId: "i1" },
+    trip: { id: "t1", userId: "u1", cityId: "city-porto", itineraryId: "i1" },
     days: [
       { id: "d1", dayNumber: 1 },
       { id: "d2", dayNumber: 2 },
       { id: "d3", dayNumber: 3 },
     ],
     places: [
-      { id: "p1", cityId: "porto" },
-      { id: "p2", cityId: "porto" },
-      { id: "p3", cityId: "porto" },
-      { id: "p4", cityId: "porto" },
-      { id: "far", cityId: "lisboa" },
+      ...["p1", "p2", "p3", "p4"].map((id, index) =>
+        place(id, "city-porto", index)
+      ),
+      place("far", "city-lisboa", 9),
     ],
     stops: stops.map((stop, index) => ({
       id: `s${index + 1}`,
@@ -65,18 +91,34 @@ export function dayPositions(data: FakeData, dayId: string): number[] {
     .sort((a, b) => a - b);
 }
 
-function pick<T extends object>(row: T, select?: Record<string, boolean>) {
+type Select = Record<string, boolean | { select: Record<string, boolean> }>;
+
+function pick<T extends object>(row: T, select?: Select) {
   if (!select) return { ...row };
-  return Object.fromEntries(Object.entries(row).filter(([key]) => select[key]));
+  return Object.fromEntries(
+    Object.entries(row).filter(([key]) => select[key] === true)
+  );
 }
 
 /**
  * The `prisma` object for `vi.mock("@/lib/prisma")`. The transaction runs its function on the same
  * data and, like the database, undoes what it did when the function throws.
  */
-export function fakePrisma(data: FakeData) {
+export function fakePrisma(
+  data: FakeData,
+  options: { placesLookupMisses?: boolean } = {}
+) {
   const dayNumber = (dayId: string) =>
     data.days.find((day) => day.id === dayId)?.dayNumber ?? 0;
+
+  /** A stop as `select` asks for it: its own fields and, if asked, the place with its chosen fields. */
+  const shape = (stop: FakeStop, select?: Select) => {
+    const own = pick(stop, select);
+    const placeSelect = select?.place;
+    if (typeof placeSelect !== "object") return own;
+    const place = data.places.find((item) => item.id === stop.placeId);
+    return { ...own, place: place && pick(place, placeSelect.select) };
+  };
 
   const tx = {
     trip: {
@@ -94,8 +136,37 @@ export function fakePrisma(data: FakeData) {
           : null,
     },
     place: {
-      findUnique: async ({ where }: { where: { id: string } }) =>
-        data.places.find((place) => place.id === where.id) ?? null,
+      findUnique: async ({
+        where,
+      }: {
+        where: { id?: string; osmId?: string };
+      }) => {
+        // `placesLookupMisses` makes the look-up find nothing, as if another request had not saved the
+        // place yet, while the database still refuses a second save of it.
+        if (options.placesLookupMisses) return null;
+        return (
+          data.places.find((item) =>
+            where.id !== undefined
+              ? item.id === where.id
+              : item.osmId === where.osmId
+          ) ?? null
+        );
+      },
+      create: async ({ data: row }: { data: FakePlace }) => {
+        // The database refuses a second place with the same id or the same OpenStreetMap id.
+        if (
+          data.places.some(
+            (item) =>
+              item.id === row.id || (row.osmId && item.osmId === row.osmId)
+          )
+        ) {
+          throw Object.assign(new Error("Unique constraint failed"), {
+            code: "P2002",
+          });
+        }
+        data.places.push({ ...row });
+        return { ...row };
+      },
     },
     itineraryStop: {
       findMany: async ({
@@ -103,7 +174,7 @@ export function fakePrisma(data: FakeData) {
         select,
       }: {
         where: { itineraryId: string };
-        select?: Record<string, boolean>;
+        select?: Select;
       }) =>
         data.stops
           .filter((stop) => stop.itineraryId === where.itineraryId)
@@ -111,7 +182,7 @@ export function fakePrisma(data: FakeData) {
             (a, b) =>
               dayNumber(a.dayId) - dayNumber(b.dayId) || a.position - b.position
           )
-          .map((stop) => pick(stop, select)),
+          .map((stop) => shape(stop, select)),
       update: async ({
         where,
         data: changes,
@@ -129,11 +200,11 @@ export function fakePrisma(data: FakeData) {
         select,
       }: {
         data: Omit<FakeStop, "id">;
-        select?: Record<string, boolean>;
+        select?: Select;
       }) => {
         const stop = { id: `new${data.stops.length + 1}`, ...row };
         data.stops.push(stop);
-        return pick(stop, select);
+        return shape(stop, select);
       },
       delete: async ({ where }: { where: { id: string } }) => {
         const index = data.stops.findIndex((stop) => stop.id === where.id);
@@ -144,12 +215,15 @@ export function fakePrisma(data: FakeData) {
   };
 
   return {
+    ...tx,
     $transaction: async <T>(work: (client: typeof tx) => Promise<T>) => {
       const before = structuredClone(data.stops);
+      const placesBefore = structuredClone(data.places);
       try {
         return await work(tx);
       } catch (error) {
         data.stops.splice(0, data.stops.length, ...before);
+        data.places.splice(0, data.places.length, ...placesBefore);
         throw error;
       }
     },
