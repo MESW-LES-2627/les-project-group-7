@@ -129,6 +129,17 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   shows a warning. The only hard limit is the day itself, so a visit time is any time from
   00:00 to 23:59. When both are set, the start is before the end. The generator keeps every
   stop inside them (the Generate panel suggests 09:00 to 20:00).
+- **Order of the stops:** a stop is added at the end of its day and can be moved anywhere,
+  to another day too. One rule protects the visit times: the stops that have a time stay in the
+  order of their times, whatever stops without a time are between them. A new stop with a time
+  goes right after the last stop with the same or an earlier time. A changed time moves the stop
+  only if the order would break, and moving a stop with a time past a stop with a different
+  time is refused (the time has to change first). A stop without a time can be put anywhere.
+- **Places on the map:** any place on the map can be added to a trip, also one found live on
+  OpenStreetMap that is not in the catalog yet. It is saved in the catalog, in the city of the
+  trip, when it is first added, and only if its position is inside the area of that city (the
+  same area as the import of the places). A place outside it, or a place of another city, is
+  refused. A place is in a trip at most once.
 - **Trip dates and length:** a trip is a name, a city and dates. It has one day for each date
   from its start date to its end date, both included, and at most **14 days**. The start date is
   today or later, and the end date is not before the start date. Every trip is created together

@@ -10,13 +10,13 @@ This glossary defines the canonical ubiquitous language for the place review and
 
 ### Place
 
-- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) loaded from OpenStreetMap by the import and seed scripts, discovered live on the map and saved when first reviewed (Stretch, built in the tracer bullet), or suggested by users (post-MVP, Dream).
+- **Definition:** A physical location or establishment of interest (restaurant, museum, monument, park) loaded from OpenStreetMap by the import and seed scripts, discovered live on the map and saved when first reviewed or first added to a trip (Stretch, built in the tracer bullet), or suggested by users (post-MVP, Dream).
 - **Key Attributes:** `id`, `osmId`, `name`, `description`, `category` (PlaceCategory), `address`, `latitude`, `longitude`, `openingHours`, `priceLevel` (`FREE` | `€` | `€€` | `€€€`, may be unknown), `averageRating`, `reviewCount`, `source` (`IMPORTED` | `LAZY_OSM` | `SUGGESTED`). Its cost points (0..3) are derived from `priceLevel`.
 - **Invariants & Policies:**
   - `averageRating` is a floating-point average [1.0, 5.0] calculated from all associated `Review` records.
   - `priceLevel`: places tagged `fee=no` in OpenStreetMap (parks, viewpoints, public landmarks) are `FREE` (0 cost points). OpenStreetMap has no other price data, so for every other place the `priceLevel` is the most common (mode) price level given in its reviews. A `FREE` place stays `FREE` until at least 2 reviews give a paid price (`PAID_REVIEWS_TO_LEAVE_FREE`, one review is not enough). A place with neither is **unknown**.
-  - **A place enters the catalog in one of three ways** (see ADR-002): the _Import places_ command and the seed script (`source = IMPORTED`), on-the-fly saving when a user posts the first review for a place discovered live on the map (Stretch, `source = LAZY_OSM`), or an approved suggestion (post-MVP, `source = SUGGESTED`). In the committed MVP only the first one is used.
-  - The place saved on the fly is created inside _Post review_. In the tracer bullet it is always assigned to the city Porto, which is a known limitation.
+  - **A place enters the catalog in one of three ways** (see ADR-002): the _Import places_ command and the seed script (`source = IMPORTED`), on-the-fly saving when a user posts the first review for a place discovered live on the map, or adds it to a trip (Stretch, `source = LAZY_OSM`), or an approved suggestion (post-MVP, `source = SUGGESTED`). In the committed MVP only the first one is used.
+  - The place saved on the fly is created inside _Post review_ or inside _Edit itinerary_ (adding a stop). In _Post review_ it is always assigned to the city Porto, which is a known limitation. In _Edit itinerary_ it is assigned to the city of the trip, and only if its position is inside the area of that city (see _ItineraryStop_); a place outside it is refused.
   - The map and the search call OpenStreetMap live (Stretch) to _discover_ places (see _Live Discovery_ in section 7). A discovered place is not in the catalog, and cannot be rated or planned, until it is saved.
 
 ### Import places
@@ -119,7 +119,7 @@ This glossary defines the canonical ubiquitous language for the place review and
 - **Cardinality:** Exactly `1` per `Trip`. It is created empty together with the trip: mode `MANUAL`, no stops and no settings.
 - **Behavior:**
   - _Generate itinerary_ populates `ItineraryStop`s and sets the mode to `GENERATED`. A manual itinerary is built with _Edit itinerary_.
-  - Once generated, the itinerary is freely editable (stops can be moved, deleted, or added manually) and the generator is not involved any more.
+  - Once generated, the itinerary is freely editable (stops can be moved, deleted, or added manually, keeping the order of the visit times, see _ItineraryStop_) and the generator is not involved any more.
 - **Settings (all optional, soft):**
   - `budgetLevel`, `dayStart` and `dayEnd` can each be empty, and empty means no limit. They never block anything, they only produce warnings: the trip's average price above the budget level, and a visit time outside the hour limits.
   - The hour limits are times from 00:00 to 23:59, and when both are set `dayStart` is before `dayEnd`. The only hard limit of a visit time is the day itself, so any time of the day is accepted in a manual itinerary.
@@ -128,10 +128,12 @@ This glossary defines the canonical ubiquitous language for the place review and
 ### ItineraryStop
 
 - **Definition:** A planned visit to a `Place` assigned to a specific `Day` in an `Itinerary`.
-- **Key Attributes:** `id`, `itineraryId`, `dayId`, `placeId`, `visitTime` (HH:mm, optional), `position` (integer order within the day). The schema also has a `reminderSent` flag, kept as a placeholder until the _Reminder_ aggregate (Stretch) exists.
+- **Key Attributes:** `id`, `itineraryId`, `dayId`, `placeId`, `visitTime` (HH:mm, optional), `position` (integer order within the day, 1, 2, 3 without gaps). The schema also has a `reminderSent` flag, kept as a placeholder until the _Reminder_ aggregate (Stretch) exists.
 - **Rules:**
   - A stop calculates `isOutsideOpeningHours()` against `Place.openingHours` when `visitTime` is specified, and the plan raises a _Plan warning_ when it is outside (only where hours are known).
   - Straight-line travel time is computed between consecutive stops on the same `Day`.
+  - **Order of the stops of a day:** the order is the person's. A new stop goes last, and any stop can be moved to another position or to another `Day`. One rule protects the visit times: the stops that have a `visitTime` always stay in the order of their times, and the stops without one can be anywhere between them. A new stop with a time goes right after the last stop with the same or an earlier time (or before the first stop with a time, if all are later). Setting or changing a time moves the stop only if the order would break, and clearing it moves nothing. Moving a stop with a time past a stop with a later or an earlier time is refused (`TIME_ORDER`): the time has to change first. The rule is in `stop-order.ts` and is unit tested.
+  - **Places in a trip:** a `Place` is a stop of a trip at most once, on any day, and has to be a place of the trip's `City`. A place discovered on the map that is not in the catalog yet is saved in the catalog, in the city of the trip, when it is first added, and only if its position is inside the area of that city (`city-areas.ts`, the same areas as the import of the places). A place outside the area is refused and nothing is saved.
 
 ---
 
@@ -201,7 +203,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 ### Live Discovery (Stretch, built in the tracer bullet)
 
 - **Definition:** Showing OpenStreetMap places that are not in the catalog yet. When the map moves, the app asks the Overpass service for the places inside the visible area (small areas only, at most 40 places, cached for 15 minutes, with three mirrors as failover). If OpenStreetMap does not answer, the map shows the places already in PostgreSQL. Discovered places show the community rating when the place is already in the catalog.
-- **Behavior:** a discovered place is saved to the catalog (`source = LAZY_OSM`) when a user posts the first review for it (see ADR-002).
+- **Behavior:** a discovered place is saved to the catalog (`source = LAZY_OSM`) when a user posts the first review for it (see ADR-002) or adds it to a trip as a stop.
 
 ### Search Outside the Catalog (built in the tracer bullet, outside the committed MVP)
 
@@ -209,7 +211,7 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 - **Behavior:**
   - Runs only when the user submits the search, never while typing, because the Nominatim usage policy forbids autocomplete. At most 1 request per second for the whole app, cached, with an identifying `User-Agent`.
   - Shows results in two groups: the local catalog and what was found on OpenStreetMap.
-  - A place found this way is saved to the catalog when it is first reviewed, like any discovered place.
+  - A place found this way is saved to the catalog when it is first reviewed or first added to a trip, like any discovered place.
   - Choosing an OpenStreetMap result focuses the place on the map and adds it to the list, like a place of the catalog, instead of opening the review dialog.
 
 ### Honest Symbolic Category Representation & Ranking DataTable
