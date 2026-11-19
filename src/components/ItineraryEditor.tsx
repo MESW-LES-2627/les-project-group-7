@@ -9,8 +9,10 @@ import {
   ChevronUp,
   CircleCheck,
   Clock,
+  ExternalLink,
   Loader2,
   Plus,
+  Star,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,10 @@ import { Label } from "@/components/ui/label";
 import MapWrapper from "@/components/MapWrapper";
 import PlaceSearchAutocomplete from "@/components/PlaceSearchAutocomplete";
 import { getCategoryConfig } from "@/domain/catalog/categories";
+import {
+  formatAverageRating,
+  formatReviewCount,
+} from "@/domain/catalog/place-details";
 import {
   ALREADY_PLANNED_MESSAGE,
   addStopBody,
@@ -423,6 +429,9 @@ export default function ItineraryEditor({
                         <StopCard
                           key={stop.id}
                           stop={stop}
+                          catalogPlace={cityPlaces.find(
+                            (place) => place.id === stop.placeId
+                          )}
                           busy={busy}
                           moves={MOVES.map((item) => ({
                             ...item,
@@ -499,6 +508,8 @@ interface StopCardProps {
   onTimeChange: (value: string) => void;
   onTimeSave: () => void;
   onRemove: () => void;
+  // The catalog place of the stop; a place found on OpenStreetMap is not there, so it has no rating or page.
+  catalogPlace?: PlaceItem;
 }
 
 function StopCard({
@@ -510,6 +521,7 @@ function StopCard({
   onTimeChange,
   onTimeSave,
   onRemove,
+  catalogPlace,
 }: StopCardProps) {
   const config = getCategoryConfig(stop.place.category);
   const timeId = `stop-time-${stop.id}`;
@@ -531,6 +543,26 @@ function StopCard({
             <span className={config.textColor}>{config.label}</span>
             {stop.place.address && ` · ${stop.place.address}`}
           </p>
+          {catalogPlace && (
+            <p className="flex items-center gap-1.5 text-xs text-slate-600">
+              <Star
+                aria-hidden
+                className="h-3 w-3 fill-amber-500 text-amber-500"
+              />
+              {formatAverageRating(catalogPlace.averageRating)} ·{" "}
+              {formatReviewCount(catalogPlace.reviewCount)}
+              <a
+                href={`/places/${catalogPlace.id}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Details and reviews of ${stop.place.name} (opens in a new tab)`}
+                className="ml-auto inline-flex items-center gap-0.5 text-indigo-600 underline-offset-2 hover:underline"
+              >
+                Details
+                <ExternalLink aria-hidden className="h-3 w-3" />
+              </a>
+            </p>
+          )}
         </div>
       </div>
 

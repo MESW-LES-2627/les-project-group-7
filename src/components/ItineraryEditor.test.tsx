@@ -375,3 +375,21 @@ describe("the map", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+describe("a stop of a catalog place", () => {
+  const withLouvre = [{ ...stop("L", "d1", 9), placeId: "louvre" }];
+
+  it("shows its rating and reviews, and a link to its page", () => {
+    render(<ItineraryEditor {...base} initialStops={withLouvre} />);
+
+    expect(screen.getByText(/3 reviews/)).toBeTruthy();
+    const link = screen.getByRole("link", { name: /Details and reviews of/ });
+    expect(link.getAttribute("href")).toBe("/places/louvre");
+  });
+
+  it("has no link for a place that is not in the catalog", () => {
+    render(<ItineraryEditor {...base} />);
+
+    expect(screen.queryByRole("link", { name: /Details/ })).toBeNull();
+  });
+});
