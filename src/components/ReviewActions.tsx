@@ -120,8 +120,14 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2">
-        <Button type="button" size="sm" variant="outline" onClick={openEditor}>
-          <Pencil className="mr-1 h-3.5 w-3.5" />
+        {/* The same look as the buttons of the table of places: Edit is the main action, Delete the outline one */}
+        <Button
+          type="button"
+          size="sm"
+          onClick={openEditor}
+          className="h-7 gap-1 px-2.5 text-xs"
+        >
+          <Pencil />
           Edit
         </Button>
 
@@ -129,12 +135,13 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
           type="button"
           size="sm"
           variant="outline"
+          className="h-7 gap-1 px-2.5 text-xs"
           onClick={() => {
             setError(null);
             setConfirmingDelete(true);
           }}
         >
-          <Trash2 className="mr-1 h-3.5 w-3.5" />
+          <Trash2 />
           Delete
         </Button>
       </div>
@@ -269,9 +276,9 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
 
             <Button
               type="button"
+              variant="destructive"
               disabled={isSubmitting}
               onClick={handleDelete}
-              className="bg-red-600 text-white hover:bg-red-700"
             >
               {isSubmitting ? "Deleting..." : "Delete review"}
             </Button>
