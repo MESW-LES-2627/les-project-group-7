@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { PrismaClient } from "@prisma/client";
 import { refreshPlaceStats, markPlaceVisited } from "./place-stats";
@@ -7,11 +6,13 @@ const findUniqueOrThrow = vi.fn();
 const findMany = vi.fn();
 const update = vi.fn();
 const upsert = vi.fn();
+const queryRaw = vi.fn();
 
 const db = {
   place: { findUniqueOrThrow, update },
   review: { findMany },
   visit: { upsert },
+  $queryRaw: queryRaw,
 } as unknown as PrismaClient;
 
 describe("refreshPlaceStats", () => {
@@ -64,6 +65,27 @@ describe("refreshPlaceStats", () => {
         priceLevel: null,
       },
     });
+  });
+
+  it("locks the row of the place before it reads the reviews, so parallel changes run one after the other", async () => {
+    findMany.mockResolvedValue([{ rating: 5, priceLevel: "€" }]);
+
+    await refreshPlaceStats(db, "p1");
+
+    expect(queryRaw).toHaveBeenCalledTimes(1);
+    const [strings, placeId] = queryRaw.mock.calls[0];
+    expect(strings.join("?")).toMatch(
+      /FROM "Place" WHERE "id" = \? FOR NO KEY UPDATE/
+    );
+    expect(placeId).toBe("p1");
+
+    // The lock comes first: a second change waits here and then reads what the first one saved
+    expect(queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      findMany.mock.invocationCallOrder[0]
+    );
+    expect(queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      update.mock.invocationCallOrder[0]
+    );
   });
 
   it("keeps a FREE place free with only one paid review", async () => {

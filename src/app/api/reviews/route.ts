@@ -195,30 +195,38 @@ export async function POST(request: Request) {
       );
     }
 
-    // Step 3: Create the Review record
-    const newReview = await prisma.review.create({
-      data: {
-        userId: authorId,
-        placeId: targetPlaceId,
-        rating,
-        text,
-        priceLevel,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
+    // Steps 3 to 5 are one transaction, so that a review is never saved without the visit and the new
+    // statistics of the place, and two changes to the reviews of one place run one after the other
+    const { newReview, updatedPlace } = await prisma.$transaction(
+      async (tx) => {
+        // Step 3: Create the Review record
+        const newReview = await tx.review.create({
+          data: {
+            userId: authorId,
+            placeId: targetPlaceId,
+            rating,
+            text,
+            priceLevel,
           },
-        },
-      },
-    });
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+        });
 
-    // Step 4: Domain policy — mark the place as visited
-    await markPlaceVisited(prisma, authorId, targetPlaceId);
+        // Step 4: Domain policy — mark the place as visited
+        await markPlaceVisited(tx, authorId, targetPlaceId);
 
-    // Step 5: Domain policy — refresh place statistics (ADR-010)
-    const updatedPlace = await refreshPlaceStats(prisma, targetPlaceId);
+        // Step 5: Domain policy — refresh place statistics (ADR-010)
+        const updatedPlace = await refreshPlaceStats(tx, targetPlaceId);
+
+        return { newReview, updatedPlace };
+      }
+    );
 
     return NextResponse.json(
       { review: newReview, place: updatedPlace },
