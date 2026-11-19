@@ -201,3 +201,49 @@ export function stopRequestError(
 
   return { message: GENERIC_STOP_MESSAGE, reason, reload: false };
 }
+
+export interface StopMapPin {
+  id: string;
+  name: string;
+  category: string;
+  priceLevel: string | null;
+  rating: number | null;
+  latitude: number;
+  longitude: number;
+}
+
+// One pin for each place of the trip, even when it is a stop on several days. The rating comes from the
+// catalog places of the city; a place found on OpenStreetMap has none yet.
+export function stopMapPins(
+  stops: readonly EditorStop[],
+  ratings: ReadonlyMap<string, number | null>
+): StopMapPin[] {
+  const pins = new Map<string, StopMapPin>();
+
+  for (const { place } of stops) {
+    pins.set(place.id, {
+      id: place.id,
+      name: place.name,
+      category: place.category,
+      priceLevel: place.priceLevel,
+      rating: ratings.get(place.id) ?? null,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
+  }
+
+  return [...pins.values()];
+}
+
+// The map opens on the stops; with none yet, on the middle of the places of the city.
+export function mapCenter(
+  points: readonly { latitude: number; longitude: number }[]
+): [number, number] | undefined {
+  if (points.length === 0) return undefined;
+
+  const sum = points.reduce(
+    (total, point) => [total[0] + point.latitude, total[1] + point.longitude],
+    [0, 0]
+  );
+  return [sum[0] / points.length, sum[1] / points.length];
+}

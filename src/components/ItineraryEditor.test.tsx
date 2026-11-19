@@ -13,6 +13,12 @@ import type {
 } from "@/domain/itinerary/itinerary-editor";
 import type { PlaceItem } from "@/types/place";
 
+vi.mock("@/components/MapWrapper", () => ({
+  default: ({ places }: { places: unknown[] }) => (
+    <div data-testid="map">{places.length} pins</div>
+  ),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
