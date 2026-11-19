@@ -20,6 +20,7 @@ import MapWrapper from "@/components/MapWrapper";
 import PlaceSearchAutocomplete from "@/components/PlaceSearchAutocomplete";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import {
+  ALREADY_PLANNED_MESSAGE,
   addStopBody,
   mapCenter,
   moveOption,
@@ -96,11 +97,9 @@ export default function ItineraryEditor({
     : (days[0]?.id ?? "");
 
   const byDay = stopsByDay(days, stops);
-  const pins = stopMapPins(
-    stops,
-    new Map(cityPlaces.map((place) => [place.id, place.averageRating]))
-  );
-  const center = mapCenter(pins.length > 0 ? pins : cityPlaces);
+  const pins = stopMapPins(stops, cityPlaces);
+  const center = mapCenter(stops.length > 0 ? stopMapPins(stops) : cityPlaces);
+  const plannedCount = new Set(stops.map((stop) => stop.placeId)).size;
   const unsavedTimes = stops.filter((stop) => stop.id in timeDrafts);
 
   // The page reads the stops again when something else changes the trip (router.refresh): take them, and
@@ -193,6 +192,13 @@ export default function ItineraryEditor({
       category: place.category,
       priceLevel: place.priceLevel,
     });
+  }
+
+  function addFromMap(placeId: string) {
+    const place = cityPlaces.find((item) => item.id === placeId);
+    // A pin that is not in the catalog is a place found on OpenStreetMap, and it is on the trip already.
+    if (place) addLocalPlace(place);
+    else setError(ALREADY_PLANNED_MESSAGE);
   }
 
   function addOsmPlace(place: OsmSearchResult) {
@@ -454,7 +460,20 @@ export default function ItineraryEditor({
           <h2 id="trip-map-heading" className="font-semibold">
             Map of {cityName}
           </h2>
-          <MapWrapper places={pins} center={center} zoom={13} />
+          <MapWrapper
+            places={pins}
+            center={center}
+            zoom={13}
+            addAction={
+              activeDayId
+                ? {
+                    label: `Add to ${dayLabel(activeDayId)}`,
+                    disabled: busy,
+                    onAdd: addFromMap,
+                  }
+                : undefined
+            }
+          />
           <p className="text-sm text-slate-500">
             {pins.length === 0
               ? "The places you add show up here."

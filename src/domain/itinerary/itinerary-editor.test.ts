@@ -266,10 +266,19 @@ describe("stopMapPins and mapCenter", () => {
       },
     }) as EditorStop;
 
-  it("gives one pin for a place planned on two days, with its rating", () => {
+  it("gives one pin for a place planned on two days, with its rating from the catalog", () => {
     const pins = stopMapPins(
       [stopAt("s1", "d1", "p1", 41), stopAt("s2", "d2", "p1", 41)],
-      new Map([["p1", 4.5]])
+      [
+        {
+          id: "p1",
+          name: "p1",
+          category: "PARK",
+          latitude: 41,
+          longitude: -8,
+          averageRating: 4.5,
+        },
+      ]
     );
 
     expect(pins).toHaveLength(1);
@@ -277,7 +286,7 @@ describe("stopMapPins and mapCenter", () => {
   });
 
   it("has no rating for a place outside the catalog", () => {
-    const [pin] = stopMapPins([stopAt("s1", "d1", "osm-1", 41)], new Map());
+    const [pin] = stopMapPins([stopAt("s1", "d1", "osm-1", 41)]);
 
     expect(pin.rating).toBeNull();
   });
@@ -290,5 +299,25 @@ describe("stopMapPins and mapCenter", () => {
       ])
     ).toEqual([41, -7]);
     expect(mapCenter([])).toBeUndefined();
+  });
+});
+
+describe("stopMapPins with the catalog", () => {
+  it("also pins the places of the city that are not planned", () => {
+    const pins = stopMapPins(
+      [],
+      [
+        {
+          id: "c1",
+          name: "Cafe",
+          category: "CAFE",
+          latitude: 41,
+          longitude: -8,
+          averageRating: null,
+        },
+      ]
+    );
+
+    expect(pins.map((pin) => pin.id)).toEqual(["c1"]);
   });
 });

@@ -14,8 +14,21 @@ import type {
 import type { PlaceItem } from "@/types/place";
 
 vi.mock("@/components/MapWrapper", () => ({
-  default: ({ places }: { places: unknown[] }) => (
-    <div data-testid="map">{places.length} pins</div>
+  default: ({
+    places,
+    addAction,
+  }: {
+    places: { id: string }[];
+    addAction?: { label: string; onAdd: (id: string) => void };
+  }) => (
+    <div data-testid="map">
+      {places.length} pins
+      {places.map((place) => (
+        <button key={place.id} onClick={() => addAction?.onAdd(place.id)}>
+          {addAction?.label} ({place.id})
+        </button>
+      ))}
+    </div>
   ),
 }));
 
@@ -333,5 +346,32 @@ describe("ItineraryEditor: removing a stop and saving a time", () => {
 
     finish(json({ stops }));
     await waitFor(() => expect(field.readOnly).toBe(false));
+  });
+});
+
+describe("the map", () => {
+  it("adds a place of the city to the chosen day", async () => {
+    render(<ItineraryEditor {...base} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 1 (louvre)" })
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body).toMatchObject({ dayId: "d1", placeId: "louvre" });
+  });
+
+  it("says a place that is already on the trip is planned, without calling the API", async () => {
+    render(<ItineraryEditor {...base} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 1 (p-A)" })
+    );
+
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -43,6 +43,13 @@ export interface MapPlace {
   isDiscovered?: boolean;
 }
 
+// A button in the popup of every pin, for a page that plans with the map (the label says where the place goes).
+export interface MapAddAction {
+  label: string;
+  disabled?: boolean;
+  onAdd: (placeId: string) => void;
+}
+
 export type BoundingBox = GeoBoundingBox;
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -163,9 +170,11 @@ function MapFlyController({
 const PlacePin = memo(function PlacePin({
   place,
   onSelectPlace,
+  addAction,
 }: {
   place: MapPlace;
   onSelectPlace?: (placeId: string) => void;
+  addAction?: MapAddAction;
 }) {
   return (
     <Marker
@@ -203,6 +212,17 @@ const PlacePin = memo(function PlacePin({
             </span>
           </div>
 
+          {addAction && (
+            <Button
+              size="sm"
+              onClick={() => addAction.onAdd(place.id)}
+              disabled={addAction.disabled}
+              className="mt-2.5 h-7 w-full gap-1 text-xs"
+            >
+              {addAction.label}
+            </Button>
+          )}
+
           {onSelectPlace && (
             <Button
               size="sm"
@@ -230,6 +250,7 @@ export default function MapComponent({
   selectedCityCenter,
   onSelectPlace,
   onMapMove,
+  addAction,
 }: {
   places?: MapPlace[];
   center?: [number, number];
@@ -238,6 +259,7 @@ export default function MapComponent({
   selectedCityCenter?: [number, number] | null;
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
+  addAction?: MapAddAction;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -310,6 +332,7 @@ export default function MapComponent({
             key={place.id}
             place={place}
             onSelectPlace={onSelectPlace}
+            addAction={addAction}
           />
         ))}
       </MapContainer>

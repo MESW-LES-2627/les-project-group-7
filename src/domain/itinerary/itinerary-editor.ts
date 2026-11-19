@@ -202,6 +202,11 @@ export function stopRequestError(
   return { message: GENERIC_STOP_MESSAGE, reason, reload: false };
 }
 
+export interface CatalogPin extends Omit<StopMapPin, "rating" | "priceLevel"> {
+  priceLevel?: string | null;
+  averageRating: number | null;
+}
+
 export interface StopMapPin {
   id: string;
   name: string;
@@ -212,13 +217,25 @@ export interface StopMapPin {
   longitude: number;
 }
 
-// One pin for each place of the trip, even when it is a stop on several days. The rating comes from the
-// catalog places of the city; a place found on OpenStreetMap has none yet.
+// One pin for each place of the city and of the trip, even when it is a stop on several days. The rating
+// comes from the catalog places of the city; a place found on OpenStreetMap has none yet.
 export function stopMapPins(
   stops: readonly EditorStop[],
-  ratings: ReadonlyMap<string, number | null>
+  catalog: readonly CatalogPin[] = []
 ): StopMapPin[] {
   const pins = new Map<string, StopMapPin>();
+
+  for (const place of catalog) {
+    pins.set(place.id, {
+      id: place.id,
+      name: place.name,
+      category: place.category,
+      priceLevel: place.priceLevel ?? null,
+      rating: place.averageRating,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
+  }
 
   for (const { place } of stops) {
     pins.set(place.id, {
@@ -226,7 +243,7 @@ export function stopMapPins(
       name: place.name,
       category: place.category,
       priceLevel: place.priceLevel,
-      rating: ratings.get(place.id) ?? null,
+      rating: pins.get(place.id)?.rating ?? null,
       latitude: place.latitude,
       longitude: place.longitude,
     });
