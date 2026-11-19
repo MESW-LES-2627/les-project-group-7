@@ -21,7 +21,10 @@ import * as path from "path";
 import { osmPriceLevelOf } from "../src/domain/osm/osm";
 import { refreshPlaceStats } from "../src/lib/place-stats";
 
-const prisma = new PrismaClient();
+// The transaction of one place takes several round trips to the database, which can pass the default 5 s on Neon
+const prisma = new PrismaClient({
+  transactionOptions: { timeout: 60_000, maxWait: 60_000 },
+});
 
 const CITIES = ["porto", "paris", "berlin"];
 
