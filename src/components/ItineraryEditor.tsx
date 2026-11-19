@@ -49,6 +49,8 @@ interface ItineraryEditorProps {
 
 const SEARCH_INPUT_ID = "itinerary-place-search";
 
+const addButtonId = (dayId: string) => `add-to-day-${dayId}`;
+
 const MOVES: {
   move: StopMove;
   label: string;
@@ -80,11 +82,40 @@ export default function ItineraryEditor({
   const [status, setStatus] = useState("");
 
   const [targetDayId, setTargetDayId] = useState(days[0]?.id ?? "");
+  const [focusTarget, setFocusTarget] = useState<string | null>(null);
   const [addTime, setAddTime] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // The day to add to has to be a day the trip has now: the dates can change under this page (the Edit trip
+  // dialog), and a day that is gone must not be sent.
+  const activeDayId = days.some((day) => day.id === targetDayId)
+    ? targetDayId
+    : (days[0]?.id ?? "");
+
   const byDay = stopsByDay(days, stops);
   const unsavedTimes = stops.filter((stop) => stop.id in timeDrafts);
+
+  // The page reads the stops again when something else changes the trip (router.refresh): take them, and
+  // forget the unsaved times of stops that are gone.
+  useEffect(() => {
+    setStops(initialStops);
+    setTimeDrafts((drafts) =>
+      Object.fromEntries(
+        Object.entries(drafts).filter(([id]) =>
+          initialStops.some((stop) => stop.id === id)
+        )
+      )
+    );
+  }, [initialStops]);
+
+  // Moves the focus after an action, once the controls are enabled again: a button that was disabled while
+  // saving loses the focus, and a keyboard user would have to tab from the top of the page again.
+  useEffect(() => {
+    if (focusTarget && !busy) {
+      document.getElementById(focusTarget)?.focus();
+      setFocusTarget(null);
+    }
+  }, [focusTarget, busy]);
 
   useEffect(() => {
     if (unsavedTimes.length === 0) return;
@@ -131,14 +162,15 @@ export default function ItineraryEditor({
   }
 
   function add(place: AddablePlace) {
-    if (!targetDayId) return;
+    if (!activeDayId) return;
 
     void run(
-      () => addStop(tripId, addStopBody(targetDayId, place, addTime || null)),
-      `${place.name} was added to ${dayLabel(targetDayId)}.`,
+      () => addStop(tripId, addStopBody(activeDayId, place, addTime || null)),
+      `${place.name} was added to ${dayLabel(activeDayId)}.`,
       () => {
         setSearchQuery("");
         setAddTime("");
+        setFocusTarget(SEARCH_INPUT_ID);
       }
     );
   }
@@ -217,6 +249,7 @@ export default function ItineraryEditor({
       `${stop.place.name} was removed from ${dayLabel(stop.dayId)}.`,
       () => {
         forgetDraft(stop.id);
+        setFocusTarget(addButtonId(stop.dayId));
         setStops((current) =>
           current
             .filter((item) => item.id !== stop.id)
@@ -280,7 +313,7 @@ export default function ItineraryEditor({
             <Label htmlFor="add-place-day">Day</Label>
             <select
               id="add-place-day"
-              value={targetDayId}
+              value={activeDayId}
               onChange={(event) => setTargetDayId(event.target.value)}
               disabled={busy}
               className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm sm:w-auto"
@@ -333,7 +366,9 @@ export default function ItineraryEditor({
         {busy ? "Saving…" : status}
       </p>
 
-      <ol className="flex snap-x gap-4 overflow-x-auto pb-4">
+      {/* relative: the screen-reader-only labels inside are positioned against this strip, so they are
+          clipped with it and do not widen the page (the page scrolled sideways on a phone) */}
+      <ol className="relative flex snap-x gap-4 overflow-x-auto pb-4">
         {days.map((day) => {
           const dayStops = byDay.get(day.id) ?? [];
           const label = formatDayLabel(day.dayNumber, day.date);
@@ -352,6 +387,7 @@ export default function ItineraryEditor({
                   {label}
                 </h3>
                 <Button
+                  id={addButtonId(day.id)}
                   variant="ghost"
                   size="sm"
                   onClick={() => chooseDay(day.id)}
@@ -467,20 +503,37 @@ function StopCard({
 
       <div className="mt-2 flex items-center justify-between gap-1">
         <div className="flex gap-0.5">
-          {moves.map(({ move, label, Icon, option }) => (
-            <Button
-              key={move}
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 px-0"
-              aria-label={`${label}: ${stop.place.name}`}
-              title={option.available ? label : (option.reason ?? label)}
-              disabled={busy || !option.available}
-              onClick={() => option.available && onMove(option.body, label)}
-            >
-              <Icon />
-            </Button>
-          ))}
+          {moves.map(({ move, label, Icon, option }) => {
+            const unavailable = busy || !option.available;
+            const reason = option.available ? null : option.reason;
+            const reasonId = `move-reason-${stop.id}-${move}`;
+
+            return (
+              <Button
+                key={move}
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 px-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                aria-label={`${label}: ${stop.place.name}`}
+                title={reason ?? label}
+                // aria-disabled, not disabled: the button keeps the focus while the change is saved and
+                // when the stop reaches the end of its day, and the reason can be read
+                aria-disabled={unavailable}
+                aria-describedby={reason ? reasonId : undefined}
+                onClick={() => {
+                  if (!unavailable && option.available)
+                    onMove(option.body, label);
+                }}
+              >
+                <Icon />
+                {reason && (
+                  <span id={reasonId} className="sr-only">
+                    {reason}
+                  </span>
+                )}
+              </Button>
+            );
+          })}
         </div>
 
         <Button
@@ -531,7 +584,8 @@ function TimeField({
           if (changed) onSave();
         }
       }}
-      disabled={disabled}
+      readOnly={disabled}
+      aria-busy={disabled}
       className="h-7 w-28 px-2 text-xs"
     />
   );

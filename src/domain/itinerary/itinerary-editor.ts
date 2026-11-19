@@ -35,7 +35,6 @@ export type MoveOption =
   | { available: true; body: MoveBody }
   | { available: false; reason: string | null };
 
-
 export function moveOption(
   days: readonly EditorDay[],
   stops: readonly EditorStop[],
