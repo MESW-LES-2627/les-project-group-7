@@ -19,8 +19,15 @@ import {
 
 export type StopsTransaction = Prisma.TransactionClient;
 
-/** Every change of an itinerary reads and writes the positions of a day, so they run one at a time. */
-export const STOPS_TRANSACTION = { isolationLevel: "Serializable" } as const;
+/**
+ * Every change of an itinerary reads the positions of the stops and writes new ones, so two changes at
+ * the same moment must run one after the other. `loadItinerary(..., { lock: true })` does that: it
+ * locks the itinerary until the transaction ends, so the second change waits and then reads what the
+ * first one saved. The transaction is read committed, so it reads after the wait. (It was serializable
+ * first: the database then refused one of two overlapping changes, or ended them in a deadlock when
+ * they updated the same stops in a different order, which was tested against a database.)
+ */
+export const STOPS_TRANSACTION = { isolationLevel: "ReadCommitted" } as const;
 
 export interface ItineraryState {
   itineraryId: string;
@@ -65,12 +72,31 @@ export async function listStops(
 /**
  * The itinerary of a trip, if the trip belongs to the user. The owner is in the filter, so another
  * user's trip is the same as a trip that does not exist. Returns `null` for both.
+ *
+ * @param options.lock lock the itinerary until the end of the transaction before anything else is
+ * read: every writer of the stops asks for it, a reader does not. Whatever else changes the days or
+ * the stops of a trip (the edit of the dates, #55) has to take the same lock.
  */
 export async function loadItinerary(
   tx: StopsTransaction,
   tripId: string,
-  userId: string
+  userId: string,
+  options: { lock?: boolean } = {}
 ): Promise<ItineraryState | null> {
+  if (options.lock) {
+    const found = await tx.trip.findFirst({
+      where: { id: tripId, userId },
+      select: { itinerary: { select: { id: true } } },
+    });
+    if (!found?.itinerary) {
+      return null;
+    }
+
+    // NO KEY UPDATE, not UPDATE: saving a stop takes a shared lock on the itinerary for its foreign
+    // key, and UPDATE conflicts with it (a deadlock between two parallel adds).
+    await tx.$queryRaw`SELECT "id" FROM "Itinerary" WHERE "id" = ${found.itinerary.id} FOR NO KEY UPDATE`;
+  }
+
   const trip = await tx.trip.findFirst({
     where: { id: tripId, userId },
     select: {
@@ -156,13 +182,18 @@ export function stopsResponse(
 }
 
 /**
- * The answer for an error that was not expected. Two changes at the same time can make the database
- * refuse one of them (P2034, or P2002 when both save the same new place): nothing was saved and the
- * person can try again.
+ * The answer for an error that was not expected. The changes of an itinerary wait for each other, so
+ * this should be rare, but if the database still refuses one (a write conflict, a deadlock, or a
+ * second save of the same new place) nothing was saved and the person can try again.
  */
 export function stopsFailure(error: unknown, what: string): Response {
   const code = (error as { code?: unknown } | null)?.code;
-  if (code === "P2034" || code === "P2002") {
+  const message = error instanceof Error ? error.message : "";
+  if (
+    code === "P2034" ||
+    code === "P2002" ||
+    /40P01|40001|deadlock detected|could not serialize/i.test(message)
+  ) {
     return NextResponse.json(
       {
         error:

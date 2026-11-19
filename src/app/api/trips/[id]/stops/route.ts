@@ -113,7 +113,9 @@ export async function POST(
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const state = await loadItinerary(tx, id, guard.user.id);
+      const state = await loadItinerary(tx, id, guard.user.id, {
+        lock: true,
+      });
       if (state === null) {
         return { kind: "no-trip" } as const;
       }

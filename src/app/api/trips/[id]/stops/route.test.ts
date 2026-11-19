@@ -563,3 +563,56 @@ describe("POST /api/trips/[id]/stops: the stops with a time keep the order of th
     expect(dayPositions(data, "d1")).toEqual([1, 2, 3, 4]);
   });
 });
+
+describe("the changes of an itinerary wait for each other", () => {
+  beforeEach(() => {
+    data = sampleData();
+    state.prisma = fakePrisma(data);
+    requireUser.mockResolvedValue({ ok: true, user: { id: "u1" } });
+  });
+
+  it("locks the itinerary when a place is added, and not when the stops are only read", async () => {
+    await GET(new Request("http://x/api/trips/t1/stops"), {
+      params: Promise.resolve({ id: "t1" }),
+    });
+    expect(data.locks).toEqual([]);
+
+    await call({ dayId: "d1", placeId: "p1" });
+    expect(data.locks).toEqual(["i1"]);
+  });
+
+  it("does not lock anything for a trip of another user", async () => {
+    requireUser.mockResolvedValue({ ok: true, user: { id: "someone-else" } });
+
+    await call({ dayId: "d1", placeId: "p1" });
+
+    expect(data.locks).toEqual([]);
+  });
+
+  it("answers 409, and not 500, when the database ends two changes in a deadlock", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    state.prisma = {
+      $transaction: async () => {
+        throw new Error(
+          'ConnectorError: PostgresError { code: "40P01", message: "deadlock detected" }'
+        );
+      },
+    };
+
+    const response = await call({ dayId: "d1", placeId: "p1" });
+
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toContain("try again");
+  });
+
+  it("answers 409 when the database refuses to serialize two changes", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    state.prisma = {
+      $transaction: async () => {
+        throw new Error("ERROR: could not serialize access (40001)");
+      },
+    };
+
+    expect((await call({ dayId: "d1", placeId: "p1" })).status).toBe(409);
+  });
+});

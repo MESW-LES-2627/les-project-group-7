@@ -95,7 +95,9 @@ export async function PATCH(request: Request, { params }: Context) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const state = await loadItinerary(tx, id, guard.user.id);
+      const state = await loadItinerary(tx, id, guard.user.id, {
+        lock: true,
+      });
       if (state === null) {
         return { kind: "no-trip" } as const;
       }
@@ -183,7 +185,9 @@ export async function DELETE(request: Request, { params }: Context) {
     const { id, stopId } = await params;
 
     const result = await prisma.$transaction(async (tx) => {
-      const state = await loadItinerary(tx, id, guard.user.id);
+      const state = await loadItinerary(tx, id, guard.user.id, {
+        lock: true,
+      });
       if (state === null) {
         return { kind: "no-trip" } as const;
       }
