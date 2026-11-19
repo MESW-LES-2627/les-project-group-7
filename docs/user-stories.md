@@ -478,13 +478,14 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 1. **Given** I wrote a review, **when** I change its rating, price level or text, **then** the review is updated and the place's rating and price level are recalculated.
 2. **Given** I wrote a review, **when** I delete it, **then** it disappears and the place's rating and price level are recalculated.
-3. **Given** my review was the only review of the place, **when** I delete it, **then** the place shows "no reviews" and its rating and price level are empty.
+3. **Given** my review was the only review of the place, **when** I delete it, **then** the place shows "no reviews" and its rating is empty. Its price level is empty too, unless OpenStreetMap says the place is free: then it is FREE.
 4. **Given** a review written by someone else, **when** I look at it, **then** there are no edit or delete buttons.
 5. **Given** I delete my review of a place, **when** it is deleted, **then** the place stays in my visited list.
 
 **Business rules**
 
 - Recalculation uses the same functions as US-C1-01.
+- The price level is calculated from what OpenStreetMap says (free, or nothing) and the reviews that exist. It never depends on the price stored before, so editing or deleting a review can also take a place back to FREE (glossary, _Place_).
 - A visit survives the deletion of the review (glossary, _Visit_).
 
 **Out of scope**
