@@ -299,6 +299,20 @@ export interface CityArea {
   maxLon: number;
 }
 
+/** Whether a point lies in the area of a city (the borders count as inside). */
+export function isInsideArea(
+  area: CityArea,
+  latitude: number,
+  longitude: number
+): boolean {
+  return (
+    latitude >= area.minLat &&
+    latitude <= area.maxLat &&
+    longitude >= area.minLon &&
+    longitude <= area.maxLon
+  );
+}
+
 /**
  * Cuts a city area into `rows` x `cols` equal tiles, north to south and west to east. A search by
  * kind returns at most 50 places, mostly the central ones, so the import also searches every tile
@@ -363,12 +377,7 @@ export function placeFromNominatim(
   if (isNaN(latitude) || isNaN(longitude)) {
     return null;
   }
-  if (
-    latitude < area.minLat ||
-    latitude > area.maxLat ||
-    longitude < area.minLon ||
-    longitude > area.maxLon
-  ) {
+  if (!isInsideArea(area, latitude, longitude)) {
     return null;
   }
 
