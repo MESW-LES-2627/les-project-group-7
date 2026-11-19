@@ -70,6 +70,30 @@ export async function listStops(
 }
 
 /**
+ * Locks the itinerary of a trip of the user until the end of the transaction, and reads nothing else.
+ * Returns false when there is no such trip, or it is not the user's.
+ *
+ * NO KEY UPDATE, not UPDATE: saving a stop takes a shared lock on the itinerary for its foreign key,
+ * and UPDATE conflicts with it (a deadlock between two parallel adds).
+ */
+export async function lockItinerary(
+  tx: StopsTransaction,
+  tripId: string,
+  userId: string
+): Promise<boolean> {
+  const found = await tx.trip.findFirst({
+    where: { id: tripId, userId },
+    select: { itinerary: { select: { id: true } } },
+  });
+  if (!found?.itinerary) {
+    return false;
+  }
+
+  await tx.$queryRaw`SELECT "id" FROM "Itinerary" WHERE "id" = ${found.itinerary.id} FOR NO KEY UPDATE`;
+  return true;
+}
+
+/**
  * The itinerary of a trip, if the trip belongs to the user. The owner is in the filter, so another
  * user's trip is the same as a trip that does not exist. Returns `null` for both.
  *
@@ -83,18 +107,8 @@ export async function loadItinerary(
   userId: string,
   options: { lock?: boolean } = {}
 ): Promise<ItineraryState | null> {
-  if (options.lock) {
-    const found = await tx.trip.findFirst({
-      where: { id: tripId, userId },
-      select: { itinerary: { select: { id: true } } },
-    });
-    if (!found?.itinerary) {
-      return null;
-    }
-
-    // NO KEY UPDATE, not UPDATE: saving a stop takes a shared lock on the itinerary for its foreign
-    // key, and UPDATE conflicts with it (a deadlock between two parallel adds).
-    await tx.$queryRaw`SELECT "id" FROM "Itinerary" WHERE "id" = ${found.itinerary.id} FOR NO KEY UPDATE`;
+  if (options.lock && !(await lockItinerary(tx, tripId, userId))) {
+    return null;
   }
 
   const trip = await tx.trip.findFirst({

@@ -11,12 +11,14 @@ import {
   formatAverageRating,
   formatReviewCount,
   newestFirst,
+  ownReviewsFirst,
 } from "@/domain/catalog/place-details";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import WriteReviewButton from "./WriteReviewButton";
 import SavedPlacesProvider from "@/components/SavedPlacesProvider";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import { formatOpeningHours } from "@/domain/osm/opening-hours";
+import ReviewActions from "@/components/ReviewActions";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +90,11 @@ export default async function PlacePage({ params }: PlacePageProps) {
   };
 
   // shortcut: all reviews of a place are loaded and sorted in memory; add pagination when a place passes ~100 reviews.
-  const orderedReviews = newestFirst(place.reviews);
+  // The review of the logged-in user comes first, then the others, newest first
+  const orderedReviews = ownReviewsFirst(
+    newestFirst(place.reviews),
+    (rev) => session !== null && rev.userId === session.user.id
+  );
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -222,6 +228,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
                 const hasPrice = isPriceLevel(rev.priceLevel);
                 const hasText = rev.text && rev.text.trim().length > 0;
+                const isOwnReview = session?.user.id === rev.userId;
 
                 return (
                   <li key={rev.id} className="py-4 first:pt-0 last:pb-0">
@@ -246,12 +253,25 @@ export default async function PlacePage({ params }: PlacePageProps) {
                         )}
                       </div>
 
-                      <time
-                        dateTime={rev.createdAt.toISOString()}
-                        className="text-xs text-slate-400"
-                      >
-                        {rev.createdAt.toLocaleDateString("en-GB")}
-                      </time>
+                      <div className="flex items-center gap-3">
+                        <time
+                          dateTime={rev.createdAt.toISOString()}
+                          className="text-xs text-slate-400"
+                        >
+                          {rev.createdAt.toLocaleDateString("en-GB")}
+                        </time>
+
+                        {isOwnReview && (
+                          <ReviewActions
+                            review={{
+                              id: rev.id,
+                              rating: rev.rating,
+                              text: rev.text,
+                              priceLevel: rev.priceLevel,
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
 
                     {hasText && (
