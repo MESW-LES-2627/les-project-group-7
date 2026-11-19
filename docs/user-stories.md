@@ -1343,6 +1343,7 @@ at sprint planning, with the same template.
 **Notes**
 
 - Needs a schema change: the city moves from the trip to the day.
+- The rule for the city of a place added to a stop changes here: it becomes the city of the day. With ADR-011 that is one new city rule in `city-rules.ts`, not a change in the routes (design.md, section 4.2).
 
 ## S14 Trip summary e-mail
 
@@ -1460,4 +1461,5 @@ at sprint planning, with the same template.
 
 - Was MVP feature B7; moved to Stretch because it depends on the public Overpass servers and is not needed for the demo scenario.
 - Known bug in ADR-002: in the prototype a saved place always goes to Porto. This story fixes it (AC2).
+- Design (ADR-011 in [design.md](design.md), section 4.2): a place found on the map is saved by one function, `saveDiscoveredPlace`, and the rule for its city is passed in. This story adds the rule `nearestCity`. The first step is #171, which moves the two existing copies (reviews and stops) to that function; the Porto assignment disappears with it. What to do with a place that is far from every city is not decided yet.
 - Search by name outside the catalog is S18.

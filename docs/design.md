@@ -437,13 +437,13 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 
 #### ADR-011: One function saves a place found on the map, and the rule for its city is an argument
 
-- **Status:** Accepted. It is built with the first story that needs it: S19 (live discovery, AC2) or saving a place found on the map to a wishlist or bookmarks, as its first step.
+- **Status:** Accepted. It is built with the first story that needs it: S19 (live discovery, AC2) or saving a place found on the map to a wishlist or bookmarks, as its first step. The issue is #171, under S19.
 - **Context:** A place found on the map becomes a `Place` the first time it is reviewed or added to a trip. Two handlers do it, each with its own copy of the sequence. Saving a place of the map to a wishlist or bookmarks would add a third copy, and a second source of places would change all of them. The copies already disagree: `POST /api/reviews` assigns the city Porto without checking the position, `POST /api/trips/[id]/stops` assigns the city of the trip, checks the position against the city areas and saves only after the stop is accepted, and S19 asks for a third rule, the nearest city of the catalog. The rules change often (the place-creation block of the reviews route changed 6 times between 1 and 19 Nov 2026, and the stories to come, S19 and ticket prices, touch it again) and the column `osmPriceLevel` (#157) had to be added in both. The full analysis is in section 4.2 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
 - **Decision:** Two steps, because a refusal must save nothing. `parseDiscoveredPlace(placeId, raw, cityRule)` (pure, `src/domain/osm/discovered-place.ts`) checks the data and applies a city rule. `saveDiscoveredPlace(db, discovered)` (new, `src/lib/discovered-places.ts`) finds the place by id or OpenStreetMap id or creates it with `source = LAZY_OSM` and the price baseline, and the caller calls it after its own checks, inside its own transaction. A city rule is a function from a position to a city or a refusal, in `src/domain/osm/city-rules.ts`: `cityOfTrip(cityId)` for trips and `nearestCity(cities)` for reviews and saved places (the Strategy pattern, in function form).
 - **Alternatives considered:** copying the steps into the saved places route (functional coupling between three writers, and the copies keep drifting); a separate endpoint that the browser calls before the review, the stop or the saved place (it breaks the rule that a refusal saves nothing and needs two requests); an abstract class with a Template Method and one subclass per caller (the code base uses functions, and the callers differ in two things only).
 - **Consequences:**
   - _Positive:_ functional coupling becomes contract coupling, a change of the rule for the city touches `city-rules.ts` only, Place Catalog owns the creation of a `Place` as the component diagram says, and the reviews handler loses about 80 lines that are not about reviews.
-  - _Trade-offs:_ one more module and one more level of indirection. The reviews route stops assigning Porto, so S19 has to say what happens to a place that is far from every city. The function reads again when its create loses a race on the unique OpenStreetMap id.
+  - _Trade-offs:_ one more module and one more level of indirection. The reviews route stops assigning Porto, so S19 has to say what happens to a place that is far from every city. The function inserts the place ignoring duplicates and then reads it, so two requests for the same new place do not collide (a plain insert that fails would abort the transaction of the caller).
   - _Revisit:_ when a second source of places is added (`Place.osmId` and `source = LAZY_OSM` name the provider), or when the city rules need more than a position.
 
 ## 4. Future change scenarios: coupling, cohesion, and design decisions
@@ -689,7 +689,7 @@ the map and nothing else), so it is the natural place for the shared part to gro
 1. `parseDiscoveredPlace(placeId, raw, cityRule)` in `src/domain/osm/discovered-place.ts` stays pure. It checks the data, asks
    the **city rule** where the place goes, and returns the place with its city, or a refusal.
 2. `saveDiscoveredPlace(db, discovered)` in the new `src/lib/discovered-places.ts`, next to `place-stats.ts`, finds the place by
-   its id or its OpenStreetMap id, or creates it with `source = LAZY_OSM` and the price baseline, and returns it. The
+   its id or its OpenStreetMap id, or inserts it (ignoring duplicates, then reading it) with `source = LAZY_OSM` and the price baseline, and returns it. The
    caller calls it **after its own checks**: the stop is accepted, the review is not a duplicate, the saved place is not saved yet.
 
 A **city rule** is a function from a position to a city or a refusal. There are two, in the new `src/domain/osm/city-rules.ts`:
@@ -740,8 +740,9 @@ Before and after:
 - The reviews handler must save the place inside the transaction of the review, as the stops handler already does, so that a
   refused review saves no place.
 - Two users who save the same new place at the same moment race on the unique OpenStreetMap id. Today the stops route answers 409 and the
-  reviews route has no handling for it (not tested against the running app). The function reads again when its create loses the race, so the
-  second request gets the place the first one saved.
+  reviews route has no handling for it (not tested against the running app). The function inserts the place ignoring duplicates (`ON CONFLICT DO NOTHING`) and then reads it, because a plain
+  insert that fails would abort the transaction of the caller (checked on the local database); the second request then gets the place
+  the first one saved.
 
 **When to revisit.**
 
