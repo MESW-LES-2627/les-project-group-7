@@ -19,7 +19,7 @@ describe("refreshPlaceStats", () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    findUniqueOrThrow.mockResolvedValue({ priceLevel: null });
+    findUniqueOrThrow.mockResolvedValue({ osmPriceLevel: null });
     update.mockImplementation(async ({ data }) => ({
       id: "p1",
       ...data,
@@ -89,7 +89,7 @@ describe("refreshPlaceStats", () => {
   });
 
   it("keeps a FREE place free with only one paid review", async () => {
-    findUniqueOrThrow.mockResolvedValue({ priceLevel: "FREE" });
+    findUniqueOrThrow.mockResolvedValue({ osmPriceLevel: "FREE" });
     findMany.mockResolvedValue([{ rating: 5, priceLevel: "€€" }]);
 
     await refreshPlaceStats(db, "p1");
@@ -105,7 +105,7 @@ describe("refreshPlaceStats", () => {
   });
 
   it("updates a FREE place after two paid reviews", async () => {
-    findUniqueOrThrow.mockResolvedValue({ priceLevel: "FREE" });
+    findUniqueOrThrow.mockResolvedValue({ osmPriceLevel: "FREE" });
     findMany.mockResolvedValue([
       { rating: 4, priceLevel: "€€" },
       { rating: 5, priceLevel: "€€" },
@@ -124,8 +124,8 @@ describe("refreshPlaceStats", () => {
   });
 
   it("clears rating and price when the last review is deleted (AC3)", async () => {
-    // The place previously had a paid price from its reviews.
-    findUniqueOrThrow.mockResolvedValue({ priceLevel: "€€" });
+    // The place had a paid price from its reviews, and OpenStreetMap says nothing about its price.
+    findUniqueOrThrow.mockResolvedValue({ osmPriceLevel: null });
 
     // After deleting the last review, no reviews remain.
     findMany.mockResolvedValue([]);
@@ -140,6 +140,66 @@ describe("refreshPlaceStats", () => {
         priceLevel: null,
       },
     });
+  });
+});
+
+describe("refreshPlaceStats: the price level when a review is edited or deleted", () => {
+  const priceAfter = async (
+    osmPriceLevel: string | null,
+    reviewPrices: (string | null)[]
+  ) => {
+    findUniqueOrThrow.mockResolvedValue({ osmPriceLevel });
+    findMany.mockResolvedValue(
+      reviewPrices.map((priceLevel) => ({ rating: 4, priceLevel }))
+    );
+    update.mockImplementation(async ({ data }) => ({ id: "p1", ...data }));
+
+    const result = await refreshPlaceStats(db, "p1");
+    return result.priceLevel;
+  };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("starts from what OpenStreetMap says, not from the price stored now", async () => {
+    findUniqueOrThrow.mockResolvedValue({ osmPriceLevel: null });
+    findMany.mockResolvedValue([]);
+    update.mockResolvedValue({ id: "p1" });
+
+    await refreshPlaceStats(db, "p1");
+
+    expect(findUniqueOrThrow).toHaveBeenCalledWith({
+      where: { id: "p1" },
+      select: { osmPriceLevel: true },
+    });
+  });
+
+  it("gives a place that OpenStreetMap tags free its FREE back when its only review is deleted", async () => {
+    expect(await priceAfter("FREE", [])).toBe("FREE");
+  });
+
+  it("leaves a place that OpenStreetMap does not tag without a price when its last review is deleted (AC3)", async () => {
+    expect(await priceAfter(null, [])).toBeNull();
+  });
+
+  it("follows a review that is edited from FREE to a paid price, for a place that is not tagged free", async () => {
+    expect(await priceAfter(null, ["FREE"])).toBe("FREE");
+    expect(await priceAfter(null, ["€€€"])).toBe("€€€");
+  });
+
+  it("gives a free place its FREE back when a review is deleted and one paid review is left", async () => {
+    expect(await priceAfter("FREE", ["€€", "€€"])).toBe("€€");
+    expect(await priceAfter("FREE", ["€€"])).toBe("FREE");
+  });
+
+  it("keeps what OpenStreetMap says when no review gives a price", async () => {
+    expect(await priceAfter("FREE", [null, null])).toBe("FREE");
+    expect(await priceAfter(null, [null])).toBeNull();
+  });
+
+  it("uses the most common price of the reviews for a place that is not tagged free", async () => {
+    expect(await priceAfter(null, ["€", "€€", "€€"])).toBe("€€");
   });
 });
 

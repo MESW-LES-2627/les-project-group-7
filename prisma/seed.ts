@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { randomUUID } from "crypto";
 import { refreshPlaceStats, markPlaceVisited } from "../src/lib/place-stats";
+import { osmPriceLevelOf } from "../src/domain/osm/osm";
 import { hashPassword } from "better-auth/crypto";
 
 const prisma = new PrismaClient();
@@ -281,6 +282,8 @@ async function main() {
         latitude: p.latitude,
         longitude: p.longitude,
         openingHours: p.openingHours,
+        // What OpenStreetMap says, also for a place with reviews: they never change it
+        osmPriceLevel: osmPriceLevelOf(p.priceLevel),
         cityId: city.id,
       };
       await prisma.place.upsert({

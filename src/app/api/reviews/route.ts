@@ -8,7 +8,7 @@ import {
   ALREADY_REVIEWED_MESSAGE,
   isRepeatedReviewError,
 } from "@/domain/reviews/one-review-rule";
-import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
+import { osmIdFromDiscoveredPlaceId, osmPriceLevelOf } from "@/domain/osm/osm";
 import { refreshPlaceStats, markPlaceVisited } from "@/lib/place-stats";
 
 /**
@@ -172,6 +172,9 @@ export async function POST(request: Request) {
           priceLevel: isPriceLevel(rawPlace.priceLevel)
             ? rawPlace.priceLevel
             : null,
+          osmPriceLevel: osmPriceLevelOf(
+            isPriceLevel(rawPlace.priceLevel) ? rawPlace.priceLevel : null
+          ),
           cityId: city.id,
           source: "LAZY_OSM",
         },

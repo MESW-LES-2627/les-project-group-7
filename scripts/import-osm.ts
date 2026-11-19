@@ -17,6 +17,7 @@ import * as path from "path";
 import {
   placeFromNominatim,
   gridTiles,
+  osmPriceLevelOf,
   type CityArea,
   type ImportedPlace,
 } from "../src/domain/osm/osm";
@@ -446,9 +447,16 @@ async function main() {
         latitude: place.latitude,
         longitude: place.longitude,
         openingHours: place.openingHours,
+        // What OpenStreetMap says, also for a place with reviews: they never change it
+        osmPriceLevel: osmPriceLevelOf(place.priceLevel),
         ...(reviewed.has(place.osmId) ? {} : { priceLevel: place.priceLevel }),
       },
-      create: { ...place, cityId: row.id, source: "IMPORTED" },
+      create: {
+        ...place,
+        osmPriceLevel: osmPriceLevelOf(place.priceLevel),
+        cityId: row.id,
+        source: "IMPORTED",
+      },
     });
   }
 

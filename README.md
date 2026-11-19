@@ -139,6 +139,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run test:watch` / `test:report`    | Vitest in watch mode / verbose report                           |
 | `npm run prisma:studio`                 | Opens Prisma Studio to browse the database                      |
 | `npm run import:osm -- <city>`          | Imports the places of one city from OpenStreetMap (see above) |
+| `npm run backfill:osm-price`            | Sets what OpenStreetMap says about the price of each place, from the snapshots (once, after the migration of #40; `--dry-run` only counts) |
 | `npm run format` / `format:check`       | Prettier on `src/` (write / check only)                         |
 | `npm run lint:docs` / `format:docs`     | Checks the links and anchors in `docs/` / formats `docs/*.md`   |
 | `npm run knip`                          | Finds unused files, exports and dependencies                    |

@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const {
   placeFindUnique,
+  placeCreate,
+  cityFindFirst,
   reviewFindUnique,
   reviewCreate,
   transaction,
@@ -10,6 +12,8 @@ const {
   markPlaceVisited,
 } = vi.hoisted(() => ({
   placeFindUnique: vi.fn(),
+  placeCreate: vi.fn(),
+  cityFindFirst: vi.fn(),
   reviewFindUnique: vi.fn(),
   reviewCreate: vi.fn(),
   transaction: vi.fn(),
@@ -20,7 +24,8 @@ const {
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    place: { findUnique: placeFindUnique },
+    place: { findUnique: placeFindUnique, create: placeCreate },
+    city: { findFirst: cityFindFirst },
     review: { findUnique: reviewFindUnique },
     $transaction: transaction,
   },
@@ -157,6 +162,45 @@ describe("POST /api/reviews", () => {
     });
     expect(reviewCreate.mock.calls[0][0].data.placeId).toBe("p9");
     expect(refreshPlaceStats).toHaveBeenCalledWith(tx, "p9");
+  });
+
+  it("saves a place found on the map with what OpenStreetMap says about its price, and reviews it", async () => {
+    placeFindUnique.mockResolvedValue(null);
+    cityFindFirst.mockResolvedValue({ id: "city-porto" });
+    placeCreate.mockImplementation(async ({ data }) => ({ ...data }));
+    reviewCreate.mockResolvedValue({ id: "r5", placeId: "osm-node-77" });
+    refreshPlaceStats.mockResolvedValue({ id: "osm-node-77", reviewCount: 1 });
+
+    const mapPlace = {
+      name: "Jardim",
+      latitude: 41.15,
+      longitude: -8.63,
+      category: "PARK",
+      priceLevel: "FREE",
+    };
+    const free = await call({
+      ...GOOD,
+      placeId: "osm-node-77",
+      place: mapPlace,
+    });
+
+    expect(free.status).toBe(201);
+    expect(placeCreate.mock.calls[0][0].data).toMatchObject({
+      id: "osm-node-77",
+      osmId: "node/77",
+      priceLevel: "FREE",
+      osmPriceLevel: "FREE",
+      source: "LAZY_OSM",
+    });
+
+    // A place that OpenStreetMap does not tag free has no price from OpenStreetMap
+    placeCreate.mockClear();
+    await call({
+      ...GOOD,
+      placeId: "osm-node-78",
+      place: { ...mapPlace, priceLevel: "€€" },
+    });
+    expect(placeCreate.mock.calls[0][0].data.osmPriceLevel).toBeNull();
   });
 
   it("answers 409 when the user already reviewed the place, before saving anything", async () => {

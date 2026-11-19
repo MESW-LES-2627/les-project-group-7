@@ -3,6 +3,7 @@ import { PlaceCategory } from "@prisma/client";
 import {
   mapOsmCategory,
   mapOsmPriceLevel,
+  osmPriceLevelOf,
   openingHoursFromTags,
   formatOsmAddress,
   formatNominatimAddress,
@@ -333,5 +334,23 @@ describe("gridTiles", () => {
     expect(gridTiles(area, 1, 1)).toEqual([
       { left: 20, top: 12, right: 24, bottom: 10 },
     ]);
+  });
+});
+
+describe("osmPriceLevelOf", () => {
+  it("keeps FREE, which is what OpenStreetMap says for a place tagged fee=no", () => {
+    expect(osmPriceLevelOf("FREE")).toBe("FREE");
+  });
+
+  it("gives nothing for every other price level, because OpenStreetMap has no other price data", () => {
+    for (const level of ["€", "€€", "€€€", "", "free", null, undefined]) {
+      expect(osmPriceLevelOf(level)).toBeNull();
+    }
+  });
+
+  it("agrees with the mapping of the tags", () => {
+    expect(osmPriceLevelOf(mapOsmPriceLevel({ fee: "no" }))).toBe("FREE");
+    expect(osmPriceLevelOf(mapOsmPriceLevel({ fee: "yes" }))).toBeNull();
+    expect(osmPriceLevelOf(mapOsmPriceLevel({}))).toBeNull();
   });
 });

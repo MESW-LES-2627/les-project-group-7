@@ -118,7 +118,11 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   The seed script creates demo users and sample reviews (the schema does not mark
   them as demo data).
   A place's price level is the most common (mode) price level given in its reviews, except that a
-  free place (`fee=no`) stays free until at least 2 reviews give a paid price.
+  free place (`fee=no`) stays free until at least 2 reviews give a paid price. The price that
+  OpenStreetMap gives (free or nothing) is kept apart from the reviews, so when a review is edited or
+  deleted the price level is calculated again from it: a place tagged free gets its FREE back when
+  the paid reviews are gone, and a place that is not tagged free has no price when its last review
+  is deleted.
 - **Ranking:** places are ranked by a **weighted rating**, not by the plain average, so that
   one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
   `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 6` and

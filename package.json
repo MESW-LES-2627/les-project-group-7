@@ -16,6 +16,7 @@
     "prisma:studio": "prisma studio",
     "seed": "tsx prisma/seed.ts",
     "import:osm": "tsx scripts/import-osm.ts",
+    "backfill:osm-price": "tsx scripts/backfill-osm-price.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "lint:docs": "tsx scripts/validate-docs.ts",

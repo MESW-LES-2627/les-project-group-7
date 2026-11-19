@@ -30,7 +30,7 @@ export async function refreshPlaceStats(db: DatabaseClient, placeId: string) {
 
   const place = await db.place.findUniqueOrThrow({
     where: { id: placeId },
-    select: { priceLevel: true },
+    select: { osmPriceLevel: true },
   });
 
   const reviews = await db.review.findMany({
@@ -42,13 +42,13 @@ export async function refreshPlaceStats(db: DatabaseClient, placeId: string) {
     reviews.map((review) => review.rating)
   );
 
-  const priceLevel =
-    reviews.length === 0
-      ? null
-      : calculatePlacePriceLevel(
-          place.priceLevel,
-          reviews.map((review) => review.priceLevel)
-        );
+  // The starting point is what OpenStreetMap says (FREE or nothing), not the price level stored now:
+  // the stored one already holds the effect of the reviews, so a review that is edited or deleted could
+  // never take it back. With no review that gives a price, the place has what OpenStreetMap says.
+  const priceLevel = calculatePlacePriceLevel(
+    place.osmPriceLevel,
+    reviews.map((review) => review.priceLevel)
+  );
 
   return db.place.update({
     where: { id: placeId },
