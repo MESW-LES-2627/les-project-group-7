@@ -15,6 +15,7 @@ import {
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import WriteReviewButton from "./WriteReviewButton";
 import { formatOpeningHours } from "@/domain/osm/opening-hours";
+import ReviewActions from "@/components/ReviewActions";
 
 export const dynamic = "force-dynamic";
 
@@ -204,6 +205,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
                 const hasPrice = isPriceLevel(rev.priceLevel);
                 const hasText = rev.text && rev.text.trim().length > 0;
+                const isOwnReview = session?.user.id === rev.userId;
 
                 return (
                   <li key={rev.id} className="py-4 first:pt-0 last:pb-0">
@@ -228,12 +230,25 @@ export default async function PlacePage({ params }: PlacePageProps) {
                         )}
                       </div>
 
-                      <time
-                        dateTime={rev.createdAt.toISOString()}
-                        className="text-xs text-slate-400"
-                      >
-                        {rev.createdAt.toLocaleDateString("en-GB")}
-                      </time>
+                      <div className="flex items-center gap-3">
+                        <time
+                          dateTime={rev.createdAt.toISOString()}
+                          className="text-xs text-slate-400"
+                        >
+                          {rev.createdAt.toLocaleDateString("en-GB")}
+                        </time>
+
+                        {isOwnReview && (
+                          <ReviewActions
+                            review={{
+                              id: rev.id,
+                              rating: rev.rating,
+                              text: rev.text,
+                              priceLevel: rev.priceLevel,
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
 
                     {hasText && (
