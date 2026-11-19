@@ -92,6 +92,7 @@ describe("TripPage", () => {
     expect(html).toContain("Porto weekend");
     expect(html).toContain("Porto, Portugal");
     expect(html).toContain("Delete trip");
+    expect(html).toContain("Edit trip");
     const headings = [...html.matchAll(/<h3[^>]*>(Day \d+ — [^<]+)</g)];
     expect(headings.map((match) => match[1])).toEqual([
       "Day 1 — Tue 1 Dec 2026",

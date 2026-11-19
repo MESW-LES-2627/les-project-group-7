@@ -6,6 +6,7 @@ import { toTripResponse } from "@/domain/trips/trip-response";
 import { toStopResponse } from "@/domain/itinerary/stop-response";
 import { listStops } from "@/lib/trip-stops";
 import DeleteTripDialog from "@/components/DeleteTripDialog";
+import EditTripDialog from "@/components/EditTripDialog";
 import ItineraryEditor from "@/components/ItineraryEditor";
 
 export const dynamic = "force-dynamic";
@@ -68,7 +69,15 @@ export default async function TripPage({ params }: TripPageProps) {
           </p>
         </div>
 
-        <DeleteTripDialog tripId={trip.id} tripName={trip.name} />
+        <div className="flex gap-2">
+          <EditTripDialog
+            tripId={trip.id}
+            name={trip.name}
+            startDate={trip.startDate}
+            endDate={trip.endDate}
+          />
+          <DeleteTripDialog tripId={trip.id} tripName={trip.name} />
+        </div>
       </div>
 
       <ItineraryEditor
