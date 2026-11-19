@@ -8,7 +8,7 @@ import {
   parseDiscoveredPlace,
   type DiscoveredPlace,
 } from "@/domain/osm/discovered-place";
-import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
+import { osmIdFromDiscoveredPlaceId, osmPriceLevelOf } from "@/domain/osm/osm";
 import {
   loadItinerary,
   listStops,
@@ -166,6 +166,8 @@ export async function POST(
         place = await tx.place.create({
           data: {
             ...discovered,
+            // What OpenStreetMap says about the price (FREE or nothing): reviews never change it
+            osmPriceLevel: osmPriceLevelOf(discovered.priceLevel),
             cityId: state.layout.cityId,
             source: "LAZY_OSM",
           },
