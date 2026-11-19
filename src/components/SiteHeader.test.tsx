@@ -28,6 +28,17 @@ describe("SiteHeader", () => {
     expect(html).toContain('href="/register"');
     expect(html).not.toContain('href="/trips"');
     expect(html).not.toContain("My trips");
+    expect(html).not.toContain('href="/my-places"');
+  });
+
+  it("renders the My places link when logged in", async () => {
+    getSession.mockResolvedValue({
+      user: { username: "maria", displayUsername: "Maria" },
+    });
+
+    const html = await render();
+    expect(html).toContain('href="/my-places"');
+    expect(html).toContain("My places");
   });
 
   it("renders My trips link and username when logged in", async () => {

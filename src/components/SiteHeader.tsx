@@ -7,7 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 /**
  * Top bar on every page. Logged out: links to the login and registration pages.
- * Logged in: link to "My trips", the username as typed, and the logout button.
+ * Logged in: links to "My trips" and "My places", the username as typed, and the logout button.
  */
 export default async function SiteHeader() {
   // A database failure must not take down every page (404s, /register): show the logged-out bar.
@@ -38,6 +38,12 @@ export default async function SiteHeader() {
                 className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 dark:hover:text-indigo-400"
               >
                 My trips
+              </Link>
+              <Link
+                href="/my-places"
+                className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 dark:hover:text-indigo-400"
+              >
+                My places
               </Link>
               <span className="text-sm font-medium text-slate-700">
                 @{session.user.displayUsername ?? session.user.username}
