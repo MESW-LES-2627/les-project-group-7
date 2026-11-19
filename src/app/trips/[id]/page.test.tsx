@@ -1,12 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const { findFirst, getSession } = vi.hoisted(() => ({
+const { findFirst, findStops, findPlaces, getSession } = vi.hoisted(() => ({
   findFirst: vi.fn(),
+  findStops: vi.fn(),
+  findPlaces: vi.fn(),
   getSession: vi.fn(),
 }));
 
-vi.mock("@/lib/prisma", () => ({ prisma: { trip: { findFirst } } }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    trip: { findFirst },
+    itineraryStop: { findMany: findStops },
+    place: { findMany: findPlaces },
+  },
+}));
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
@@ -49,8 +57,29 @@ function mockTrip() {
 const render = async (id = "t1") =>
   renderToStaticMarkup(await TripPage({ params: Promise.resolve({ id }) }));
 
+function mockStop(id: string, dayId: string, position: number, name: string) {
+  return {
+    id,
+    dayId,
+    placeId: `p-${id}`,
+    position,
+    visitTime: position === 1 ? "10:00" : null,
+    place: {
+      id: `p-${id}`,
+      name,
+      category: "MUSEUM",
+      address: "Rua 1",
+      latitude: 41.1,
+      longitude: -8.6,
+      priceLevel: null,
+    },
+  };
+}
+
 beforeEach(() => {
   findFirst.mockReset();
+  findStops.mockReset().mockResolvedValue([]);
+  findPlaces.mockReset().mockResolvedValue([]);
   getSession.mockResolvedValue({ user: { id: "u1" } });
 });
 
@@ -63,12 +92,38 @@ describe("TripPage", () => {
     expect(html).toContain("Porto weekend");
     expect(html).toContain("Porto, Portugal");
     expect(html).toContain("Delete trip");
-    expect(html.match(/Day \d+ — [^<]+/g)).toEqual([
+    const headings = [...html.matchAll(/<h3[^>]*>(Day \d+ — [^<]+)</g)];
+    expect(headings.map((match) => match[1])).toEqual([
       "Day 1 — Tue 1 Dec 2026",
       "Day 2 — Wed 2 Dec 2026",
       "Day 3 — Thu 3 Dec 2026",
     ]);
     expect(html.match(/No places yet/g)).toHaveLength(3);
+  });
+
+  it("shows the stops of each day in order, with their times, and reads only the itinerary of the trip (#61)", async () => {
+    findFirst.mockResolvedValue(mockTrip());
+    findStops.mockResolvedValue([
+      mockStop("s1", "d2", 1, "Serralves"),
+      mockStop("s2", "d2", 2, "Casa da Música"),
+    ]);
+
+    const html = await render();
+
+    expect(html.indexOf("Serralves")).toBeLessThan(
+      html.indexOf("Casa da Música")
+    );
+    expect(html).toContain('value="10:00"');
+    expect(html).toContain("Remove Serralves");
+    expect(html).toContain("Save trip");
+    expect(html).toContain("All changes saved");
+    expect(html.match(/No places yet/g)).toHaveLength(2);
+    expect(findStops).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { itineraryId: "i1" } })
+    );
+    expect(findPlaces).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { cityId: "c1" } })
+    );
   });
 
   it("only looks for a trip of the logged-in user, a 404 otherwise", async () => {

@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { toTripResponse } from "@/domain/trips/trip-response";
-import { formatDayLabel } from "@/domain/trips/trip-labels";
+import { toStopResponse } from "@/domain/itinerary/stop-response";
+import { listStops } from "@/lib/trip-stops";
 import DeleteTripDialog from "@/components/DeleteTripDialog";
+import ItineraryEditor from "@/components/ItineraryEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +34,31 @@ export default async function TripPage({ params }: TripPageProps) {
 
   const trip = toTripResponse({ ...record, itinerary });
 
+  const [stops, cityPlaces] = await Promise.all([
+    listStops(prisma, itinerary.id),
+    prisma.place.findMany({
+      where: { cityId: record.cityId },
+      select: {
+        id: true,
+        osmId: true,
+        name: true,
+        category: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        priceLevel: true,
+        averageRating: true,
+        reviewCount: true,
+      },
+      orderBy: [
+        { averageRating: { sort: "desc", nulls: "last" } },
+        { name: "asc" },
+      ],
+    }),
+  ]);
+
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{trip.name}</h1>
@@ -46,16 +71,13 @@ export default async function TripPage({ params }: TripPageProps) {
         <DeleteTripDialog tripId={trip.id} tripName={trip.name} />
       </div>
 
-      <ul className="space-y-3">
-        {trip.days.map((day) => (
-          <li key={day.id} className="rounded-xl border border-slate-200 p-4">
-            <h2 className="font-semibold">
-              {formatDayLabel(day.dayNumber, day.date)}
-            </h2>
-            <p className="text-sm text-slate-500">No places yet</p>
-          </li>
-        ))}
-      </ul>
+      <ItineraryEditor
+        tripId={trip.id}
+        cityName={record.city.name}
+        days={trip.days}
+        initialStops={stops.map(toStopResponse)}
+        cityPlaces={cityPlaces}
+      />
     </main>
   );
 }
