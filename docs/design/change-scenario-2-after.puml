@@ -12,7 +12,7 @@ skinparam component {
 
 legend right
   |<#FFF8E1> Exists today |
-  |<#EEEEEE> Planned (S19 and saving a place of the map to a wishlist) |
+  |<#EEEEEE> Planned (saving a place of the map to a wishlist or bookmarks) |
   |<#DDF3DD> New with the decision (ADR-011) |
   The steps are written once. A caller passes the data of the
   place and the rule for its city (a strategy: a function), and

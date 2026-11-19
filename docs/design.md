@@ -438,7 +438,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 #### ADR-011: One function saves a place found on the map, and the rule for its city is an argument
 
 - **Status:** Accepted. It is built with the first story that needs it: S19 (live discovery, AC2) or saving a place found on the map to a wishlist or bookmarks, as its first step.
-- **Context:** A place found on the map becomes a `Place` the first time it is reviewed or added to a trip. Two handlers do it, each with its own copy of the sequence, and the copies disagree: `POST /api/reviews` assigns the city Porto without checking the position, `POST /api/trips/[id]/stops` assigns the city of the trip and checks the position against the city areas and saves only after the stop is accepted. S19 asks for a third rule, the nearest city of the catalog. Saving a place of the map to a wishlist would add a third copy. The rules change often (9 commits to the reviews route and 6 to the stops route between 1 and 19 Nov 2026) and the column `osmPriceLevel` (#157) had to be added in both. The full analysis is in section 4.2 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
+- **Context:** A place found on the map becomes a `Place` the first time it is reviewed or added to a trip. Two handlers do it, each with its own copy of the sequence. Saving a place of the map to a wishlist or bookmarks would add a third copy, and a second source of places would change all of them. The copies already disagree: `POST /api/reviews` assigns the city Porto without checking the position, `POST /api/trips/[id]/stops` assigns the city of the trip, checks the position against the city areas and saves only after the stop is accepted, and S19 asks for a third rule, the nearest city of the catalog. The rules change often (9 commits to the reviews route and 6 to the stops route between 1 and 19 Nov 2026) and the column `osmPriceLevel` (#157) had to be added in both. The full analysis is in section 4.2 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
 - **Decision:** Two steps, because a refusal must save nothing. `parseDiscoveredPlace(placeId, raw, cityRule)` (pure, `src/domain/osm/discovered-place.ts`) checks the data and applies a city rule. `saveDiscoveredPlace(db, discovered)` (new, `src/lib/discovered-places.ts`) finds the place by id or OpenStreetMap id or creates it with `source = LAZY_OSM` and the price baseline, and the caller calls it after its own checks, inside its own transaction. A city rule is a function from a position to a city or a refusal, in `src/domain/osm/city-rules.ts`: `cityOfTrip(cityId)` for trips and `nearestCity(cities)` for reviews and saved places (the Strategy pattern, in function form).
 - **Alternatives considered:** copying the steps into the saved places route (functional coupling between three writers, and the copies keep drifting); a separate endpoint that the browser calls before the review, the stop or the saved place (it breaks the rule that a refusal saves nothing and needs two requests); an abstract class with a Template Method and one subclass per caller (the code base uses functions, and the callers differ in two things only).
 - **Consequences:**
@@ -455,7 +455,7 @@ each iteration, and its decision is recorded as an ADR in [section 3.3](#33-arch
 | Scenario | Written at | Decision |
 | -------- | ---------- | -------- |
 | 1. Edit and delete a review (US-C2-01), section 4.1 below | End of Iteration 1 | [ADR-010](#adr-010-one-function-recomputes-the-stored-values-of-a-place) |
-| 2. Save a place found on the map (S19 and the wishlist), section 4.2 below | End of Iteration 2 | [ADR-011](#adr-011-one-function-saves-a-place-found-on-the-map-and-the-rule-for-its-city-is-an-argument) |
+| 2. Save a place found on the map to a wishlist or bookmarks, section 4.2 below | End of Iteration 2 | [ADR-011](#adr-011-one-function-saves-a-place-found-on-the-map-and-the-rule-for-its-city-is-an-argument) |
 
 ### 4.1. Scenario 1 — Edit and delete a review (Iteration 1)
 
@@ -596,14 +596,15 @@ Before and after:
 
 #### Change scenario and design context
 
-**The scenario.** The story **S19 Live discovery** (Stretch, built in the tracer bullet) says that a place found on the map is saved to the
-catalog **"in the correct city"** when its first review is posted (AC2), and its business rule is: "a discovered place is
-assigned to the nearest city that is in the catalog". The story also records that this is not true today: a place saved from
-a review always goes to Porto (ADR-002). Next to it there is a second, equally plausible request: a user finds a place on the
-map and wants to put it on the wishlist or bookmark it, without writing a review first. The saved places API takes the id of a
-catalog place only, so such a place needs a `Place` row before it can be saved. Both requests touch the same knowledge: **how a
-place found on the map becomes a `Place`**. The change is plausible because S19 is a story and a wishlist of places found on the
-map is the natural next use, and it is sensitive because the rule for the city is about to change.
+**The scenario.** A user finds a place on the map or in the search, one that the catalog does not have yet, and wants to put it on
+the **wishlist** or to **bookmark** it, without writing a review first (an extension of US-D1-01, saved places; it is not a story
+yet). The saved places API takes the id of a catalog place only, so such a place needs a `Place` row before it can be
+saved. The same step already exists in two features: a place found on the map is saved to the catalog when it is reviewed and when
+it is added to a trip. The wishlist would be the third, and a second source of places beside OpenStreetMap, which the component
+diagram already allows for (the places data source is an external system), would make every one of them change at once.
+All of these touch the same knowledge: **how a place found on the map becomes a `Place`**. The change is plausible because
+reviewing, planning and saving are the three things a user does with a place, and it is sensitive because the rules of that
+step are volatile (see the coupling analysis).
 
 **The design today.** Two handlers turn a place of the map into a `Place` row, each with its own copy of the sequence:
 
@@ -613,7 +614,9 @@ map is the natural next use, and it is sensitive because the rule for the city i
 | `POST /api/trips/[id]/stops` (about 60 lines) | After the stop is accepted, so a refusal saves nothing (#60). City: the city of the trip, and only if the position is inside its area (`city-areas.ts`). The data is checked by `parseDiscoveredPlace`. A lost race on the unique OpenStreetMap id answers 409. |
 
 Both write `source = LAZY_OSM`, set the price baseline with `osmPriceLevelOf` and reuse a place that has the same OpenStreetMap
-id. They are not the rule of S19, and they are not the same rule as each other. The import script and the seed also create
+id. They are not the same rule as each other, and neither is the one that the story S19 (live discovery) asks for, "the nearest city
+of the catalog": the copies have already drifted, which is what happens to a rule that is written twice (ADR-002 records the
+Porto assignment of reviews as a known limitation). The import script and the seed also create
 places, but from snapshot files, in bulk and with `source = IMPORTED`: a different path, outside this scenario. One change shows
 the cost of the copies: the column `osmPriceLevel` (#157) had to be written in both handlers, in separate commits, and in the
 import, the seed and the backfill script.

@@ -11,7 +11,7 @@ skinparam component {
 
 legend right
   |<#FFF8E1> Exists today |
-  |<#EEEEEE> Planned (S19 and saving a place of the map to a wishlist) |
+  |<#EEEEEE> Planned (saving a place of the map to a wishlist or bookmarks) |
   Each caller checks the data of the place, chooses its city and
   creates the Place row. The two copies exist and already
   disagree: reviews assume Porto, trips use the city of the trip.
