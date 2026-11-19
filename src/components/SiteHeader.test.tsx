@@ -53,3 +53,32 @@ describe("SiteHeader", () => {
     expect(html).toContain("dark:hover:text-indigo-400");
   });
 });
+
+describe("Visited places navigation (Task #43)", () => {
+  it("shows My visited places when the user is logged in", async () => {
+    getSession.mockResolvedValue({
+      user: {
+        id: "user-1",
+        username: "maria",
+        displayUsername: "Maria",
+      },
+    });
+
+    const html = await render();
+
+    expect(html).toContain("My visited places");
+    expect(html).toContain('href="/visited"');
+    expect(html).toContain("My trips");
+  });
+
+  it("hides My visited places when the user is logged out", async () => {
+    getSession.mockResolvedValue(null);
+
+    const html = await render();
+
+    expect(html).not.toContain("My visited places");
+    expect(html).not.toContain('href="/visited"');
+    expect(html).toContain('href="/login"');
+    expect(html).toContain('href="/register"');
+  });
+});
