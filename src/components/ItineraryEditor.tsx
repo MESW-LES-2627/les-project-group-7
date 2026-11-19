@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PlannerSavedPlaces from "@/components/PlannerSavedPlaces";
 import PlaceSearchAutocomplete from "@/components/PlaceSearchAutocomplete";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import {
@@ -187,6 +188,11 @@ export default function ItineraryEditor({
     });
   }
 
+  function addSavedPlace(placeId: string) {
+    const place = cityPlaces.find((item) => item.id === placeId);
+    if (place) addLocalPlace(place);
+  }
+
   function addOsmPlace(place: OsmSearchResult) {
     add({
       id: discoveredPlaceId(place.osmId),
@@ -353,6 +359,15 @@ export default function ItineraryEditor({
           </div>
         </div>
       </section>
+
+      <PlannerSavedPlaces
+        cityName={cityName}
+        cityPlaceIds={new Set(cityPlaces.map((place) => place.id))}
+        plannedIds={new Set(stops.map((stop) => stop.placeId))}
+        dayLabel={dayLabel(activeDayId)}
+        disabled={busy || !activeDayId}
+        onAdd={addSavedPlace}
+      />
 
       {error && (
         <p
