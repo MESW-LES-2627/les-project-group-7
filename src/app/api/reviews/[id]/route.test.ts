@@ -139,6 +139,20 @@ describe("PATCH /api/reviews/[id]", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("returns one message for each wrong field, as the post does", async () => {
+    const response = await call({ rating: 9, text: " ", priceLevel: "x" });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("Rating must be an integer between 1 and 5");
+    expect(Object.keys(body.errors).sort()).toEqual([
+      "priceLevel",
+      "rating",
+      "text",
+    ]);
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("does not allow changing review ownership", async () => {
     const response = await call({
       userId: "u2",

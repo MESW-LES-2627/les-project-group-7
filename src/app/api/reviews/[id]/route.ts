@@ -9,7 +9,8 @@ import { validateReviewUpdateInput } from "@/domain/reviews/review-update-valida
  * PATCH /api/reviews/[id]
  *
  * Updates a review belonging to the logged-in user.
- * Returns 404 when the review does not exist or belongs to another user.
+ * Returns 400 with `error` and, for a wrong field, one message per field in `errors` (as POST does),
+ * and 404 when the review does not exist or belongs to another user.
  */
 export async function PATCH(
   request: Request,
@@ -31,7 +32,10 @@ export async function PATCH(
     const validation = validateReviewUpdateInput(body);
 
     if (!validation.ok) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+      return NextResponse.json(
+        { error: validation.error, errors: validation.errors },
+        { status: 400 }
+      );
     }
 
     // Find the review only if it belongs to the logged-in user.
