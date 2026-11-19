@@ -2,17 +2,14 @@ import { NextResponse } from "next/server";
 import { PlaceCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/guard";
-import {
-  calculateAverageRating,
-  calculatePlacePriceLevel,
-  isPriceLevel,
-} from "@/domain/reviews/rating";
+import { isPriceLevel } from "@/domain/reviews/rating";
 import { validateReviewInput } from "@/domain/reviews/review-validation";
 import {
   ALREADY_REVIEWED_MESSAGE,
   isRepeatedReviewError,
 } from "@/domain/reviews/one-review-rule";
-import { osmIdFromDiscoveredPlaceId } from "@/domain/osm/osm";
+import { osmIdFromDiscoveredPlaceId, osmPriceLevelOf } from "@/domain/osm/osm";
+import { refreshPlaceStats, markPlaceVisited } from "@/lib/place-stats";
 
 /**
  * User-Defined Type Guard verifying if an unknown value is a valid Prisma PlaceCategory.
@@ -175,6 +172,9 @@ export async function POST(request: Request) {
           priceLevel: isPriceLevel(rawPlace.priceLevel)
             ? rawPlace.priceLevel
             : null,
+          osmPriceLevel: osmPriceLevelOf(
+            isPriceLevel(rawPlace.priceLevel) ? rawPlace.priceLevel : null
+          ),
           cityId: city.id,
           source: "LAZY_OSM",
         },
@@ -198,69 +198,38 @@ export async function POST(request: Request) {
       );
     }
 
-    // Step 3: Create the Review record
-    const newReview = await prisma.review.create({
-      data: {
-        userId: authorId,
-        placeId: targetPlaceId,
-        rating,
-        text,
-        priceLevel,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
+    // Steps 3 to 5 are one transaction, so that a review is never saved without the visit and the new
+    // statistics of the place, and two changes to the reviews of one place run one after the other
+    const { newReview, updatedPlace } = await prisma.$transaction(
+      async (tx) => {
+        // Step 3: Create the Review record
+        const newReview = await tx.review.create({
+          data: {
+            userId: authorId,
+            placeId: targetPlaceId,
+            rating,
+            text,
+            priceLevel,
           },
-        },
-      },
-    });
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+        });
 
-    // Step 4: Domain policy — mark the place as visited for the author
-    await prisma.visit.upsert({
-      where: {
-        userId_placeId: {
-          userId: authorId,
-          placeId: targetPlaceId,
-        },
-      },
-      update: {
-        visitedAt: new Date(),
-      },
-      create: {
-        userId: authorId,
-        placeId: targetPlaceId,
-      },
-    });
+        // Step 4: Domain policy — mark the place as visited
+        await markPlaceVisited(tx, authorId, targetPlaceId);
 
-    // Step 5: Domain policy — recalculate arithmetic average rating and modal price level
-    const allReviews = await prisma.review.findMany({
-      where: { placeId: targetPlaceId },
-      select: { rating: true, priceLevel: true },
-    });
+        // Step 5: Domain policy — refresh place statistics (ADR-010)
+        const updatedPlace = await refreshPlaceStats(tx, targetPlaceId);
 
-    const ratingsList: number[] = [];
-    const priceLevelsList: (string | null)[] = [];
-    for (let i = 0; i < allReviews.length; i++) {
-      ratingsList.push(allReviews[i].rating);
-      priceLevelsList.push(allReviews[i].priceLevel);
-    }
-    const newAvg = calculateAverageRating(ratingsList);
-    const newPriceLevel = calculatePlacePriceLevel(
-      existingPlace.priceLevel,
-      priceLevelsList
+        return { newReview, updatedPlace };
+      }
     );
-
-    // Step 6: Update the Place with the new average, count, and price level
-    const updatedPlace = await prisma.place.update({
-      where: { id: targetPlaceId },
-      data: {
-        averageRating: newAvg,
-        reviewCount: allReviews.length,
-        priceLevel: newPriceLevel,
-      },
-    });
 
     return NextResponse.json(
       { review: newReview, place: updatedPlace },

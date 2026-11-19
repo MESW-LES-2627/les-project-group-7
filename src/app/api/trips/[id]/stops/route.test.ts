@@ -269,6 +269,24 @@ describe("POST /api/trips/[id]/stops: a place of the map that is not in the cata
     });
   });
 
+  it("keeps what OpenStreetMap says about the price apart from the price of the place", async () => {
+    await call({
+      dayId: "d1",
+      placeId: "osm-node-5001",
+      place: { ...MAP_PLACE, priceLevel: "FREE" },
+    });
+    await call({
+      dayId: "d1",
+      placeId: "osm-node-5002",
+      place: { ...MAP_PLACE, priceLevel: "€€" },
+    });
+
+    const free = data.places.find((item) => item.id === "osm-node-5001");
+    const paid = data.places.find((item) => item.id === "osm-node-5002");
+    expect(free).toMatchObject({ priceLevel: "FREE", osmPriceLevel: "FREE" });
+    expect(paid).toMatchObject({ priceLevel: "€€", osmPriceLevel: null });
+  });
+
   it("uses the place of the catalog that has the same OpenStreetMap id, instead of a second copy", async () => {
     data.places[0].osmId = "node/4242";
     const placesBefore = data.places.length;

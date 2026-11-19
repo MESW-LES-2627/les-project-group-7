@@ -2,10 +2,8 @@ import { PrismaClient, PlaceCategory } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
 import { randomUUID } from "crypto";
-import {
-  calculateAverageRating,
-  calculatePlacePriceLevel,
-} from "../src/domain/reviews/rating";
+import { refreshPlaceStats, markPlaceVisited } from "../src/lib/place-stats";
+import { osmPriceLevelOf } from "../src/domain/osm/osm";
 import { hashPassword } from "better-auth/crypto";
 
 const prisma = new PrismaClient();
@@ -151,41 +149,25 @@ async function replaceDemoReviews(
   // The reviews endpoint marks the place as visited for the author of a review (US-C1-01), and the seed
   // writes reviews straight into the database, so it marks the places visited too. A visit that is
   // already there stays.
-  await prisma.visit.createMany({
-    data: authors.map((userId) => ({ userId, placeId })),
-    skipDuplicates: true,
-  });
+  for (const userId of new Set(authors)) {
+    await markPlaceVisited(prisma, userId, placeId, true);
+  }
 }
 
 /**
- * The seed writes reviews straight into the database, so the code of the reviews endpoint does not
- * run for them. This recomputes what that code stores on the place, from the reviews and with the
- * same functions of src/domain: the average rating, the number of reviews and the price level
- * (US-B2-01). A place keeps its price level when no review gives one.
+ * Recalculates place statistics using the shared ADR-010 policy.
+ * Includes reviews written directly by the seed.
  */
 async function recalculateRatings() {
   const places = await prisma.place.findMany({
     where: { reviews: { some: {} } },
-    select: { id: true, priceLevel: true },
+    select: { id: true },
   });
 
-  for (const { id, priceLevel } of places) {
-    const reviews = await prisma.review.findMany({
-      where: { placeId: id },
-      select: { rating: true, priceLevel: true },
-    });
-    await prisma.place.update({
-      where: { id },
-      data: {
-        averageRating: calculateAverageRating(reviews.map((r) => r.rating)),
-        reviewCount: reviews.length,
-        priceLevel: calculatePlacePriceLevel(
-          priceLevel,
-          reviews.map((r) => r.priceLevel)
-        ),
-      },
-    });
+  for (const { id } of places) {
+    await refreshPlaceStats(prisma, id);
   }
+
   return places.length;
 }
 
@@ -300,6 +282,8 @@ async function main() {
         latitude: p.latitude,
         longitude: p.longitude,
         openingHours: p.openingHours,
+        // What OpenStreetMap says, also for a place with reviews: they never change it
+        osmPriceLevel: osmPriceLevelOf(p.priceLevel),
         cityId: city.id,
       };
       await prisma.place.upsert({

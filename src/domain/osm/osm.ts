@@ -82,6 +82,15 @@ export function mapOsmPriceLevel(tags?: OsmTags | null): PriceLevel | null {
 }
 
 /**
+ * What OpenStreetMap says about the price of a place, as it is kept in `Place.osmPriceLevel`: FREE for a
+ * place tagged `fee=no`, and nothing for every other place (OpenStreetMap has no other price data, so
+ * any other level did not come from it).
+ */
+export function osmPriceLevelOf(priceLevel?: string | null): "FREE" | null {
+  return priceLevel === "FREE" ? "FREE" : null;
+}
+
+/**
  * The opening hours as OpenStreetMap writes them, or null when it has none (unknown: the app
  * cannot warn about closed places, and never invents hours).
  */

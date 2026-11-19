@@ -418,7 +418,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 - **Alternatives considered:** copying the steps into each handler (cheapest now, functional coupling between four writers with the most volatile rules); computing the values in the database with a trigger or a view (a volatile rule moves into SQL, away from the tested code); not storing the values and computing them on every read (every list and ranking aggregates thousands of reviews).
 - **Consequences:**
   - _Positive:_ functional coupling becomes contract coupling (a caller only says which place changed), a rule change touches one place, the Place policies leave the review handler as the component diagram says, and the seed cannot miss a policy again.
-  - _Trade-offs:_ one more module and one more level of indirection, and the function is tested with a database or a fake client, not as a pure function. Two simultaneous requests can still compute from a stale list of reviews; the new module allows one transaction in one place.
+  - _Trade-offs:_ one more module and one more level of indirection, and the function is tested with a database or a fake client, not as a pure function. Two simultaneous requests would compute from a stale list of reviews, so each writer calls the function inside its own transaction and the function first locks the row of the place (`SELECT … FOR NO KEY UPDATE`): the second request waits, then reads the reviews that the first one saved.
   - _Revisit:_ when the stored values grow (for example the rating score is stored), or when `rating.ts` keeps growing with unrelated rules and must be split.
 
 ## 4. Future change scenarios: coupling, cohesion, and design decisions
@@ -552,9 +552,11 @@ Before and after:
 **Costs and risks.**
 
 - One more module and one more level of indirection to read.
-- Two requests that arrive together can still compute from a stale list of reviews. Today this is accepted. It
-  is handled by running the function and the write in one transaction, which the new module makes possible in
-  one place.
+- Two requests that arrive together would compute from a stale list of reviews, and the last one to finish
+  would store a wrong rating until the next change (found by calling the endpoints in parallel against a local
+  database). The function locks the row of the place at its start, inside the transaction of each writer, so
+  the second request waits and then reads what the first one saved. The lock is in one place because the new
+  module is.
 - The function needs the database, so it is tested with a database or with a fake client, not as a pure
   function.
 

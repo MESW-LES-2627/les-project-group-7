@@ -22,6 +22,7 @@ export interface FakePlace {
   latitude: number;
   longitude: number;
   priceLevel: string | null;
+  osmPriceLevel?: string | null;
   cityId: string;
   source?: string;
 }
