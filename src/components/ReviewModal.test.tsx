@@ -4,6 +4,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { PlaceCategory } from "@prisma/client";
 import ReviewModal, { type ReviewItem } from "./ReviewModal";
 import type { PlaceItem } from "./PlaceExplorer";
@@ -123,5 +124,79 @@ describe("ReviewModal: the review of the logged-in user comes first", () => {
     renderModal({ reviews });
 
     expect(screen.getByText(/Recent Reviews \(3\)/)).toBeTruthy();
+  });
+});
+
+describe("ReviewModal: the form that writes a review", () => {
+  it("uses the same rating and price buttons as the dialog that edits a review", () => {
+    renderModal();
+
+    expect(screen.getByRole("group", { name: /^Rating/ })).toBeTruthy();
+    expect(screen.getByRole("group", { name: /^Price level/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "3 ★" })).toBeTruthy();
+    expect(screen.queryAllByRole("radio")).toHaveLength(0);
+  });
+
+  it("starts with nothing chosen and the submit button disabled", () => {
+    renderModal();
+
+    expect(
+      screen.getByRole("button", { name: "4 ★" }).getAttribute("aria-pressed")
+    ).toBe("false");
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /submit review/i,
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+  });
+
+  it("sends the rating, the comment and the price level that were chosen", async () => {
+    const onSubmit = vi.fn();
+    render(
+      <ReviewModal
+        place={place()}
+        currentUsername="ana"
+        reviews={[]}
+        isLoadingReviews={false}
+        isSubmitting={false}
+        submitSuccess={null}
+        errorMessage={null}
+        onClose={() => {}}
+        onSubmit={onSubmit}
+      />
+    );
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "4 ★" }));
+    await user.click(screen.getByRole("button", { name: /^€\s?€$/ }));
+    await user.type(screen.getByRole("textbox"), "  Great place  ");
+    await user.click(screen.getByRole("button", { name: /submit review/i }));
+
+    expect(onSubmit).toHaveBeenCalledWith(4, "Great place", "€€");
+  });
+
+  it("keeps submit disabled until the rating, the price level and the text are all given", async () => {
+    renderModal();
+    const user = userEvent.setup();
+    const submit = () =>
+      screen.getByRole("button", {
+        name: /submit review/i,
+      }) as HTMLButtonElement;
+
+    await user.click(screen.getByRole("button", { name: "5 ★" }));
+    await user.type(screen.getByRole("textbox"), "Nice");
+    expect(submit().disabled).toBe(true);
+
+    await user.click(screen.getByRole("button", { name: /free/i }));
+    expect(submit().disabled).toBe(false);
+  });
+
+  it("shows the notice and no form to a user who already reviewed the place", () => {
+    renderModal({ reviews: [review("1", "ana", "mine")] });
+
+    expect(screen.queryByRole("button", { name: "4 ★" })).toBeNull();
+    expect(screen.getByText(/already reviewed this place/i)).toBeTruthy();
   });
 });

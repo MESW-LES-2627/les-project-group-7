@@ -3,13 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
-import {
-  PRICE_LEVELS,
-  formatPriceLevel,
-  isPriceLevel,
-  type PriceLevel,
-} from "@/domain/reviews/rating";
+import { isPriceLevel, type PriceLevel } from "@/domain/reviews/rating";
 import { Button } from "@/components/ui/button";
+import { PriceLevelField, RatingField } from "@/components/ReviewFields";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -161,45 +157,17 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
           </DialogHeader>
 
           <form onSubmit={handleSave} className="space-y-4">
-            <fieldset>
-              <legend className="mb-2 text-sm font-medium">Rating</legend>
+            <RatingField
+              value={rating}
+              onChange={setRating}
+              disabled={isSubmitting}
+            />
 
-              <div className="flex flex-wrap gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <Button
-                    key={value}
-                    type="button"
-                    size="sm"
-                    variant={rating === value ? "default" : "outline"}
-                    aria-pressed={rating === value}
-                    onClick={() => setRating(value)}
-                    disabled={isSubmitting}
-                  >
-                    {value} ★
-                  </Button>
-                ))}
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend className="mb-2 text-sm font-medium">Price level</legend>
-
-              <div className="flex flex-wrap gap-2">
-                {PRICE_LEVELS.map((level) => (
-                  <Button
-                    key={level}
-                    type="button"
-                    size="sm"
-                    variant={priceLevel === level ? "default" : "outline"}
-                    aria-pressed={priceLevel === level}
-                    onClick={() => setPriceLevel(level)}
-                    disabled={isSubmitting}
-                  >
-                    {formatPriceLevel(level)}
-                  </Button>
-                ))}
-              </div>
-            </fieldset>
+            <PriceLevelField
+              value={priceLevel}
+              onChange={setPriceLevel}
+              disabled={isSubmitting}
+            />
 
             <div className="space-y-2">
               <label

@@ -25,6 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PriceLevelField, RatingField } from "@/components/ReviewFields";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -45,11 +46,7 @@ import {
   ALREADY_REVIEWED_MESSAGE,
   hasReviewedPlace,
 } from "@/domain/reviews/one-review-rule";
-import {
-  PRICE_LEVELS,
-  type PriceLevel,
-  formatPriceLevel,
-} from "@/domain/reviews/rating";
+import { type PriceLevel, formatPriceLevel } from "@/domain/reviews/rating";
 
 export interface ReviewItem {
   id: string;
@@ -93,14 +90,12 @@ export default function ReviewModal({
 }: ReviewModalProps) {
   // No defaults: the reviewer chooses the rating and the price level, the form does not guess them
   const [rating, setRating] = useState<number | null>(null);
-  const [hoverRating, setHoverRating] = useState(0);
   const [priceLevel, setPriceLevel] = useState<PriceLevel | null>(null);
   const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (place) {
       setRating(null);
-      setHoverRating(0);
       setPriceLevel(null);
       setComment("");
     }
@@ -208,70 +203,13 @@ export default function ReviewModal({
           </p>
         ) : currentUsername ? (
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            <div>
-              <Label htmlFor="star-rating">
-                Rating (1 to 5 stars) <span className="text-rose-500">*</span>
-              </Label>
-              <div className="flex items-center gap-1.5" id="star-rating">
-                {[1, 2, 3, 4, 5].map((starValue) => (
-                  <Button
-                    type="button"
-                    key={starValue}
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setRating(starValue)}
-                    onMouseEnter={() => setHoverRating(starValue)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="h-9 w-9 text-slate-300 hover:text-amber-400"
-                    title={`${starValue} stars`}
-                  >
-                    <Star
-                      className={`h-7 w-7 ${
-                        starValue <= (hoverRating || rating || 0)
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-slate-300"
-                      } transition-transform active:scale-90`}
-                    />
-                  </Button>
-                ))}
-                <span className="ml-2 text-sm font-bold text-slate-700">
-                  {rating ? `${rating} / 5` : "Choose a rating"}
-                </span>
-              </div>
-            </div>
+            <RatingField value={rating} onChange={setRating} required />
 
-            <div>
-              <Label>
-                Price level <span className="text-rose-500">*</span>
-              </Label>
-              <div
-                role="radiogroup"
-                aria-label="Price level"
-                className="mt-1.5 flex flex-wrap gap-2"
-              >
-                {PRICE_LEVELS.map((lvl) => {
-                  const isSelected = priceLevel === lvl;
-                  return (
-                    <Button
-                      key={lvl}
-                      type="button"
-                      size="sm"
-                      variant={isSelected ? "default" : "outline"}
-                      className={
-                        isSelected
-                          ? "h-8 px-3 text-xs font-semibold"
-                          : "h-8 px-3 text-xs text-slate-600 hover:text-slate-900"
-                      }
-                      aria-checked={isSelected}
-                      role="radio"
-                      onClick={() => setPriceLevel(lvl)}
-                    >
-                      {formatPriceLevel(lvl)}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
+            <PriceLevelField
+              value={priceLevel}
+              onChange={setPriceLevel}
+              required
+            />
 
             <div>
               <Label htmlFor="review-comment">
