@@ -33,6 +33,8 @@ export interface FakeData {
   days: { id: string; dayNumber: number }[];
   places: FakePlace[];
   stops: FakeStop[];
+  /** The itineraries that were locked (FOR NO KEY UPDATE), in order. */
+  locks: string[];
 }
 
 function place(id: string, cityId: string, index: number): FakePlace {
@@ -64,6 +66,7 @@ export function sampleData(stops: Partial<FakeStop>[] = []): FakeData {
       ),
       place("far", "city-lisboa", 9),
     ],
+    locks: [],
     stops: stops.map((stop, index) => ({
       id: `s${index + 1}`,
       itineraryId: "i1",
@@ -122,6 +125,10 @@ export function fakePrisma(
   };
 
   const tx = {
+    $queryRaw: async (_strings: TemplateStringsArray, ...values: unknown[]) => {
+      data.locks.push(String(values[0]));
+      return [];
+    },
     trip: {
       findFirst: async ({
         where,

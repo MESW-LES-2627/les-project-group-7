@@ -511,3 +511,42 @@ describe("PATCH /api/trips/[id]/stops/[stopId]: the stops with a time keep the o
     expect(dayOrder(data, "d2")).toEqual(["x1", "s3"]);
   });
 });
+
+describe("the stops of a trip: a change locks the itinerary first", () => {
+  beforeEach(() => {
+    data = sample();
+    state.prisma = fakePrisma(data);
+    requireUser.mockResolvedValue({ ok: true, user: { id: "u1" } });
+  });
+
+  it("locks the itinerary for a move, a time and a removal", async () => {
+    await patch({ position: 2 }, "s1");
+    await patch({ visitTime: "10:00" }, "s2");
+    await remove("s3");
+
+    expect(data.locks).toEqual(["i1", "i1", "i1"]);
+  });
+
+  it("does not lock anything for a trip of another user", async () => {
+    requireUser.mockResolvedValue({ ok: true, user: { id: "someone-else" } });
+
+    await patch({ position: 2 }, "s1");
+    await remove("s3");
+
+    expect(data.locks).toEqual([]);
+  });
+
+  it("answers 409 for a deadlock in a move or a removal", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    state.prisma = {
+      $transaction: async () => {
+        throw new Error(
+          'PostgresError { code: "40P01", message: "deadlock detected" }'
+        );
+      },
+    };
+
+    expect((await patch({ position: 2 }, "s1")).status).toBe(409);
+    expect((await remove("s1")).status).toBe(409);
+  });
+});
