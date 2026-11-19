@@ -284,3 +284,49 @@ describe("Review edit and delete controls (Task #41)", () => {
     expect(html).not.toContain(">Delete</button>");
   });
 });
+
+describe("The review of the logged-in user comes first", () => {
+  const reviews = () => [
+    review("old", "2026-01-01", { text: "Oldest one.", userId: "u-old" }),
+    review("mine", "2026-02-01", { text: "My own one.", userId: "user-1" }),
+    review("new", "2026-05-01", { text: "Newest one.", userId: "u-new" }),
+  ];
+
+  it("shows the own review before the newer ones of other people", async () => {
+    getSession.mockResolvedValue({ user: { id: "user-1", name: "Ana" } });
+    findUnique.mockResolvedValue(mockPlace({ reviews: reviews() }));
+
+    const html = await renderPage();
+
+    expect(html.indexOf("My own one.")).toBeLessThan(
+      html.indexOf("Newest one.")
+    );
+    expect(html.indexOf("Newest one.")).toBeLessThan(
+      html.indexOf("Oldest one.")
+    );
+  });
+
+  it("keeps newest first for a visitor who is not logged in", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: reviews() }));
+
+    const html = await renderPage();
+
+    expect(html.indexOf("Newest one.")).toBeLessThan(
+      html.indexOf("My own one.")
+    );
+    expect(html.indexOf("My own one.")).toBeLessThan(
+      html.indexOf("Oldest one.")
+    );
+  });
+
+  it("keeps newest first for a logged-in user who has no review of the place", async () => {
+    getSession.mockResolvedValue({ user: { id: "someone-else", name: "Rui" } });
+    findUnique.mockResolvedValue(mockPlace({ reviews: reviews() }));
+
+    const html = await renderPage();
+
+    expect(html.indexOf("Newest one.")).toBeLessThan(
+      html.indexOf("My own one.")
+    );
+  });
+});

@@ -22,6 +22,7 @@ import {
   Coffee,
   Wine,
   MapPin,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import type { PlaceItem } from "./PlaceExplorer";
 import { getCategoryConfig } from "@/domain/catalog/categories";
+import { ownReviewsFirst } from "@/domain/catalog/place-details";
 import {
   ALREADY_REVIEWED_MESSAGE,
   hasReviewedPlace,
@@ -63,6 +65,11 @@ export interface ReviewItem {
 interface ReviewModalProps {
   place: PlaceItem | null;
   currentUsername: string | null;
+  /**
+   * Show the button that opens the page of the place. It is hidden on that page itself, where the
+   * button would lead to the page the person is already on.
+   */
+  showPlaceLink?: boolean;
   reviews: ReviewItem[];
   isLoadingReviews: boolean;
   isSubmitting: boolean;
@@ -75,6 +82,7 @@ interface ReviewModalProps {
 export default function ReviewModal({
   place,
   currentUsername,
+  showPlaceLink = true,
   reviews,
   isLoadingReviews,
   isSubmitting,
@@ -113,6 +121,12 @@ export default function ReviewModal({
 
   const categoryConfig = getCategoryConfig(place.category);
 
+  // The review of the logged-in user comes first (the usernames are compared without case, as for the
+  // "already reviewed" notice)
+  const isOwnReview = (review: ReviewItem) =>
+    Boolean(currentUsername) &&
+    review.user?.username?.toLowerCase() === currentUsername?.toLowerCase();
+
   return (
     <Dialog open={Boolean(place)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent onClose={onClose}>
@@ -135,10 +149,28 @@ export default function ReviewModal({
               </Badge>
             )}
           </div>
-          <DialogTitle className="mt-1 text-base">{place.name}</DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            {place.address}
-          </DialogDescription>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <DialogTitle className="text-base">{place.name}</DialogTitle>
+              <DialogDescription className="mt-1 text-xs text-slate-500">
+                {place.address}
+              </DialogDescription>
+            </div>
+
+            {/* A place that was only found on the map is not in the catalog yet, so it has no page */}
+            {showPlaceLink && !place.isDiscovered && (
+              <Button
+                asChild
+                size="sm"
+                className="shrink-0 gap-1 self-end px-2.5 text-xs sm:self-auto"
+              >
+                <Link href={`/places/${place.id}`}>
+                  <ExternalLink className="h-3 w-3" />
+                  Open place page
+                </Link>
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         {/* Active user session */}
@@ -309,7 +341,7 @@ export default function ReviewModal({
             </p>
           ) : (
             <div className="max-h-48 space-y-2.5 overflow-y-auto pr-1">
-              {reviews.map((review) => (
+              {ownReviewsFirst(reviews, isOwnReview).map((review) => (
                 <Card key={review.id} className="border-slate-100 bg-slate-50">
                   <CardContent className="p-2.5 text-xs">
                     <div className="mb-1 flex items-center justify-between text-[11px] text-slate-500">

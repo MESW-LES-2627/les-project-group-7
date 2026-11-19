@@ -11,6 +11,7 @@ import {
   formatAverageRating,
   formatReviewCount,
   newestFirst,
+  ownReviewsFirst,
 } from "@/domain/catalog/place-details";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import WriteReviewButton from "./WriteReviewButton";
@@ -87,7 +88,11 @@ export default async function PlacePage({ params }: PlacePageProps) {
   };
 
   // shortcut: all reviews of a place are loaded and sorted in memory; add pagination when a place passes ~100 reviews.
-  const orderedReviews = newestFirst(place.reviews);
+  // The review of the logged-in user comes first, then the others, newest first
+  const orderedReviews = ownReviewsFirst(
+    newestFirst(place.reviews),
+    (rev) => session !== null && rev.userId === session.user.id
+  );
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
