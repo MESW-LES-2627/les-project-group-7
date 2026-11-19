@@ -21,7 +21,8 @@ import { toTripResponse } from "@/domain/trips/trip-response";
  * - 404 when there is no such trip, or it is another user's: the same answer for both, so the
  *   response does not tell whether the id exists.
  *
- * One `deleteMany` filtered by owner: there is no gap between checking the owner and deleting.
+ * One `deleteMany` filtered by owner, after the lock of the itinerary: there is no gap between checking
+ * the owner and deleting, and an edit of the same trip at the same moment waits.
  */
 export async function DELETE(
   request: Request,
@@ -36,9 +37,16 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const { count } = await prisma.trip.deleteMany({
-      where: { id, userId: guard.user.id },
-    });
+    // The same lock as the edit of the trip and the changes of its stops: a delete and an edit of the
+    // same trip at the same moment wait for each other instead of ending in a deadlock. A trip without
+    // an itinerary has nothing to lock, and the delete below still decides if there is such a trip.
+    const count = await prisma.$transaction(async (tx) => {
+      await lockItinerary(tx, id, guard.user.id);
+      const result = await tx.trip.deleteMany({
+        where: { id, userId: guard.user.id },
+      });
+      return result.count;
+    }, STOPS_TRANSACTION);
 
     if (count === 0) {
       return NextResponse.json({ error: "Trip not found" }, { status: 404 });
@@ -100,7 +108,8 @@ export async function PATCH(
           return { kind: "notFound" } as const;
         }
 
-        const trip = await tx.trip.findFirstOrThrow({
+        // The trip can be gone by now (deleted while this request waited for the lock): that is a 404
+        const trip = await tx.trip.findFirst({
           where: { id, userId: guard.user.id },
           include: {
             city: { select: { timezone: true } },
@@ -114,6 +123,10 @@ export async function PATCH(
             },
           },
         });
+
+        if (trip === null) {
+          return { kind: "notFound" } as const;
+        }
 
         const validation = validateTripEdit(
           body,
@@ -130,9 +143,13 @@ export async function PATCH(
           return { kind: "invalid", errors: { endDate: sync.error } } as const;
         }
 
-        const withStops = trip.days.filter(
-          (day) => sync.remove.includes(day.dayNumber) && day._count.stops > 0
-        );
+        // In day order: the database gives the days in the order they were written, which changes
+        // once the dates of a day have been updated
+        const withStops = trip.days
+          .filter(
+            (day) => sync.remove.includes(day.dayNumber) && day._count.stops > 0
+          )
+          .sort((a, b) => a.dayNumber - b.dayNumber);
         const stopsRemoved = withStops.reduce(
           (total, day) => total + day._count.stops,
           0

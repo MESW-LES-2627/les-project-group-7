@@ -2,11 +2,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const { deleteMany, requireUser, tx, lockItinerary } = vi.hoisted(() => {
   const tx = {
-    trip: { findFirstOrThrow: vi.fn(), update: vi.fn() },
+    trip: {
+      findFirst: vi.fn(),
+      findFirstOrThrow: vi.fn(),
+      update: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     day: { deleteMany: vi.fn(), update: vi.fn(), createMany: vi.fn() },
   };
   return {
-    deleteMany: vi.fn(),
+    deleteMany: tx.trip.deleteMany,
     requireUser: vi.fn(),
     lockItinerary: vi.fn(),
     tx,
@@ -15,7 +20,6 @@ const { deleteMany, requireUser, tx, lockItinerary } = vi.hoisted(() => {
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    trip: { deleteMany },
     $transaction: (run: (t: typeof tx) => unknown) => run(tx),
   },
 }));
@@ -36,6 +40,8 @@ function call(id = "t1") {
 describe("DELETE /api/trips/[id]", () => {
   beforeEach(() => {
     deleteMany.mockReset();
+    lockItinerary.mockReset();
+    lockItinerary.mockResolvedValue(true);
     requireUser.mockResolvedValue({ ok: true, user: { id: "u1" } });
   });
 
@@ -58,6 +64,26 @@ describe("DELETE /api/trips/[id]", () => {
     const response = await call("other");
 
     expect(response.status).toBe(404);
+  });
+
+  it("takes the lock of the itinerary before it deletes, like the edit and the stops do", async () => {
+    deleteMany.mockResolvedValue({ count: 1 });
+
+    await call("t1");
+
+    expect(lockItinerary).toHaveBeenCalledWith(tx, "t1", "u1");
+    expect(lockItinerary.mock.invocationCallOrder[0]).toBeLessThan(
+      deleteMany.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("still deletes a trip that has no itinerary to lock", async () => {
+    lockItinerary.mockResolvedValue(false);
+    deleteMany.mockResolvedValue({ count: 1 });
+
+    const response = await call("t1");
+
+    expect(response.status).toBe(204);
   });
 
   it("answers what the guard says and deletes nothing without a login", async () => {
@@ -123,23 +149,19 @@ describe("PATCH /api/trips/[id]", () => {
     vi.clearAllMocks();
     requireUser.mockResolvedValue({ ok: true, user: { id: "u1" } });
     lockItinerary.mockResolvedValue(true);
-    tx.trip.findFirstOrThrow.mockImplementation(
-      async (args: { include: { itinerary?: boolean } }) =>
-        args.include.itinerary
-          ? {
-              ...storedTrip(),
-              createdAt: new Date("2030-01-01T00:00:00.000Z"),
-              days: [],
-              itinerary: {
-                id: "i1",
-                mode: "MANUAL",
-                budgetLevel: null,
-                dayStart: null,
-                dayEnd: null,
-              },
-            }
-          : storedTrip()
-    );
+    tx.trip.findFirst.mockImplementation(async () => storedTrip());
+    tx.trip.findFirstOrThrow.mockImplementation(async () => ({
+      ...storedTrip(),
+      createdAt: new Date("2030-01-01T00:00:00.000Z"),
+      days: [],
+      itinerary: {
+        id: "i1",
+        mode: "MANUAL",
+        budgetLevel: null,
+        dayStart: null,
+        dayEnd: null,
+      },
+    }));
   });
 
   it("takes the lock of the itinerary first (the same as the stops)", async () => {
@@ -220,7 +242,7 @@ describe("PATCH /api/trips/[id]", () => {
 
   it("removes days without stops without asking", async () => {
     // The only stop is on day 1, so day 3 is empty and can go without a warning.
-    tx.trip.findFirstOrThrow.mockResolvedValueOnce({
+    tx.trip.findFirst.mockResolvedValueOnce({
       ...storedTrip(),
       days: [
         day(1, "2030-05-10", 1),
@@ -300,6 +322,39 @@ describe("PATCH /api/trips/[id]", () => {
       data: expect.objectContaining({ name: "Weekend in Porto" }),
     });
     expect(await response.json()).toMatchObject({ id: "t1" });
+  });
+
+  it("lists the days of the warning in day order, whatever order the database gives them", async () => {
+    // After the dates of some days were updated, the database returns the days in another order
+    tx.trip.findFirst.mockResolvedValueOnce({
+      ...storedTrip(),
+      endDate: new Date("2030-05-14T00:00:00.000Z"),
+      days: [
+        day(1, "2030-05-10"),
+        day(2, "2030-05-11"),
+        day(5, "2030-05-14", 2),
+        day(3, "2030-05-12", 2),
+        day(4, "2030-05-13", 1),
+      ],
+    });
+
+    const response = await patch({ ...same, endDate: "2030-05-11" });
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(
+      body.removal.days.map((d: { dayNumber: number }) => d.dayNumber)
+    ).toEqual([3, 4, 5]);
+  });
+
+  it("answers 404, not 500, when the trip was deleted while the request waited for the lock", async () => {
+    tx.trip.findFirst.mockResolvedValue(null);
+
+    const response = await patch(same);
+
+    expect(response.status).toBe(404);
+    expect(tx.trip.update).not.toHaveBeenCalled();
+    expect(tx.day.deleteMany).not.toHaveBeenCalled();
   });
 
   it("answers 404 when there is no such trip or it is not the user's", async () => {
