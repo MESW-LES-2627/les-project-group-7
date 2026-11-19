@@ -438,7 +438,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 #### ADR-011: One function saves a place found on the map, and the rule for its city is an argument
 
 - **Status:** Accepted. It is built with the first story that needs it: S19 (live discovery, AC2) or saving a place found on the map to a wishlist or bookmarks, as its first step.
-- **Context:** A place found on the map becomes a `Place` the first time it is reviewed or added to a trip. Two handlers do it, each with its own copy of the sequence. Saving a place of the map to a wishlist or bookmarks would add a third copy, and a second source of places would change all of them. The copies already disagree: `POST /api/reviews` assigns the city Porto without checking the position, `POST /api/trips/[id]/stops` assigns the city of the trip, checks the position against the city areas and saves only after the stop is accepted, and S19 asks for a third rule, the nearest city of the catalog. The rules change often (9 commits to the reviews route and 6 to the stops route between 1 and 19 Nov 2026) and the column `osmPriceLevel` (#157) had to be added in both. The full analysis is in section 4.2 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
+- **Context:** A place found on the map becomes a `Place` the first time it is reviewed or added to a trip. Two handlers do it, each with its own copy of the sequence. Saving a place of the map to a wishlist or bookmarks would add a third copy, and a second source of places would change all of them. The copies already disagree: `POST /api/reviews` assigns the city Porto without checking the position, `POST /api/trips/[id]/stops` assigns the city of the trip, checks the position against the city areas and saves only after the stop is accepted, and S19 asks for a third rule, the nearest city of the catalog. The rules change often (the place-creation block of the reviews route changed 6 times between 1 and 19 Nov 2026, and the stories to come, S19 and ticket prices, touch it again) and the column `osmPriceLevel` (#157) had to be added in both. The full analysis is in section 4.2 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
 - **Decision:** Two steps, because a refusal must save nothing. `parseDiscoveredPlace(placeId, raw, cityRule)` (pure, `src/domain/osm/discovered-place.ts`) checks the data and applies a city rule. `saveDiscoveredPlace(db, discovered)` (new, `src/lib/discovered-places.ts`) finds the place by id or OpenStreetMap id or creates it with `source = LAZY_OSM` and the price baseline, and the caller calls it after its own checks, inside its own transaction. A city rule is a function from a position to a city or a refusal, in `src/domain/osm/city-rules.ts`: `cityOfTrip(cityId)` for trips and `nearestCity(cities)` for reviews and saved places (the Strategy pattern, in function form).
 - **Alternatives considered:** copying the steps into the saved places route (functional coupling between three writers, and the copies keep drifting); a separate endpoint that the browser calls before the review, the stop or the saved place (it breaks the rule that a refusal saves nothing and needs two requests); an abstract class with a Template Method and one subclass per caller (the code base uses functions, and the callers differ in two things only).
 - **Consequences:**
@@ -604,7 +604,7 @@ it is added to a trip. The wishlist would be the third, and a second source of p
 diagram already allows for (the places data source is an external system), would make every one of them change at once.
 All of these touch the same knowledge: **how a place found on the map becomes a `Place`**. The change is plausible because
 reviewing, planning and saving are the three things a user does with a place, and it is sensitive because the rules of that
-step are volatile (see the coupling analysis).
+step are volatile.
 
 **The design today.** Two handlers turn a place of the map into a `Place` row, each with its own copy of the sequence:
 
@@ -631,7 +631,7 @@ import, the seed and the backfill script.
 | #   | Relationship                                                                                       | Strength   | Distance | Volatility | Verdict           |
 | --- | -------------------------------------------------------------------------------------------------- | ---------- | -------- | ---------- | ----------------- |
 | R1  | `POST /api/reviews` and `POST /api/trips/[id]/stops`                                               | Functional | D3       | V4         | Worth redesigning |
-| R2  | Both routes and `src/domain/osm/osm.ts` (`osmIdFromDiscoveredPlaceId`, `osmPriceLevelOf`)          | Contract   | D4       | V4         | Balanced          |
+| R2  | Both routes and `src/domain/osm/osm.ts` (`osmIdFromDiscoveredPlaceId`, `osmPriceLevelOf`)          | Contract   | D4       | V3         | Balanced          |
 | R3  | `POST /api/trips/[id]/stops` and `parseDiscoveredPlace` (`src/domain/osm/discovered-place.ts`)     | Model      | D4       | V3         | Tolerable         |
 | R4  | A future saved-places handler and the two routes, if the steps are copied again                    | Functional | D3       | V4         | Worth avoiding    |
 
@@ -643,11 +643,18 @@ import, the seed and the backfill script.
   (if the copies were removed, both sides would still have to change together). The two copies already disagree on the city,
   which shows that copies drift. **Distance:** `src/app/api/reviews` and `src/app/api/trips/[id]/stops` are different
   packages under the top-level package `app` (D3), and they belong to two components, Reviews and Trip Planner.
-  **Volatility:** between 1 and 19 Nov 2026 the reviews route changed 9 times and the stops route 6 times (git), and the
-  rule for the city is about to change (S19, AC2). That is more than once a month: V4.
+  **Volatility:** counted on the lines of the place-creation block only, not on the whole files (git): the block of the reviews
+  route changed 6 times between 1 and 19 Nov 2026, and the block of the stops route 4 times since it was written on 18 Nov.
+  Most of those changes are about knowledge that belongs here: the price rule (#17, #38, #40) and the format of the id. Four of the
+  six in the reviews route came in the first week, while those stories were reworked, and two followed (12 and 19 Nov), about one
+  a week. The next changes are already in the backlog: the rule for the city (S19, AC2), another attribute from OpenStreetMap
+  (ticket prices, S11) and the wishlist. That is monthly or more often: V4. The history alone, with the first week counted as
+  one rework, would be closer to V3; the stories to come keep it at V4.
 - **R2. Strength:** the routes pass a string or a price level and get a value back (`"node/123"` or `null`, `"FREE"` or `null`).
-  They do not know the format of the id. That is contract coupling, and it absorbs the volatility of `osm.ts`
-  (7 commits since 1 Nov: V4). **Distance:** `app` and `domain` (D4), acceptable at this strength.
+  They do not know the format of the id. That is contract coupling, and it absorbs the volatility of the rules behind it.
+  **Volatility:** counted on these two functions only (git), not on the 398 lines of `osm.ts`: `osmIdFromDiscoveredPlaceId`
+  changed twice, both on 3 Nov, and `osmPriceLevelOf` was written on 3 Nov and changed once, on 19 Nov (#40): V3.
+  **Distance:** `app` and `domain` (D4), acceptable at this strength and at this volatility.
 - **R3. Strength:** the stops route spreads the object returned by `parseDiscoveredPlace` into `place.create`
   (`...discovered`), so it must know the fields of `DiscoveredPlace`, which are columns of `Place`: model coupling.
   **Distance:** `app` and `domain` (D4). **Volatility:** the type is new, but it follows the columns of `Place`, which got a
