@@ -63,6 +63,7 @@ describe("TripPage", () => {
     expect(html).toContain("Porto weekend");
     expect(html).toContain("Porto, Portugal");
     expect(html).toContain("Delete trip");
+    expect(html).toContain("Edit trip");
     expect(html.match(/Day \d+ — [^<]+/g)).toEqual([
       "Day 1 — Tue 1 Dec 2026",
       "Day 2 — Wed 2 Dec 2026",

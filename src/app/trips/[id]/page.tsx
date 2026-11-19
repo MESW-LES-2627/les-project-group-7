@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { toTripResponse } from "@/domain/trips/trip-response";
 import { formatDayLabel } from "@/domain/trips/trip-labels";
 import DeleteTripDialog from "@/components/DeleteTripDialog";
+import EditTripDialog from "@/components/EditTripDialog";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,15 @@ export default async function TripPage({ params }: TripPageProps) {
           </p>
         </div>
 
-        <DeleteTripDialog tripId={trip.id} tripName={trip.name} />
+        <div className="flex gap-2">
+          <EditTripDialog
+            tripId={trip.id}
+            name={trip.name}
+            startDate={trip.startDate}
+            endDate={trip.endDate}
+          />
+          <DeleteTripDialog tripId={trip.id} tripName={trip.name} />
+        </div>
       </div>
 
       <ul className="space-y-3">
