@@ -4,9 +4,9 @@ Team: Group 7
 Tag: `iter-1`  
 Previous tag: none yet (Iteration 0 had no tag; the start of this iteration is tagged `sprint-1-start`)
 
-This file lives on the tagged commit at `docs/iterations/1/CLAIM.md`. The review opens this file. We do not hunt the repository. A dead link scores that line at most 4.
+This file lives on the tagged commit at `docs/iterations/1/CLAIM.md`.
 
-Iteration 0 is a readiness review. An ugly claim does not cap the mark if the slice runs. From Iteration 1, a missing tag or a missing CLAIM.md caps the team mark at 10.
+Iteration 0 is a readiness review. 
 
 ---
 
