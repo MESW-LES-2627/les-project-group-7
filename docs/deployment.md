@@ -243,6 +243,51 @@ Check before and after: `SELECT c.name, count(p.id) FROM "City" c LEFT JOIN "Pla
 
 Status: run on dev on 5 Nov 2026. Not run on prod yet.
 
+## CI on a self-hosted runner
+
+The CI jobs of [ci.yml](../.github/workflows/ci.yml) do not start when the organisation's
+GitHub billing is blocked: they fail after 1 to 4 seconds with "The job was not started because
+recent account payments have failed or your spending limit needs to be increased". While that
+lasts, the jobs can run on a computer of the group instead.
+
+`runs-on` in `ci.yml` reads the repository variable `CI_RUNNER`. Without the variable the jobs
+run on `ubuntu-latest`, as before. With `["self-hosted","les7"]` they run on any free runner
+that has the label `les7`. Each person can register a runner, and a job goes to the first one
+that is free. The jobs only wait when every runner is off. `deploy.yml` stays on
+`ubuntu-latest`, because it uses the Vercel and database secrets.
+
+### One-time setup (a repository admin)
+
+1. Open the repository, Settings, Secrets and variables, Actions, tab Variables, and create
+   the variable `CI_RUNNER` with the value `["self-hosted","les7"]`.
+2. Give each person who will run a runner the admin role on the repository, or send them the
+   token from the next step. Registering a runner needs admin, and the Maintain role gets a 404.
+
+### Register your runner
+
+1. As an admin: Settings, Actions, Runners, New self-hosted runner, Linux. Copy the token
+   from the `./config.sh` line. It is valid for about one hour.
+2. Download and unpack the runner with the two commands that page shows.
+3. Register it as a one-job runner, with the label `les7`:
+
+   ```bash
+   ./config.sh --url https://github.com/MESW-LES-2627/les-project-group-7 \
+     --token <token> --labels les7 --ephemeral --unattended
+   ```
+
+4. Start it with `./run.sh` when you want to run checks. It takes one job and exits, so it
+   uses nothing in the background. The integration job starts a PostgreSQL container, so
+   Docker has to be running. Register again (new token) for each new session, or
+   remove `--ephemeral` to keep the runner registered between jobs.
+
+Pull requests from other people run their code on your computer. Read a pull request before
+you let its checks run on your runner.
+
+### Back to GitHub's runners
+
+When the billing works again, delete the `CI_RUNNER` variable. Nothing in the workflows
+changes. Remove the runners from Settings, Actions, Runners.
+
 ## Known problems and rules
 
 - **Migrations are incremental.** Never edit or squash a migration that was already applied

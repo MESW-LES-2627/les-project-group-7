@@ -11,7 +11,7 @@ concurrency:
 jobs:
   static-and-unit:
     name: Lint, Types, Tests & Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNNER || '"ubuntu-latest"') }}
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
@@ -57,7 +57,7 @@ jobs:
 
   integration:
     name: Integration Tests (PostgreSQL)
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.CI_RUNNER || '"ubuntu-latest"') }}
     services:
       postgres:
         image: postgres:16-alpine
