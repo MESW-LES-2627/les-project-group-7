@@ -1,0 +1,44 @@
+@startuml change-scenario-2-after
+title Change scenario "save a place found on the map" - after the decision (one function, the city rule is an argument)
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam ArrowColor #555555
+skinparam component {
+  BackgroundColor #FFF8E1
+  BorderColor #666666
+  BackgroundColor<<planned>> #EEEEEE
+  BackgroundColor<<new>> #DDF3DD
+}
+
+legend right
+  |<#FFF8E1> Exists today |
+  |<#EEEEEE> Planned (S19 and saving a place of the map to a wishlist) |
+  |<#DDF3DD> New with the decision (ADR-011) |
+  The steps are written once. A caller passes the data of the
+  place and the rule for its city (a strategy: a function), and
+  saves only after its own checks have passed.
+endlegend
+
+component "POST /api/reviews\n(post a review)" as post
+component "POST /api/trips/[id]/stops\n(add a stop)" as stops
+component "POST /api/saved-places\n(wishlist, bookmark)" as saved <<planned>>
+component "src/domain/osm/city-rules.ts\ncityOfTrip(cityId)\nnearestCity(cities)\n(CityRule strategies)" as rules <<new>>
+component "src/domain/osm/discovered-place.ts\nparseDiscoveredPlace(id, raw, cityRule)" as parse
+component "src/lib/discovered-places.ts\nsaveDiscoveredPlace(db, discovered)" as save <<new>>
+component "src/domain/osm/osm.ts\n(OSM id format, price baseline)" as osm
+database "Place\nsource = LAZY_OSM,\nosmId, osmPriceLevel" as place #E8E8E8
+
+post ..> rules : picks nearestCity
+stops ..> rules : picks cityOfTrip
+saved ..> rules : picks nearestCity
+post ..> parse : raw data, rule
+stops ..> parse : raw data, rule
+saved ..> parse : raw data, rule
+post ..> save : after its own checks
+stops ..> save : after its own checks
+saved ..> save : after its own checks
+parse ..> rules : applies the rule it is given
+parse ..> osm
+save ..> osm
+save --> place : finds or creates the row
+@enduml

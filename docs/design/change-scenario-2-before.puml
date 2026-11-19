@@ -1,0 +1,35 @@
+@startuml change-scenario-2-before
+title Change scenario "save a place found on the map" - before the decision (each caller has its own copy)
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam ArrowColor #555555
+skinparam component {
+  BackgroundColor #FFF8E1
+  BorderColor #666666
+  BackgroundColor<<planned>> #EEEEEE
+}
+
+legend right
+  |<#FFF8E1> Exists today |
+  |<#EEEEEE> Planned (S19 and saving a place of the map to a wishlist) |
+  Each caller checks the data of the place, chooses its city and
+  creates the Place row. The two copies exist and already
+  disagree: reviews assume Porto, trips use the city of the trip.
+endlegend
+
+component "POST /api/reviews\n(post a review)\ncity: Porto, no area check" as post
+component "POST /api/trips/[id]/stops\n(add a stop)\ncity: the trip's city, inside its area" as stops
+component "POST /api/saved-places\n(wishlist, bookmark)\ncatalog places only today" as saved <<planned>>
+component "src/domain/osm/osm.ts\n(OSM id format, price baseline)" as osm
+component "src/domain/osm/discovered-place.ts\nparseDiscoveredPlace(id, raw, area)" as parse
+database "Place\nsource = LAZY_OSM,\nosmId, osmPriceLevel" as place #E8E8E8
+
+post ..> osm
+stops ..> osm
+stops ..> parse
+saved ..> osm : third copy
+saved ..> parse : third copy
+post --> place : creates the row
+stops --> place : creates the row
+saved --> place : creates the row
+@enduml

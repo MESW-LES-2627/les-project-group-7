@@ -158,9 +158,10 @@ Terms are defined in the [glossary](GLOSSARY.md).
 | User                           | User                | username, email, role (USER / ADMIN)                                                         | writes Reviews, makes Visits, saves Places, owns Lists, plans Trips. An ADMIN is also the moderator of suggestions |
 | City                           | Place               | name, country, latitude, longitude, timezone                                                           | contains Places, destination of Trips                                                     |
 | Place                          | Place               | name, description, category, address, latitude, longitude, openingHours (optional), /priceLevel, /averageRating, /reviewCount | belongs to a City, has Reviews and Visits                       |
+| DiscoveredPlace (value object) | Place               | name, address (optional), category (optional), latitude, longitude, priceLevel (optional)    | a place found on the map or in the search that the catalog does not have yet; becomes a Place the first time it is reviewed or added to a trip, in a City |
 | Visit                          | Place               | visitedAt                                                                                    | links a User to a Place (at most one per pair); created when the user posts a review      |
 | PlaceSuggestion (post-MVP)     | Place suggestion    | proposedName, proposedCategory, proposedAddress, status, suggestedAt, decidedAt (optional)   | suggested by a User, decided by a moderator (ADMIN), proposed in a City, approved as a Place |
-| Review                         | Review              | rating (1..5), priceLevel (FREE, €, €€ or €€€; required when posted), text, createdAt                                        | written by a User about a Place (a user reviews a given place at most once)               |
+| Review                         | Review              | rating (1..5), priceLevel (FREE, €, €€ or €€€; required when posted), text, createdAt, updatedAt                                        | written by a User about a Place (a user reviews a given place at most once)               |
 | SavedPlace                     | Saved places        | type (WISHLIST / BOOKMARK)                                                                   | a User saves a Place                                                                      |
 | SavedList                      | List                | name                                                                                         | owned by a User, contains bookmarked SavedPlaces                                          |
 | Trip                           | Trip                | name, startDate, endDate                                                                     | owned by a User, goes to a City, has Days and one Itinerary                               |
@@ -196,6 +197,18 @@ Design notes:
   the Visit.
 - Place suggestion is its own aggregate (Dream). When a suggestion is approved, a
   policy adds a Place to the catalog in the city it was proposed in.
+- A place found on the map is a value object, not a Place: it has no identity in the
+  catalog until it becomes one. The rule for its city depends on who saves it: a trip
+  takes it in the city of the trip, only if its position is inside that city (a trip
+  never holds a place of another city), and a review is meant to take it in the nearest city of the
+  catalog (S19; today a review always assigns Porto, see ADR-002). The two rules are one decision in [ADR-011](#adr-011-one-function-saves-a-place-found-on-the-map-and-the-rule-for-its-city-is-an-argument).
+- What OpenStreetMap says about the price (free, or nothing) is kept apart from what the
+  reviews say and no review changes it. When the reviews no longer give a price, the price
+  level of the place goes back to it.
+- The stops of a day with a visit time stay in the order of their times, and a stop
+  without a time can be anywhere. The name and the dates of a trip can be changed: every
+  day then gets its new date and keeps its number, and a day after the new end date is
+  removed with its stops, after the person confirms.
 
 ## 3. High-level architecture
 
@@ -206,8 +219,8 @@ Design notes:
 
 The component diagram is **the solution**: how the system is built to solve the problem
 described by the [domain model](#22-domain-model). Green components are built (end of
-Iteration 1), yellow ones are MVP and not built yet, grey ones are Stretch: designed,
-not in the MVP.
+Iteration 2), light green ones are partly built (the label says what), yellow ones are
+MVP and not built yet, grey ones are Stretch: designed, not in the MVP.
 
 **How to read the diagram** (the same legend is inside the diagram):
 
@@ -226,10 +239,10 @@ not in the MVP.
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Web App (built)      | Browser UI for users and admins, including the map and the place page                                                                                                         | Backend REST API, Map tiles (external)                                  |
 | Identity (built)     | Users, authentication (Better Auth, see ADR-009), roles                                                                                                                                                 | Database                                                                |
-| Place Catalog (built) | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation and the top-rated list (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
-| Reviews (post built; edit and delete not yet) | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog (ADR-010 puts both policies in one function)                                            | Place Catalog                                                           |
-| Saved Places         | Wishlist, bookmarks and custom lists                                                                                                                                         | Place Catalog                                                           |
-| Trip Planner         | Trips, days, itineraries with their optional budget level and hour limits, visit times, travel-time estimates, opening-hours, hour-limit and budget warnings                                                | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
+| Place Catalog (built) | The whole Place aggregate: places, city search, import, opening hours, visited marker, rating recalculation, the top-rated list and saving the places found on the map (ADR-011) (live discovery of places and search outside the catalog are built but outside the committed MVP; suggestions and moderation are post-MVP) | Database, Places data source (external), Geocoding service (external) |
+| Reviews (built) | Post, edit and delete reviews, including the price level. Triggers _mark place visited_ and _recalculate rating_ in Place Catalog (ADR-010 puts both policies in one function) and passes a place found on the map to Place Catalog to be saved (ADR-011) | Place Catalog |
+| Saved Places (partly built) | Wishlist, bookmarks and custom lists. Built: the API for the wishlist and the bookmarks. Not yet: the page and the lists. Saving a place found on the map would go through Place Catalog (ADR-011) | Place Catalog |
+| Trip Planner (partly built) | Trips, days, itineraries. Built: create, list, edit and delete a trip, the itinerary editor, and the stops with their visit times and their order. Not yet: the optional budget level and hour limits, travel-time estimates, and the opening-hours, hour-limit and budget warnings. A place found on the map is passed to Place Catalog to be saved, with the rule for the city of the trip (ADR-011) | Place Catalog, Itinerary Generator, Routing service (external, Stretch) |
 | Itinerary Generator  | Builds a basic itinerary from top-rated places, type filters, distance, the budget average, the wishlist, the hour limits given for the generation and known opening hours.                           | Place Catalog, Saved Places                                             |
 | Import and seed scripts (built) | The command line side of Place Catalog: imports the places of a city from OpenStreetMap into a snapshot and the database, and loads the demo users, places and sample reviews. They are run by hand and reuse the rules of `src/domain` | Database, Geocoding service (external), Place Catalog rules |
 | Publishing (Stretch) | Published itineraries, sharing, bookmarks                                                                                                                                    | Trip Planner                                                            |
@@ -278,6 +291,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 | ADR-008 | Rank places by a weighted rating                          | Accepted              |
 | ADR-009 | Authentication with Better Auth                           | Accepted              |
 | ADR-010 | One function recomputes the stored values of a place      | Accepted              |
+| ADR-011 | One function saves a place found on the map, and the rule for its city is an argument | Accepted (built with S19 or the first story that needs it) |
 
 #### ADR-001: Full-stack architecture with Next.js 15 App Router
 
@@ -302,7 +316,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 - **Alternatives considered:** only the import script, with no live calls. It was the first version of this decision: the demos then need no external network, but a place that was not imported cannot be reviewed.
 - **Consequences:**
   - _Positive:_ with live discovery any place on the map can be reviewed or added to a trip, the catalog still works when Overpass is down (it falls back to the database), and relational integrity is kept for all reviews and trips because only saved places can be reviewed.
-  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. A place saved by `POST /api/reviews` is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities. The trip route does not have this problem: it uses the city of the trip and the city areas.
+  - _Trade-offs:_ the map depends on public Overpass servers for places that are not yet saved, and they can be slow or rate-limited. A place saved by `POST /api/reviews` is always assigned to the city Porto, so this must be fixed before live discovery is used in other cities. The trip route does not have this problem: it uses the city of the trip and the city areas. [ADR-011](#adr-011-one-function-saves-a-place-found-on-the-map-and-the-rule-for-its-city-is-an-argument) decides how the two are brought together.
 
 #### ADR-003: Soft budget metric based on cost points
 
@@ -412,7 +426,7 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
 
 #### ADR-010: One function recomputes the stored values of a place
 
-- **Status:** Accepted. It is built with US-C2-01 (edit and delete a review).
+- **Status:** Accepted and built in Iteration 2 with US-C2-01 (edit and delete a review): `refreshPlaceStats` and `markPlaceVisited` are in `src/lib/place-stats.ts`.
 - **Context:** A place stores three values that are derived from its reviews: `averageRating`, `reviewCount` and `priceLevel`. The rules are pure functions in `src/domain/reviews/rating.ts`, but the sequence that applies them (load the reviews, apply the rules, write the three values) is written in the post handler and in the seed, and the visit policy only in the post handler. The rules change often, and the seed already missed the visit policy because it was copied, not shared. Edit and delete (US-C2-01) would add two more copies. The full analysis is in section 4.1 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
 - **Decision:** One function, `refreshPlaceStats(db, placeId)` in `src/lib/place-stats.ts`, recomputes the three values, and `markPlaceVisited(db, userId, placeId)` next to it holds the visit policy. The post, edit and delete handlers and the seed call them and pass their database client. The formulas stay pure in `src/domain/reviews/rating.ts`.
 - **Alternatives considered:** copying the steps into each handler (cheapest now, functional coupling between four writers with the most volatile rules); computing the values in the database with a trigger or a view (a volatile rule moves into SQL, away from the tested code); not storing the values and computing them on every read (every list and ranking aggregates thousands of reviews).
@@ -420,6 +434,17 @@ truth. Domain policies are on the EventStorming board and in section 2.1.
   - _Positive:_ functional coupling becomes contract coupling (a caller only says which place changed), a rule change touches one place, the Place policies leave the review handler as the component diagram says, and the seed cannot miss a policy again.
   - _Trade-offs:_ one more module and one more level of indirection, and the function is tested with a database or a fake client, not as a pure function. Two simultaneous requests would compute from a stale list of reviews, so each writer calls the function inside its own transaction and the function first locks the row of the place (`SELECT … FOR NO KEY UPDATE`): the second request waits, then reads the reviews that the first one saved.
   - _Revisit:_ when the stored values grow (for example the rating score is stored), or when `rating.ts` keeps growing with unrelated rules and must be split.
+
+#### ADR-011: One function saves a place found on the map, and the rule for its city is an argument
+
+- **Status:** Accepted. It is built with the first story that needs it: S19 (live discovery, AC2) or saving a place found on the map to a wishlist or bookmarks, as its first step.
+- **Context:** A place found on the map becomes a `Place` the first time it is reviewed or added to a trip. Two handlers do it, each with its own copy of the sequence, and the copies disagree: `POST /api/reviews` assigns the city Porto without checking the position, `POST /api/trips/[id]/stops` assigns the city of the trip and checks the position against the city areas and saves only after the stop is accepted. S19 asks for a third rule, the nearest city of the catalog. Saving a place of the map to a wishlist would add a third copy. The rules change often (9 commits to the reviews route and 6 to the stops route between 1 and 19 Nov 2026) and the column `osmPriceLevel` (#157) had to be added in both. The full analysis is in section 4.2 ([change scenarios](#4-future-change-scenarios-coupling-cohesion-and-design-decisions)).
+- **Decision:** Two steps, because a refusal must save nothing. `parseDiscoveredPlace(placeId, raw, cityRule)` (pure, `src/domain/osm/discovered-place.ts`) checks the data and applies a city rule. `saveDiscoveredPlace(db, discovered)` (new, `src/lib/discovered-places.ts`) finds the place by id or OpenStreetMap id or creates it with `source = LAZY_OSM` and the price baseline, and the caller calls it after its own checks, inside its own transaction. A city rule is a function from a position to a city or a refusal, in `src/domain/osm/city-rules.ts`: `cityOfTrip(cityId)` for trips and `nearestCity(cities)` for reviews and saved places (the Strategy pattern, in function form).
+- **Alternatives considered:** copying the steps into the saved places route (functional coupling between three writers, and the copies keep drifting); a separate endpoint that the browser calls before the review, the stop or the saved place (it breaks the rule that a refusal saves nothing and needs two requests); an abstract class with a Template Method and one subclass per caller (the code base uses functions, and the callers differ in two things only).
+- **Consequences:**
+  - _Positive:_ functional coupling becomes contract coupling, a change of the rule for the city touches `city-rules.ts` only, Place Catalog owns the creation of a `Place` as the component diagram says, and the reviews handler loses about 80 lines that are not about reviews.
+  - _Trade-offs:_ one more module and one more level of indirection. The reviews route stops assigning Porto, so S19 has to say what happens to a place that is far from every city. The function reads again when its create loses a race on the unique OpenStreetMap id.
+  - _Revisit:_ when a second source of places is added (`Place.osmId` and `source = LAZY_OSM` name the provider), or when the city rules need more than a position.
 
 ## 4. Future change scenarios: coupling, cohesion, and design decisions
 
@@ -430,6 +455,7 @@ each iteration, and its decision is recorded as an ADR in [section 3.3](#33-arch
 | Scenario | Written at | Decision |
 | -------- | ---------- | -------- |
 | 1. Edit and delete a review (US-C2-01), section 4.1 below | End of Iteration 1 | [ADR-010](#adr-010-one-function-recomputes-the-stored-values-of-a-place) |
+| 2. Save a place found on the map (S19 and the wishlist), section 4.2 below | End of Iteration 2 | [ADR-011](#adr-011-one-function-saves-a-place-found-on-the-map-and-the-rule-for-its-city-is-an-argument) |
 
 ### 4.1. Scenario 1 — Edit and delete a review (Iteration 1)
 
@@ -565,6 +591,155 @@ Before and after:
 - The stored values are no longer enough (for example the rating score must be stored): the function grows.
   If it must run for thousands of places at once, option D or a scheduled job becomes worth discussing.
 - `rating.ts` keeps growing with unrelated rules: split it (see the cohesion analysis above).
+
+### 4.2. Scenario 2 — Save a place found on the map (Iteration 2)
+
+#### Change scenario and design context
+
+**The scenario.** The story **S19 Live discovery** (Stretch, built in the tracer bullet) says that a place found on the map is saved to the
+catalog **"in the correct city"** when its first review is posted (AC2), and its business rule is: "a discovered place is
+assigned to the nearest city that is in the catalog". The story also records that this is not true today: a place saved from
+a review always goes to Porto (ADR-002). Next to it there is a second, equally plausible request: a user finds a place on the
+map and wants to put it on the wishlist or bookmark it, without writing a review first. The saved places API takes the id of a
+catalog place only, so such a place needs a `Place` row before it can be saved. Both requests touch the same knowledge: **how a
+place found on the map becomes a `Place`**. The change is plausible because S19 is a story and a wishlist of places found on the
+map is the natural next use, and it is sensitive because the rule for the city is about to change.
+
+**The design today.** Two handlers turn a place of the map into a `Place` row, each with its own copy of the sequence:
+
+| Where                                    | How a place of the map is saved                                                                                                                                                                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/reviews` (about 80 lines)     | Before the review. City: the first city whose name contains "Porto", created if it does not exist. A missing position becomes the centre of Porto. The position is not checked. Name, address and category fall back to defaults. No handling of two requests creating the same place. |
+| `POST /api/trips/[id]/stops` (about 60 lines) | After the stop is accepted, so a refusal saves nothing (#60). City: the city of the trip, and only if the position is inside its area (`city-areas.ts`). The data is checked by `parseDiscoveredPlace`. A lost race on the unique OpenStreetMap id answers 409. |
+
+Both write `source = LAZY_OSM`, set the price baseline with `osmPriceLevelOf` and reuse a place that has the same OpenStreetMap
+id. They are not the rule of S19, and they are not the same rule as each other. The import script and the seed also create
+places, but from snapshot files, in bulk and with `source = IMPORTED`: a different path, outside this scenario. One change shows
+the cost of the copies: the column `osmPriceLevel` (#157) had to be written in both handlers, in separate commits, and in the
+import, the seed and the backfill script.
+
+#### Coupling and cohesion analysis
+
+**Coupling analysis.** The scales are the ones of the analysis in section 4.1: strength (contract, model, functional, intrusive), distance D1 to D5
+(D3 is another package under the same top-level package, D4 another top-level package) and volatility V1 to V4.
+
+**The relationships.**
+
+| #   | Relationship                                                                                       | Strength   | Distance | Volatility | Verdict           |
+| --- | -------------------------------------------------------------------------------------------------- | ---------- | -------- | ---------- | ----------------- |
+| R1  | `POST /api/reviews` and `POST /api/trips/[id]/stops`                                               | Functional | D3       | V4         | Worth redesigning |
+| R2  | Both routes and `src/domain/osm/osm.ts` (`osmIdFromDiscoveredPlaceId`, `osmPriceLevelOf`)          | Contract   | D4       | V4         | Balanced          |
+| R3  | `POST /api/trips/[id]/stops` and `parseDiscoveredPlace` (`src/domain/osm/discovered-place.ts`)     | Model      | D4       | V3         | Tolerable         |
+| R4  | A future saved-places handler and the two routes, if the steps are copied again                    | Functional | D3       | V4         | Worth avoiding    |
+
+**Evidence.**
+
+- **R1. Strength:** both must know how the data sent by the browser becomes a row of `Place`: the id of the place is its
+  OpenStreetMap id, the origin is `LAZY_OSM`, the price baseline is kept apart from the reviews, an existing place with the same
+  OpenStreetMap id is reused, and a city is chosen. No code is shared: the rule is written twice, so this is functional coupling
+  (if the copies were removed, both sides would still have to change together). The two copies already disagree on the city,
+  which shows that copies drift. **Distance:** `src/app/api/reviews` and `src/app/api/trips/[id]/stops` are different
+  packages under the top-level package `app` (D3), and they belong to two components, Reviews and Trip Planner.
+  **Volatility:** between 1 and 19 Nov 2026 the reviews route changed 9 times and the stops route 6 times (git), and the
+  rule for the city is about to change (S19, AC2). That is more than once a month: V4.
+- **R2. Strength:** the routes pass a string or a price level and get a value back (`"node/123"` or `null`, `"FREE"` or `null`).
+  They do not know the format of the id. That is contract coupling, and it absorbs the volatility of `osm.ts`
+  (7 commits since 1 Nov: V4). **Distance:** `app` and `domain` (D4), acceptable at this strength.
+- **R3. Strength:** the stops route spreads the object returned by `parseDiscoveredPlace` into `place.create`
+  (`...discovered`), so it must know the fields of `DiscoveredPlace`, which are columns of `Place`: model coupling.
+  **Distance:** `app` and `domain` (D4). **Volatility:** the type is new, but it follows the columns of `Place`, which got a
+  new one on 19 Nov (#157) and a time zone on `City` on 12 Nov: several times in a few weeks, V3. The reviews route does not
+  use `parseDiscoveredPlace` at all: it reads the same fields by hand.
+- **R4.** If saving a place of the map to a wishlist copies the steps, three handlers must change together whenever the rule
+  changes. They would sit in `app/api/reviews`, `app/api/trips/[id]/stops` and `app/api/saved-places` (D3), and the rule is V4.
+  The relationship does not exist yet: it is the scenario.
+
+**Cohesion analysis.** The component diagram says that Place Catalog owns the `Place` aggregate and that Reviews and Trip Planner
+call it. The code says that **Place Catalog owns none of the creation**: Reviews and Trip Planner call `prisma.place.create`
+themselves. In the **reviews handler** about 80 lines (from "On-the-fly ingestion" to the 404) are about places, not about
+reviews, and they run before the first rule of the review itself. In the **stops handler** the lookup by id and by OpenStreetMap
+id, the parsing and the creation sit inside the same transaction callback as the ordering of the stops, which is what this
+handler is for (`stop-order.ts`). The sequence is the same, but it is written in two components that are not the owner. Cohesion is low at
+the level of the component, and a third copy would make it lower. **`discovered-place.ts`** is cohesive (it checks the data of a place of
+the map and nothing else), so it is the natural place for the shared part to grow.
+
+#### Alternatives, decision, and consequences
+
+**Options.**
+
+| Option                                                                                                  | Effect on strength, distance, volatility                                                                                         | Cost                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| A. Do nothing: copy the steps into the saved places route and fix the city of reviews on its own         | Functional coupling between three writers (R1 and R4), V4. The copies keep drifting                                              | Cheapest now, most expensive at each change of the rule                                                               |
+| B. One function in Place Catalog that saves a place of the map. The rule for its city is an argument (a Strategy, as a function) | Functional becomes contract: a caller says "this place, with this city rule". V4 stays but is absorbed in one place         | One module, one level of indirection, and two small functions for the two city rules                                  |
+| C. A separate endpoint "save a place of the map" that the browser calls before the review, the stop or the saved place | One writer, but the place is saved before the caller has accepted its request                                                | Breaks the rule of #60 that a refusal saves nothing (orphan places), needs two requests, and puts the order of the steps in the browser |
+| D. An abstract class with a Template Method and one subclass per caller                                  | Removes the copies, in the form of a class hierarchy                                                                              | The code base uses functions and modules, not classes, and the callers differ in two things only, which arguments say more simply than subclasses |
+
+**Decision.** **Option B** ([ADR-011](#adr-011-one-function-saves-a-place-found-on-the-map-and-the-rule-for-its-city-is-an-argument)). In two steps, because a refusal must save nothing:
+
+1. `parseDiscoveredPlace(placeId, raw, cityRule)` in `src/domain/osm/discovered-place.ts` stays pure. It checks the data, asks
+   the **city rule** where the place goes, and returns the place with its city, or a refusal.
+2. `saveDiscoveredPlace(db, discovered)` in the new `src/lib/discovered-places.ts`, next to `place-stats.ts`, finds the place by
+   its id or its OpenStreetMap id, or creates it with `source = LAZY_OSM` and the price baseline, and returns it. The
+   caller calls it **after its own checks**: the stop is accepted, the review is not a duplicate, the saved place is not saved yet.
+
+A **city rule** is a function from a position to a city or a refusal. There are two, in the new `src/domain/osm/city-rules.ts`:
+`cityOfTrip(cityId)`, the rule of the stops route today (the city of the trip, if the position is inside its area), and
+`nearestCity(cities)`, the rule of S19. The reviews route and the saved places route pass `nearestCity`, the stops route
+passes `cityOfTrip`. The change is made with the first story that needs it, S19 or the wishlist of places of the map, as its
+first step, so that no third copy is ever written.
+
+**The pattern, in the terms of the course.** The two callers need the same behaviour and differ in how the city is chosen.
+Without a design, that difference becomes a flag inside the function (`if (tripId) … else …`), the "flag-based approach" of the course: each
+new caller adds a case, and the function has to be edited every time. The **Strategy** pattern captures the varying part
+separately and plugs it in. In TypeScript the strategy is a function, which is the idiom of this code base (CUPID: idiomatic).
+
+| Pattern role           | In this design                                           | Explanation                                                                      |
+| ---------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Strategy (interface)   | The type `CityRule`: position in, city or refusal out    | One signature, so any rule can be plugged in                                     |
+| Concrete strategy A    | `cityOfTrip(cityId)` in `city-rules.ts`                  | The city of the trip, if the position is inside its area (a trip never holds a place of another city) |
+| Concrete strategy B    | `nearestCity(cities)` in `city-rules.ts`                 | The rule of S19                                                                  |
+| Context                | `parseDiscoveredPlace`                                   | Validates the data and delegates the choice of the city to the rule it is given  |
+| Client                 | The three route handlers                                 | Each one chooses the rule and decides when to save                               |
+
+**Template Method was considered and not used** (option D): it would put the steps in an abstract class and let each caller
+override the city, but the callers do not need to inherit anything, and a function with one argument is smaller than a class
+with three subclasses.
+
+Before and after:
+
+![Before the decision](design/change-scenario-2-before.png)
+
+![After the decision](design/change-scenario-2-after.png)
+
+**Why this is better balanced, not only more decoupled.**
+
+- **Strength:** R1 and R4 go from functional to contract: the callers no longer know the columns of `Place`, the origin, the
+  price baseline or how to reuse a place by its OpenStreetMap id. R3 disappears, because the route no longer builds the data
+  of `place.create`.
+- **Distance:** it does not change. Callers stay in `app`, and the knowledge now lives in Place Catalog, so the distance a change has to travel
+  is one module.
+- **Volatility:** it does not change. The rule for the city is still V4, but it now changes in `city-rules.ts` and nowhere else.
+- **Cohesion:** the creation of a `Place` moves to its owner, the reviews handler loses about 80 lines that are not about
+  reviews, and the stops handler keeps only what is about stops.
+
+**Costs and risks.**
+
+- One more module and one more level of indirection, and two small rules to test (one with a list of cities).
+- The behaviour of the reviews route changes on purpose: it stops assigning Porto and follows S19. S19 says "the nearest city
+  that is in the catalog" and does not say what to do with a place that is far from every city. That has to be decided with the story.
+- The reviews handler must save the place inside the transaction of the review, as the stops handler already does, so that a
+  refused review saves no place.
+- Two users who save the same new place at the same moment race on the unique OpenStreetMap id. Today the stops route answers 409 and the
+  reviews route has no handling for it (not tested against the running app). The function reads again when its create loses the race, so the
+  second request gets the place the first one saved.
+
+**When to revisit.**
+
+- A second source of places beside OpenStreetMap: `parseDiscoveredPlace` is the only code that knows the OpenStreetMap payload
+  (it plays the role of an adapter), but `Place.osmId` and `source = LAZY_OSM` carry the name of the provider. The model would
+  need a provider and an external id then.
+- More than two city rules, or rules that need data: `CityRule` would receive it, or the rules would become a small registry.
+- If the import script and the seed ever need the same checks, they can call `saveDiscoveredPlace`.
 
 ## 5. Existing design pattern instances
 
