@@ -95,7 +95,21 @@ When we do not know a value, such as a price level or opening hours, we leave it
   #166, and for `scripts/ci-local.sh` (pull request #152).
 - It also helped to compare the reviews of #160 and #166 with the code, and to write the plan of the usability review of
   Iteration 3.
-- Each member adds here, before the review, what they used AI for in their own pull requests of this iteration.
+- GalaxyXYZ888: I used Claude Code for the Create trip API with its days and an empty itinerary
+  ([#148](https://github.com/MESW-LES-2627/les-project-group-7/pull/148)), the day synchronisation when the dates of a
+  trip change ([#154](https://github.com/MESW-LES-2627/les-project-group-7/pull/154)), and the polish of the My trips
+  page ([#153](https://github.com/MESW-LES-2627/les-project-group-7/pull/153)). I used it for the Stops API: add, list,
+  move, set the time of and remove the stops of an itinerary, with the order rule for stops with a time
+  ([#156](https://github.com/MESW-LES-2627/les-project-group-7/pull/156)), and for the lock that makes the changes of
+  one itinerary wait for each other
+  ([#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)). I also used it for the order of the reviews,
+  the "Open place page" button and the matching buttons of the review form
+  ([#163](https://github.com/MESW-LES-2627/les-project-group-7/pull/163)), and for the backfill script of the
+  OpenStreetMap price ([#157](https://github.com/MESW-LES-2627/les-project-group-7/pull/157)).
+- A script outside the repository runs the deploy workflow with `act` in Docker while GitHub Actions does not start. I
+  used Claude Code to run it and deploy `dev` after merges, and to take a snapshot of the Neon `dev` database before
+  the migrations. The secrets are in files outside the repository. The tool ran the script that reads them and did not
+  print them, and I had the log of each deploy searched for their values.
 
 ### Problems we found in code written with AI
 
