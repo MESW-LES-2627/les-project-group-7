@@ -45,7 +45,7 @@ export default function PlannerSavedPlaces({
   return (
     <section
       aria-labelledby="planner-saved-heading"
-      className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"
+      className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4"
     >
       <h2 id="planner-saved-heading" className="font-semibold">
         Your saved places in {cityName}
