@@ -15,6 +15,8 @@ import {
 } from "@/domain/catalog/place-details";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import WriteReviewButton from "./WriteReviewButton";
+import SavedPlacesProvider from "@/components/SavedPlacesProvider";
+import SavePlaceButtons from "@/components/SavePlaceButtons";
 import { formatOpeningHours } from "@/domain/osm/opening-hours";
 import ReviewActions from "@/components/ReviewActions";
 
@@ -154,6 +156,22 @@ export default async function PlacePage({ params }: PlacePageProps) {
               {formattedPrice}
             </span>
           </div>
+
+          <SavedPlacesProvider loggedIn={session !== null}>
+            <SavePlaceButtons
+              variant="full"
+              place={{
+                id: place.id,
+                name: place.name,
+                category: place.category,
+                address: place.address,
+                averageRating: place.averageRating,
+                reviewCount: place.reviewCount,
+                priceLevel: place.priceLevel,
+                city: { name: place.city.name, country: place.city.country },
+              }}
+            />
+          </SavedPlacesProvider>
 
           <p className="text-base text-slate-700">
             {place.description ?? "No description yet."}

@@ -1,3 +1,7 @@
+import {
+  savedSections,
+  type SavedPlace,
+} from "@/domain/saved-places/saved-places";
 import { moveStop, type StopRefusal } from "./stop-order";
 import type { toStopResponse } from "./stop-response";
 
@@ -200,4 +204,22 @@ export function stopRequestError(
   }
 
   return { message: GENERIC_STOP_MESSAGE, reason, reload: false };
+}
+
+// The saved places the planner can add: the ones of the city of the trip (the API refuses the others), in
+// the sections of My places. The rest is only counted, so the panel can say why they are not listed.
+export function plannerSavedPlaces(
+  saved: readonly SavedPlace[],
+  cityPlaceIds: ReadonlySet<string>
+) {
+  const inCity = saved.filter((entry) => cityPlaceIds.has(entry.place.id));
+
+  return {
+    sections: savedSections(inCity),
+    elsewhere: new Set(
+      saved
+        .filter((entry) => !cityPlaceIds.has(entry.place.id))
+        .map((entry) => entry.place.id)
+    ).size,
+  };
 }

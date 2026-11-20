@@ -7,7 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 /**
  * Top bar on every page. Logged out: links to the login and registration pages.
- * Logged in: link to "My trips", the username as typed, and the logout button.
+ * Logged in: links to "My trips" and "My places", the username as typed, and the logout button.
  */
 export default async function SiteHeader() {
   // A database failure must not take down every page (404s, /register): show the logged-out bar.
@@ -32,14 +32,21 @@ export default async function SiteHeader() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           {session ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <Link
                 href="/trips"
                 className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 dark:hover:text-indigo-400"
               >
                 My trips
               </Link>
-              <span className="text-sm font-medium text-slate-700">
+              <Link
+                href="/my-places"
+                className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 dark:hover:text-indigo-400"
+              >
+                My places
+              </Link>
+              {/* Only for screen readers below sm: with the username the header is wider than a 390 px phone. */}
+              <span className="sr-only text-sm font-medium text-slate-700 sm:not-sr-only">
                 @{session.user.displayUsername ?? session.user.username}
               </span>
               <LogoutButton />

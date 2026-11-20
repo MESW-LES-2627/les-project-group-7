@@ -13,6 +13,11 @@ import type {
 } from "@/domain/itinerary/itinerary-editor";
 import type { PlaceItem } from "@/types/place";
 
+const savedPlaces = vi.hoisted(() => ({ value: null as unknown }));
+vi.mock("@/components/SavedPlacesProvider", () => ({
+  useSavedPlaces: () => savedPlaces.value,
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
@@ -87,6 +92,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  savedPlaces.value = null;
   cleanup();
   vi.unstubAllGlobals();
 });
@@ -327,5 +333,38 @@ describe("ItineraryEditor: removing a stop and saving a time", () => {
 
     finish(json({ stops }));
     await waitFor(() => expect(field.readOnly).toBe(false));
+  });
+});
+
+describe("the saved places panel", () => {
+  it("adds a saved place of the city to the chosen day", async () => {
+    savedPlaces.value = {
+      status: "ready",
+      reload: vi.fn(),
+      saved: [
+        {
+          type: "WISHLIST",
+          savedAt: "2026-11-01T10:00:00Z",
+          place: { id: "louvre", name: "Louvre", category: "MUSEUM" },
+        },
+      ],
+    };
+    render(<ItineraryEditor {...base} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add Louvre to Day 1" })
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body).toMatchObject({ dayId: "d1", placeId: "louvre" });
+  });
+
+  it("is not on the page outside the saved places provider", () => {
+    render(<ItineraryEditor {...base} />);
+
+    expect(screen.queryByText(/Your saved places in/)).toBeNull();
   });
 });

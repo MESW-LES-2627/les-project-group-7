@@ -5,6 +5,7 @@ import {
   GENERIC_STOP_MESSAGE,
   SESSION_EXPIRED_MESSAGE,
   addStopBody,
+  plannerSavedPlaces,
   moveOption,
   stopRequestError,
   stopsByDay,
@@ -242,5 +243,29 @@ describe("stopRequestError", () => {
       GENERIC_STOP_MESSAGE
     );
     expect(stopRequestError(400, {}).message).toBe(GENERIC_STOP_MESSAGE);
+  });
+});
+
+describe("plannerSavedPlaces", () => {
+  const saved = (id: string, type: "WISHLIST" | "BOOKMARK") => ({
+    type,
+    savedAt: "2026-11-01T10:00:00Z",
+    place: { id, name: id, category: "PARK" },
+  });
+
+  it("lists the places of the city by section and counts the others once", () => {
+    const result = plannerSavedPlaces(
+      [
+        saved("a", "WISHLIST"),
+        saved("b", "BOOKMARK"),
+        saved("far", "WISHLIST"),
+        saved("far", "BOOKMARK"),
+      ],
+      new Set(["a", "b"])
+    );
+
+    expect(result.sections.WISHLIST.map((e) => e.place.id)).toEqual(["a"]);
+    expect(result.sections.BOOKMARK.map((e) => e.place.id)).toEqual(["b"]);
+    expect(result.elsewhere).toBe(1);
   });
 });
