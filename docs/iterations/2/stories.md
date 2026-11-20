@@ -7,8 +7,8 @@ counts as done only when all its issues are merged (see the [Definition of Done]
 The acceptance criteria of each story are in [user-stories.md](../../user-stories.md). The plan of the sprint is
 in [sprint-2-plan.md](../../sprints/sprint-2-plan.md).
 
-GitHub closes an issue only when its pull request reaches `main`, so #41, #43, #46 and #55 show as open until
-`dev` is merged into `main`. Their pull requests are merged in `dev`.
+A story is done when all its tasks (its issues) are merged. A story whose planned tasks are done but that still has
+tasks that are not done is listed in the second table, with the tasks that are done and the ones that are not.
 
 ## Done
 
@@ -21,18 +21,20 @@ GitHub closes an issue only when its pull request reaches `main`, so #41, #43, #
 | US-C3-01 See my visited places (#42) | #43 Visited list API and page | #166 |
 | US-D1-01 Save a place to the wishlist or bookmarks (#44) | #45 Saved places API, #46 Saved places UI and My places page | #159, #160, #170 |
 
-## Started, not done
+## Tasks done, story not done yet
 
-| Story | Merged | Not merged |
+| Story | Tasks done | Tasks not done |
 | :---- | :---- | :---- |
-| US-E4-01 Build an itinerary by hand (#58) | #59 Stop ordering rules ([#155](https://github.com/MESW-LES-2627/les-project-group-7/pull/155)), #60 Stops API ([#156](https://github.com/MESW-LES-2627/les-project-group-7/pull/156), [#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)), #61 Itinerary editing UI ([#158](https://github.com/MESW-LES-2627/les-project-group-7/pull/158), [#169](https://github.com/MESW-LES-2627/les-project-group-7/pull/169), [#174](https://github.com/MESW-LES-2627/les-project-group-7/pull/174)) | #144 Itinerary settings API and #145 Itinerary settings box, which were added to the story on 12 Nov and are planned for Iteration 3 |
-| US-P2-01 Separate dev and prod environments (#79) | The deploy workflow of Iteration 1 | #80 Pipeline for dev and prod (pull request #152, open: the checks of GitHub Actions do not start, see the [retrospective](retrospective.md)) and #81 Migrations per environment (no pull request yet) |
+| US-E4-01 Build an itinerary by hand (#58) | #59 Stop ordering rules ([#155](https://github.com/MESW-LES-2627/les-project-group-7/pull/155)), #60 Stops API ([#156](https://github.com/MESW-LES-2627/les-project-group-7/pull/156), [#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)), #61 Itinerary editing UI ([#158](https://github.com/MESW-LES-2627/les-project-group-7/pull/158), [#169](https://github.com/MESW-LES-2627/les-project-group-7/pull/169), [#174](https://github.com/MESW-LES-2627/les-project-group-7/pull/174)). These are all the tasks that the sprint plan had for this story. | #144 Itinerary settings API and #145 Itinerary settings box (the optional budget level and hour limits). They were added to the story on 12 Nov, are not in the sprint plan and are moved to Iteration 3, so the story stays open. |
+| US-P2-01 Separate dev and prod environments (#79) | #81 Migrations per environment (closed), and the deploy workflow of Iteration 1 | #80 Pipeline for dev and prod (pull request #152, in review). The repository became public on 20 Nov and GitHub Actions runs again, so the pipeline can be checked and merged in Iteration 3. |
 
 ## Moved to Iteration 3
 
 - #63 Nearby ranking function with unit tests (US-E5-01) and #69 Trip average with unit tests (US-E6-02) were
   moved out of Iteration 1 and the sprint plan left them out of this iteration, with the rest of the stories E5 to
   E8 and P1, for Iterations 3 and 4.
+- #144 Itinerary settings API and #145 Itinerary settings box (US-E4-01) were added to the story on 12 Nov and are not in
+  the sprint plan of this iteration.
 
 ## Other work in the iteration
 
