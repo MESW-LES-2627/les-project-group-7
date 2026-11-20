@@ -53,6 +53,15 @@ describe("SiteHeader", () => {
     expect(html).not.toContain('href="/login"');
   });
 
+  it("hides the username on a phone, for sight only, so the header fits 390 px", async () => {
+    getSession.mockResolvedValue({
+      user: { username: "maria", displayUsername: "Maria" },
+    });
+
+    const html = await render();
+    expect(html).toMatch(/class="sr-only[^"]*sm:not-sr-only[^"]*">@Maria/);
+  });
+
   it("keeps the My trips link readable on hover in dark mode", async () => {
     getSession.mockResolvedValue({
       user: { username: "maria", displayUsername: "Maria" },
