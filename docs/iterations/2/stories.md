@@ -25,7 +25,7 @@ GitHub closes an issue only when its pull request reaches `main`, so #41, #43, #
 
 | Story | Merged | Not merged |
 | :---- | :---- | :---- |
-| US-E4-01 Build an itinerary by hand (#58) | #59 Stop ordering rules ([#155](https://github.com/MESW-LES-2627/les-project-group-7/pull/155)), #60 Stops API ([#156](https://github.com/MESW-LES-2627/les-project-group-7/pull/156), [#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)), #61 Itinerary editing UI ([#158](https://github.com/MESW-LES-2627/les-project-group-7/pull/158), [#169](https://github.com/MESW-LES-2627/les-project-group-7/pull/169)) | #144 Itinerary settings API and #145 Itinerary settings box, which were added to the story on 12 Nov and are planned for Iteration 3 |
+| US-E4-01 Build an itinerary by hand (#58) | #59 Stop ordering rules ([#155](https://github.com/MESW-LES-2627/les-project-group-7/pull/155)), #60 Stops API ([#156](https://github.com/MESW-LES-2627/les-project-group-7/pull/156), [#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)), #61 Itinerary editing UI ([#158](https://github.com/MESW-LES-2627/les-project-group-7/pull/158), [#169](https://github.com/MESW-LES-2627/les-project-group-7/pull/169), [#174](https://github.com/MESW-LES-2627/les-project-group-7/pull/174)) | #144 Itinerary settings API and #145 Itinerary settings box, which were added to the story on 12 Nov and are planned for Iteration 3 |
 | US-P2-01 Separate dev and prod environments (#79) | The deploy workflow of Iteration 1 | #80 Pipeline for dev and prod (pull request #152, open: the checks of GitHub Actions do not start, see the [retrospective](retrospective.md)) and #81 Migrations per environment (no pull request yet) |
 
 ## Moved to Iteration 3
@@ -43,5 +43,5 @@ GitHub closes an issue only when its pull request reaches `main`, so #41, #43, #
 - The design report of the end of the iteration: the domain model and the component diagram updated, change
   scenario 2 and ADR-011, one function that saves a place found on the map (commit `1450569`).
 - The plan and the start snapshot of the sprint ([#172](https://github.com/MESW-LES-2627/les-project-group-7/pull/172)).
-- `scripts/ci-local.sh`, which runs the checks of the pipeline on a computer while GitHub Actions does not start
-  (pull request #152).
+- The planner on one screen, with the days as a timeline and one panel to find places (Search, Saved and Map)
+  ([#174](https://github.com/MESW-LES-2627/les-project-group-7/pull/174)).

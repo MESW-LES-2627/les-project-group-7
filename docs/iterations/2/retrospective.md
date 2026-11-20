@@ -46,5 +46,5 @@ Iteration 3" is a proposal, to agree on at the retrospective meeting.
 | No pull request is merged without an approval from a teammate. A review by a tool does not count. | Every merged pull request shows an approval by a person in GitHub. |
 | A pull request covers one issue and says "Part of #N". | The title and the first line of each pull request name one issue. |
 | The freeze is kept: after Wed 2 Dec nothing new of a story is merged. | No story pull request is merged on 3 Dec or later, except fixes found in the review. |
-| The pipeline runs, or the checks run on a computer and the result is in the pull request. | Green checks on the pull request, or the output of `bash scripts/ci-local.sh all` pasted in it. |
+| The pipeline runs, or the checks run on a computer and the result is in the pull request. | Green checks on the pull request, or the output of the same checks run on a computer pasted in it. |
 | The start of each sprint is tagged. | The tag `sprint-3-start` exists on the day of the planning. |

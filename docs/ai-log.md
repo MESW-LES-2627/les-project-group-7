@@ -92,7 +92,7 @@ When we do not know a value, such as a price level or opening hours, we leave it
   ([#165](https://github.com/MESW-LES-2627/les-project-group-7/pull/165)), for the map, the rating of a place and the
   saved places in the planner ([#169](https://github.com/MESW-LES-2627/les-project-group-7/pull/169),
   [#170](https://github.com/MESW-LES-2627/les-project-group-7/pull/170)), for the fixes asked in the reviews of #160 and
-  #166, and for `scripts/ci-local.sh` (pull request #152).
+  #166.
 - It also helped to compare the reviews of #160 and #166 with the code, and to write the plan of the usability review of
   Iteration 3.
 - GalaxyXYZ888: I used Claude Code for the Create trip API with its days and an empty itinerary
@@ -124,8 +124,8 @@ When we do not know a value, such as a price level or opening hours, we leave it
 - Parallel requests against a local PostgreSQL, which found the deadlock of #161.
 - The reviews of #160 and #166 used a merged tree of `dev` and the branch, a real database and a browser at 390 px, in
   light and dark.
-- While GitHub Actions does not start, `bash scripts/ci-local.sh all` runs the checks of the pipeline on a computer:
-  format, types, lint, knip, tests with coverage and build, then the integration tests against a temporary PostgreSQL.
+- While GitHub Actions does not start, the checks of the pipeline are run by hand on a computer: format, types, lint,
+  knip and the tests, and the pull request is only merged after they pass.
 
 ### What we changed because of it
 
