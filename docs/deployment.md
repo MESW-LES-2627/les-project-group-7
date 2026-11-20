@@ -283,6 +283,14 @@ that is free. The jobs only wait when every runner is off. `deploy.yml` stays on
 Pull requests from other people run their code on your computer. Read a pull request before
 you let its checks run on your runner.
 
+### Run the checks on your computer
+
+Without a runner, `bash scripts/ci-local.sh` runs the same steps as `ci.yml` on your computer:
+format, types, lint, knip, tests with coverage and build, then the integration tests against a
+PostgreSQL in a temporary Docker container (a free port, removed at the end). Use `static` or
+`integration` to run one job. SonarCloud is the only step that does not run, because it needs the
+`SONAR_TOKEN` secret. It takes about 2 minutes.
+
 ### Back to GitHub's runners
 
 When the billing works again, delete the `CI_RUNNER` variable. Nothing in the workflows
