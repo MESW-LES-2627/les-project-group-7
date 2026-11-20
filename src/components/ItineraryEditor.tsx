@@ -512,8 +512,7 @@ export default function ItineraryEditor({
                   />
                 </div>
                 <p className="text-xs text-slate-500">
-                  Press Enter to also search OpenStreetMap. Without a time, the
-                  place goes at the end of the day.
+                  Without a time, the place goes at the end of the day.
                 </p>
               </div>
             )}
