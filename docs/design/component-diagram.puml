@@ -9,13 +9,15 @@ skinparam component {
   BackgroundColor #FFF8E1
   BorderColor #666666
   BackgroundColor<<built>> #DDF3DD
+  BackgroundColor<<partial>> #F0F4C3
 }
 skinparam package {
   BorderColor #888888
 }
 
 legend right
-  |<#DDF3DD> Built (Iteration 1) |
+  |<#DDF3DD> Built (end of Iteration 2) |
+  |<#F0F4C3> Partly built (end of Iteration 2), see the label |
   |<#FFF8E1> MVP component, not built yet |
   |<#EEEEEE> Stretch (designed, not in the MVP) |
   |<#F8C9D8> External system |
@@ -37,10 +39,10 @@ package "Backend" as backend {
   interface "REST API" as api
 
   component "Identity\n(users, auth, roles)\nBetter Auth library" as identity <<built>>
-  component "Place Catalog\n(places, city and place search,\nfilters, opening hours, visited,\nrating, top-rated)" as catalog <<built>>
-  component "Reviews\n(post: built;\nedit, delete: not yet;\nprice level)" as reviews <<built>>
-  component "Saved Places\n(wishlist, bookmarks, lists)" as saved
-  component "Trip Planner\n(trips, days, itinerary,\nvisit times, optional budget\nand hour limits, travel time,\nopening-hours, hour-limit\nand budget warnings)" as planner
+  component "Place Catalog\n(places, city and place search,\nfilters, opening hours, visited,\nrating, top-rated,\nplaces of the map: ADR-011)" as catalog <<built>>
+  component "Reviews\n(post, edit, delete;\nprice level)" as reviews <<built>>
+  component "Saved Places\n(wishlist, bookmarks: API built;\npage and lists: not yet)" as saved <<partial>>
+  component "Trip Planner\n(built: trips create, list,\nedit, delete; days; itinerary\neditor; stops with visit times.\nNot yet: optional budget and\nhour limits, travel time, warnings)" as planner <<partial>>
   component "Itinerary Generator\n(basic: rating, distance,\nbudget average, wishlist,\nhour limits given,\nopening hours)" as generator
   component "Publishing\n(published itineraries,\nsharing, bookmarks)" as publishing #EEEEEE
   component "Reminders\n(scheduler)" as reminders #EEEEEE
@@ -50,7 +52,7 @@ component "Import and seed scripts\n(CLI: import-osm, seed)\nPlace Catalog: impo
 
 database "PostgreSQL\n(via Prisma)" as db #E8E8E8
 
-cloud "Places data source\n(OpenStreetMap, Overpass)\nlive discovery" as places #F8C9D8
+cloud "Places data source\n(OpenStreetMap, Overpass)\nlive discovery: built,\noutside the committed MVP" as places #F8C9D8
 cloud "Map tiles\n(OpenStreetMap)" as tiles #F8C9D8
 cloud "Routing service\n(on foot, by car,\npublic transport)\nStretch" as routing #F8C9D8
 cloud "Geocoding service\n(Nominatim)\nimport: MVP;\nsearch outside the\ncatalog: not in the\ncommitted MVP" as geocoding #F8C9D8
@@ -68,9 +70,9 @@ api - saved
 api - planner
 api - publishing
 
-reviews ..> catalog : mark place visited,\nrecalculate rating
-saved ..> catalog
-planner ..> catalog : find places,\nopening hours
+reviews ..> catalog : mark place visited,\nrecalculate rating,\nsave a place of the map
+saved ..> catalog : places,\nsave a place of the map\n(later)
+planner ..> catalog : find places,\nopening hours,\nsave a place of the map
 planner ..> generator : generate
 generator ..> catalog : candidates\n(top-rated,\nopening hours)
 generator ..> saved : wishlist places
@@ -80,13 +82,20 @@ reminders ..> planner : upcoming visits
 scripts --> geocoding : places of a city
 scripts --> db : places, demo users,\nsample reviews
 scripts ..> catalog : same rules\n(categories, ratings)
-catalog ..> places : live discovery\n(outside the MVP)
+catalog ..> places : live discovery
 catalog ..> geocoding : search outside\nthe catalog
 planner ..> routing : real travel times
 reminders --> notif : send reminder
 
 
 backend --> db : reads / writes
+
+note bottom of catalog
+  ADR-011: Reviews, Trip Planner and, later,
+  Saved Places do not create places themselves.
+  They pass a place found on the map, and the
+  rule for its city, to Place Catalog.
+end note
 
 note right of web
   Every write action authenticates

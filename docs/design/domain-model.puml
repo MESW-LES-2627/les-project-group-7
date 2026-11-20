@@ -22,7 +22,7 @@ legend right
   **Box colours = aggregates**
   |<#F5F5F5> User |
   |<#FFFFFF> Shared enumerations (PriceLevel, PlaceCategory) |
-  |<#FFF3C4> Place (with City, Visit) |
+  |<#FFF3C4> Place (with City, Visit, DiscoveredPlace) |
   |<#D6ECFA> Review |
   |<#DDF3DD> Saved places |
   |<#CDEFEF> List |
@@ -99,10 +99,30 @@ class Place #FFF3C4 {
 note right of Place
   /priceLevel: free if OpenStreetMap says no fee, and it
   stays free until 2 reviews give a paid price; otherwise
-  the most common level in its reviews.
+  the most common level in its reviews. What OpenStreetMap
+  says is kept apart and no review changes it: when the
+  reviews no longer give a price, the place goes back to it.
   /averageRating and /reviewCount: from its reviews.
   /ratingScore: weighted rating used to rank places, so
   that one review cannot outrank many (ADR-008).
+end note
+
+class DiscoveredPlace <<value object>> #FFF3C4 {
+  name
+  address [0..1]
+  category : PlaceCategory [0..1]
+  latitude
+  longitude
+  priceLevel : PriceLevel [0..1]
+}
+note right of DiscoveredPlace
+  A place found on the map or in the search that the
+  catalog does not have yet. It has no page and cannot
+  be rated or planned until it becomes a Place: the first
+  time it is reviewed or added to a trip. It is unique by
+  its OpenStreetMap id: if the catalog already has it,
+  that Place is used. A trip only takes it if its position
+  is inside the city of the trip.
 end note
 
 class PlaceSuggestion <<post-MVP>> #F3E0A8 {
@@ -119,11 +139,15 @@ class Review #D6ECFA {
   priceLevel : PriceLevel
   text
   createdAt
+  updatedAt
 }
 
 note right of Review
   A user can review a given place only once.
   Different users can each review the same place.
+  The author can edit or delete the review. The rating
+  and the price level of the place are recalculated
+  after every change.
   The price level is required when a review is
   posted (a review written before that may have none).
 end note
@@ -163,7 +187,9 @@ class Trip #FFE3CC {
 note right of Trip
   A trip is only a name, a city and dates. At most
   14 days, and the start date is today or later in
-  the time zone of the city.
+  the time zone of the city. The name and the dates
+  can be changed later. The start date is checked
+  again only when it is the one that changes.
 end note
 
 class Day #FFE3CC {
@@ -172,7 +198,10 @@ class Day #FFE3CC {
 }
 note right of Day
   One Day per date between the start
-  and the end date of the trip.
+  and the end date of the trip. When the dates
+  change, every day gets its new date and keeps
+  its number. A day after the new end date goes
+  with its stops, after the person confirms.
 end note
 
 class Itinerary #FFE3CC {
@@ -201,6 +230,9 @@ class ItineraryStop #FFE3CC {
   /travelTimeFromPreviousStop
 }
 note right of ItineraryStop
+  A place is a stop of a trip at most once. The stops
+  with a visit time stay in the order of their times;
+  a stop without a time can be anywhere.
   /outsideOpeningHours: the visit time is outside the
   place's opening hours. Only where the hours are known.
   /travelTimeFromPreviousStop: estimate in minutes.
@@ -231,6 +263,8 @@ Place "1" -- "*" Review : has >
 User "1" -- "*" Visit : makes >
 Place "1" -- "*" Visit : is visited in >
 City "1" -- "*" Place : contains >
+DiscoveredPlace ..> Place : becomes >
+DiscoveredPlace ..> City : is placed in >
 PlaceSuggestion "*" -- "1" User : suggested by >
 PlaceSuggestion "*" -- "0..1" User : decided by >
 PlaceSuggestion "*" -- "1" City : proposed in >

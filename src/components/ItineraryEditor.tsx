@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MapWrapper from "@/components/MapWrapper";
+import PlannerSavedPlaces from "@/components/PlannerSavedPlaces";
 import PlaceSearchAutocomplete from "@/components/PlaceSearchAutocomplete";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import {
@@ -205,6 +206,11 @@ export default function ItineraryEditor({
     // A pin that is not in the catalog is a place found on OpenStreetMap, and it is on the trip already.
     if (place) addLocalPlace(place);
     else setError(ALREADY_PLANNED_MESSAGE);
+  }
+
+  function addSavedPlace(placeId: string) {
+    const place = cityPlaces.find((item) => item.id === placeId);
+    if (place) addLocalPlace(place);
   }
 
   function addOsmPlace(place: OsmSearchResult) {
@@ -462,33 +468,45 @@ export default function ItineraryEditor({
           </ol>
         </div>
 
-        <section
-          aria-labelledby="trip-map-heading"
-          className="space-y-2 lg:sticky lg:top-4 lg:self-start"
-        >
-          <h2 id="trip-map-heading" className="font-semibold">
-            Map of {cityName}
-          </h2>
-          <MapWrapper
-            places={pins}
-            center={center}
-            zoom={13}
-            addAction={
-              activeDayId
-                ? {
-                    label: `Add to ${dayLabel(activeDayId)}`,
-                    disabled: busy,
-                    onAdd: addFromMap,
-                  }
-                : undefined
-            }
+        <div className="flex min-w-0 flex-col gap-6">
+          <section
+            aria-labelledby="trip-map-heading"
+            className="space-y-2 lg:sticky lg:top-4"
+          >
+            <h2 id="trip-map-heading" className="font-semibold">
+              Map of {cityName}
+            </h2>
+            <MapWrapper
+              places={pins}
+              center={center}
+              zoom={13}
+              addAction={
+                activeDayId
+                  ? {
+                      label: `Add to ${dayLabel(activeDayId)}`,
+                      disabled: busy,
+                      onAdd: addFromMap,
+                    }
+                  : undefined
+              }
+            />
+            <p className="text-sm text-slate-500">
+              Click a pin to add the place to the day chosen above.{" "}
+              {plannedCount === 1
+                ? "1 place is planned."
+                : `${plannedCount} places are planned.`}
+            </p>
+          </section>
+
+          <PlannerSavedPlaces
+            cityName={cityName}
+            cityPlaceIds={new Set(cityPlaces.map((place) => place.id))}
+            plannedIds={new Set(stops.map((stop) => stop.placeId))}
+            dayLabel={dayLabel(activeDayId)}
+            disabled={busy || !activeDayId}
+            onAdd={addSavedPlace}
           />
-          <p className="text-sm text-slate-500">
-            {pins.length === 0
-              ? "The places you add show up here."
-              : `${pins.length} ${pins.length === 1 ? "place" : "places"} of this trip.`}
-          </p>
-        </section>
+        </div>
       </div>
     </div>
   );

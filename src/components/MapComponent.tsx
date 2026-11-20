@@ -31,6 +31,7 @@ import {
 } from "@/domain/catalog/geo";
 import { formatPriceLevel } from "@/domain/reviews/rating";
 import MapClusterMarker from "./MapClusterMarker";
+import SavePlaceButtons from "./SavePlaceButtons";
 
 export interface MapPlace {
   id: string;
@@ -222,6 +223,17 @@ const PlacePin = memo(function PlacePin({
               {addAction.label}
             </Button>
           )}
+          <SavePlaceButtons
+            place={{
+              id: place.id,
+              name: place.name,
+              category: place.category,
+              priceLevel: place.priceLevel,
+              averageRating: place.rating,
+              isDiscovered: place.isDiscovered,
+            }}
+            className="mt-2"
+          />
 
           {onSelectPlace && (
             <Button

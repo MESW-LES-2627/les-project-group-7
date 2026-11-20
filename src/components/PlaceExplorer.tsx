@@ -15,6 +15,7 @@ import MapExplorerCard from "./MapExplorerCard";
 import PlaceGrid from "./PlaceGrid";
 import PlaceDataTable from "./PlaceDataTable";
 import ReviewModal, { type ReviewItem } from "./ReviewModal";
+import SavedPlacesProvider from "./SavedPlacesProvider";
 import type { CityOption } from "./CitySelector";
 import { usePlaceReviews } from "@/hooks/usePlaceReviews";
 import { usePlaceFiltering } from "@/hooks/usePlaceFiltering";
@@ -247,91 +248,93 @@ export default function PlaceExplorer({
   };
 
   return (
-    <div className="space-y-8">
-      {/* ── 2. Map Explorer & City Selector ──────────────────────────────── */}
-      <MapExplorerCard
-        places={mapPins}
-        allPlaces={allPlaces}
-        selectedCenter={selectedMapCenter}
-        selectedCityCenter={selectedCityCenter}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        filters={filters}
-        onFiltersChange={setFilters}
-        isFetchingOsm={isFetchingOsm}
-        cities={initialCities}
-        selectedCityId={selectedCityId}
-        activeCityName={activeCityName}
-        onSelectCity={handleSelectCity}
-        onSelectPlace={handleSelectPlace}
-        onFocusPlace={handleFocusPlace}
-        onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
-        onMapMove={handleMapMove}
-      />
+    <SavedPlacesProvider loggedIn={currentUsername !== null}>
+      <div className="space-y-8">
+        {/* ── 2. Map Explorer & City Selector ──────────────────────────────── */}
+        <MapExplorerCard
+          places={mapPins}
+          allPlaces={allPlaces}
+          selectedCenter={selectedMapCenter}
+          selectedCityCenter={selectedCityCenter}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          filters={filters}
+          onFiltersChange={setFilters}
+          isFetchingOsm={isFetchingOsm}
+          cities={initialCities}
+          selectedCityId={selectedCityId}
+          activeCityName={activeCityName}
+          onSelectCity={handleSelectCity}
+          onSelectPlace={handleSelectPlace}
+          onFocusPlace={handleFocusPlace}
+          onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
+          onMapMove={handleMapMove}
+        />
 
-      {/* ── 3. Ranking & Spots Catalog ───────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <Trophy className="h-5 w-5 text-amber-500" />
-              Place Ranking{activeCityName ? ` in ${activeCityName}` : ""}
-            </h2>
-            <p className="text-xs text-slate-500">
-              {filteredPlaces.length} of {allPlaces.length} places, best rating
-              score first
-            </p>
+        {/* ── 3. Ranking & Spots Catalog ───────────────────────────────────── */}
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Trophy className="h-5 w-5 text-amber-500" />
+                Place Ranking{activeCityName ? ` in ${activeCityName}` : ""}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {filteredPlaces.length} of {allPlaces.length} places, best
+                rating score first
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1">
+              <Button
+                size="sm"
+                variant={viewMode === "table" ? "secondary" : "ghost"}
+                onClick={() => setViewMode("table")}
+                className={`h-7 gap-1.5 px-3 text-xs font-medium ${
+                  viewMode === "table"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <LayoutList className="h-3.5 w-3.5" />
+                Table
+              </Button>
+              <Button
+                size="sm"
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                onClick={() => setViewMode("grid")}
+                className={`h-7 gap-1.5 px-3 text-xs font-medium ${
+                  viewMode === "grid"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Cards
+              </Button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1">
-            <Button
-              size="sm"
-              variant={viewMode === "table" ? "secondary" : "ghost"}
-              onClick={() => setViewMode("table")}
-              className={`h-7 gap-1.5 px-3 text-xs font-medium ${
-                viewMode === "table"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <LayoutList className="h-3.5 w-3.5" />
-              Table
-            </Button>
-            <Button
-              size="sm"
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              onClick={() => setViewMode("grid")}
-              className={`h-7 gap-1.5 px-3 text-xs font-medium ${
-                viewMode === "grid"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Cards
-            </Button>
-          </div>
+          {viewMode === "table" ? (
+            <PlaceDataTable {...listProps} />
+          ) : (
+            <PlaceGrid {...listProps} />
+          )}
         </div>
 
-        {viewMode === "table" ? (
-          <PlaceDataTable {...listProps} />
-        ) : (
-          <PlaceGrid {...listProps} />
-        )}
+        {/* ── 4. Review Dialog ─────────────────────────────────────────────── */}
+        <ReviewModal
+          place={activeReviewPlace}
+          currentUsername={currentUsername}
+          reviews={reviewsList}
+          isLoadingReviews={isLoadingReviews}
+          isSubmitting={isSubmitting}
+          submitSuccess={submitSuccess}
+          errorMessage={errorMsg}
+          onClose={closeReviewModal}
+          onSubmit={handleSubmitReview}
+        />
       </div>
-
-      {/* ── 4. Review Dialog ─────────────────────────────────────────────── */}
-      <ReviewModal
-        place={activeReviewPlace}
-        currentUsername={currentUsername}
-        reviews={reviewsList}
-        isLoadingReviews={isLoadingReviews}
-        isSubmitting={isSubmitting}
-        submitSuccess={submitSuccess}
-        errorMessage={errorMsg}
-        onClose={closeReviewModal}
-        onSubmit={handleSubmitReview}
-      />
-    </div>
+    </SavedPlacesProvider>
   );
 }

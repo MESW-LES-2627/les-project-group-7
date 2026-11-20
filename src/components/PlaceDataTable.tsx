@@ -15,6 +15,7 @@ import { formatPriceLevel } from "@/domain/reviews/rating";
 import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
+import SavePlaceButtons from "./SavePlaceButtons";
 
 export interface PlaceDataTableProps {
   paginatedPlaces: PlaceItem[];
@@ -168,6 +169,8 @@ export default function PlaceDataTable({
                       {/* Quick Actions */}
                       <td className="py-3 pl-4 pr-6 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          <SavePlaceButtons place={place} />
+
                           <Button
                             size="sm"
                             variant="outline"

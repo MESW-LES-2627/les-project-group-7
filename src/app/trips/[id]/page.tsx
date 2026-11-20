@@ -7,6 +7,7 @@ import { toStopResponse } from "@/domain/itinerary/stop-response";
 import { listStops } from "@/lib/trip-stops";
 import DeleteTripDialog from "@/components/DeleteTripDialog";
 import EditTripDialog from "@/components/EditTripDialog";
+import SavedPlacesProvider from "@/components/SavedPlacesProvider";
 import ItineraryEditor from "@/components/ItineraryEditor";
 
 export const dynamic = "force-dynamic";
@@ -80,13 +81,15 @@ export default async function TripPage({ params }: TripPageProps) {
         </div>
       </div>
 
-      <ItineraryEditor
-        tripId={trip.id}
-        cityName={record.city.name}
-        days={trip.days}
-        initialStops={stops.map(toStopResponse)}
-        cityPlaces={cityPlaces}
-      />
+      <SavedPlacesProvider loggedIn>
+        <ItineraryEditor
+          tripId={trip.id}
+          cityName={record.city.name}
+          days={trip.days}
+          initialStops={stops.map(toStopResponse)}
+          cityPlaces={cityPlaces}
+        />
+      </SavedPlacesProvider>
     </main>
   );
 }
