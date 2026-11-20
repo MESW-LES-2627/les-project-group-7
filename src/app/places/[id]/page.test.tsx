@@ -1,9 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const { findUnique } = vi.hoisted(() => ({ findUnique: vi.fn() }));
+const { findUnique, findVisit, getSession } = vi.hoisted(() => ({
+  findUnique: vi.fn(),
+  findVisit: vi.fn(),
+  getSession: vi.fn(),
+}));
 
-vi.mock("@/lib/prisma", () => ({ prisma: { place: { findUnique } } }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    place: { findUnique },
+    visit: { findUnique: findVisit },
+  },
+}));
+
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
@@ -11,10 +21,16 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
-vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers(),
+}));
 
 vi.mock("@/lib/auth", () => ({
-  auth: { api: { getSession: vi.fn().mockResolvedValue(null) } },
+  auth: {
+    api: {
+      getSession,
+    },
+  },
 }));
 
 import PlacePage from "./page";
@@ -70,6 +86,11 @@ async function renderPage(id = "p1"): Promise<string> {
 
 beforeEach(() => {
   findUnique.mockReset();
+  findVisit.mockReset();
+  getSession.mockReset();
+
+  getSession.mockResolvedValue(null);
+  findVisit.mockResolvedValue(null);
 });
 
 describe("Place page details (AC1)", () => {
@@ -117,6 +138,7 @@ describe("Place page details (AC1)", () => {
 describe("Unknown place (AC5)", () => {
   it("shows the not-found page when the id does not exist", async () => {
     findUnique.mockResolvedValue(null);
+
     await expect(renderPage("does-not-exist")).rejects.toThrow(
       "NEXT_NOT_FOUND"
     );
@@ -124,6 +146,7 @@ describe("Unknown place (AC5)", () => {
 
   it("shows the not-found page for an id that is not a catalog id", async () => {
     findUnique.mockResolvedValue(null);
+
     await expect(renderPage("node-123")).rejects.toThrow("NEXT_NOT_FOUND");
   });
 
@@ -159,7 +182,7 @@ describe("Reviews of a place (AC3)", () => {
     expect(html).toContain("Ana");
     expect(html).toContain("rui");
     expect(html).toContain("€€");
-    expect(html).toMatch(/5\s*\/\s*5|aria-label="Rated 5 out of 5"/);
+    expect(html).toContain('aria-label="Rated 5 out of 5"');
   });
 
   it("leaves out the price badge and text of a review that has none", async () => {
@@ -198,5 +221,112 @@ describe("Place without reviews (AC4)", () => {
 
     expect(html).toContain("Write a review");
     expect(html).not.toContain("Write the first review");
+  });
+});
+
+describe("Review edit and delete controls (Task #41)", () => {
+  it("shows Edit and Delete for the review owner", async () => {
+    getSession.mockResolvedValue({
+      user: { id: "user-1", name: "Ana" },
+    });
+
+    findUnique.mockResolvedValue(
+      mockPlace({
+        reviews: [
+          review("r1", "2026-05-01", {
+            userId: "user-1",
+          }),
+        ],
+      })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toContain("Edit");
+    expect(html).toContain("Delete");
+  });
+
+  it("hides Edit and Delete for another user's review", async () => {
+    getSession.mockResolvedValue({
+      user: { id: "user-1", name: "Ana" },
+    });
+
+    findUnique.mockResolvedValue(
+      mockPlace({
+        reviews: [
+          review("r1", "2026-05-01", {
+            userId: "user-2",
+          }),
+        ],
+      })
+    );
+
+    const html = await renderPage();
+
+    expect(html).not.toContain(">Edit</button>");
+    expect(html).not.toContain(">Delete</button>");
+  });
+
+  it("hides Edit and Delete when the visitor is not logged in", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({
+        reviews: [
+          review("r1", "2026-05-01", {
+            userId: "user-1",
+          }),
+        ],
+      })
+    );
+
+    const html = await renderPage();
+
+    expect(html).not.toContain(">Edit</button>");
+    expect(html).not.toContain(">Delete</button>");
+  });
+});
+
+describe("The review of the logged-in user comes first", () => {
+  const reviews = () => [
+    review("old", "2026-01-01", { text: "Oldest one.", userId: "u-old" }),
+    review("mine", "2026-02-01", { text: "My own one.", userId: "user-1" }),
+    review("new", "2026-05-01", { text: "Newest one.", userId: "u-new" }),
+  ];
+
+  it("shows the own review before the newer ones of other people", async () => {
+    getSession.mockResolvedValue({ user: { id: "user-1", name: "Ana" } });
+    findUnique.mockResolvedValue(mockPlace({ reviews: reviews() }));
+
+    const html = await renderPage();
+
+    expect(html.indexOf("My own one.")).toBeLessThan(
+      html.indexOf("Newest one.")
+    );
+    expect(html.indexOf("Newest one.")).toBeLessThan(
+      html.indexOf("Oldest one.")
+    );
+  });
+
+  it("keeps newest first for a visitor who is not logged in", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: reviews() }));
+
+    const html = await renderPage();
+
+    expect(html.indexOf("Newest one.")).toBeLessThan(
+      html.indexOf("My own one.")
+    );
+    expect(html.indexOf("My own one.")).toBeLessThan(
+      html.indexOf("Oldest one.")
+    );
+  });
+
+  it("keeps newest first for a logged-in user who has no review of the place", async () => {
+    getSession.mockResolvedValue({ user: { id: "someone-else", name: "Rui" } });
+    findUnique.mockResolvedValue(mockPlace({ reviews: reviews() }));
+
+    const html = await renderPage();
+
+    expect(html.indexOf("Newest one.")).toBeLessThan(
+      html.indexOf("My own one.")
+    );
   });
 });

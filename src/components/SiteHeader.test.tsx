@@ -28,6 +28,17 @@ describe("SiteHeader", () => {
     expect(html).toContain('href="/register"');
     expect(html).not.toContain('href="/trips"');
     expect(html).not.toContain("My trips");
+    expect(html).not.toContain('href="/my-places"');
+  });
+
+  it("renders the My places link when logged in", async () => {
+    getSession.mockResolvedValue({
+      user: { username: "maria", displayUsername: "Maria" },
+    });
+
+    const html = await render();
+    expect(html).toContain('href="/my-places"');
+    expect(html).toContain("My places");
   });
 
   it("renders My trips link and username when logged in", async () => {
@@ -40,6 +51,15 @@ describe("SiteHeader", () => {
     expect(html).toContain("My trips");
     expect(html).toContain("@Maria");
     expect(html).not.toContain('href="/login"');
+  });
+
+  it("hides the username on a phone, for sight only, so the header fits 390 px", async () => {
+    getSession.mockResolvedValue({
+      user: { username: "maria", displayUsername: "Maria" },
+    });
+
+    const html = await render();
+    expect(html).toMatch(/class="sr-only[^"]*sm:not-sr-only[^"]*">@Maria/);
   });
 
   it("keeps the My trips link readable on hover in dark mode", async () => {
@@ -55,6 +75,14 @@ describe("SiteHeader", () => {
 });
 
 describe("Visited places navigation (Task #43)", () => {
+  it("shows the three links together, My trips, My places and My visited places", async () => {
+    getSession.mockResolvedValue({ user: { username: "maria" } });
+
+    const html = await render();
+    const links = [...html.matchAll(/href="(\/[a-z-]+)"/g)].map((m) => m[1]);
+    expect(links).toEqual(["/trips", "/my-places", "/visited"]);
+  });
+
   it("shows My visited places when the user is logged in", async () => {
     getSession.mockResolvedValue({
       user: {

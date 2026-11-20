@@ -50,6 +50,7 @@ export default function WriteReviewButton({
       </Button>
 
       <ReviewModal
+        showPlaceLink={false}
         place={activeReviewPlace}
         currentUsername={currentUsername}
         reviews={reviewsList}
