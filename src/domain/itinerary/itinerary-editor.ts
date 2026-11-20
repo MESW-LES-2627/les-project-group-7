@@ -206,6 +206,69 @@ export function stopRequestError(
   return { message: GENERIC_STOP_MESSAGE, reason, reload: false };
 }
 
+export interface CatalogPin extends Omit<StopMapPin, "rating" | "priceLevel"> {
+  priceLevel?: string | null;
+  averageRating: number | null;
+}
+
+export interface StopMapPin {
+  id: string;
+  name: string;
+  category: string;
+  priceLevel: string | null;
+  rating: number | null;
+  latitude: number;
+  longitude: number;
+}
+
+// One pin for each place of the city and of the trip, even when it is a stop on several days. The rating
+// comes from the catalog places of the city; a place found on OpenStreetMap has none yet.
+export function stopMapPins(
+  stops: readonly EditorStop[],
+  catalog: readonly CatalogPin[] = []
+): StopMapPin[] {
+  const pins = new Map<string, StopMapPin>();
+
+  for (const place of catalog) {
+    pins.set(place.id, {
+      id: place.id,
+      name: place.name,
+      category: place.category,
+      priceLevel: place.priceLevel ?? null,
+      rating: place.averageRating,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
+  }
+
+  for (const { place } of stops) {
+    pins.set(place.id, {
+      id: place.id,
+      name: place.name,
+      category: place.category,
+      priceLevel: place.priceLevel,
+      rating: pins.get(place.id)?.rating ?? null,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
+  }
+
+  return [...pins.values()];
+}
+
+// The map opens on the stops; with none yet, on the middle of the places of the city.
+export function mapCenter(
+  points: readonly { latitude: number; longitude: number }[]
+): [number, number] | undefined {
+  if (points.length === 0) return undefined;
+
+  const sum = points.reduce(
+    (total, point) => [total[0] + point.latitude, total[1] + point.longitude],
+    [0, 0]
+  );
+  return [sum[0] / points.length, sum[1] / points.length];
+}
+
 // The saved places the planner can add: the ones of the city of the trip (the API refuses the others), in
 // the sections of My places. The rest is only counted, so the panel can say why they are not listed.
 export function plannerSavedPlaces(

@@ -9,19 +9,29 @@ import {
   ChevronUp,
   CircleCheck,
   Clock,
+  ExternalLink,
   Loader2,
   Plus,
+  Star,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import MapWrapper from "@/components/MapWrapper";
 import PlannerSavedPlaces from "@/components/PlannerSavedPlaces";
 import PlaceSearchAutocomplete from "@/components/PlaceSearchAutocomplete";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import {
+  formatAverageRating,
+  formatReviewCount,
+} from "@/domain/catalog/place-details";
+import {
+  ALREADY_PLANNED_MESSAGE,
   addStopBody,
+  mapCenter,
   moveOption,
+  stopMapPins,
   stopsByDay,
   type AddablePlace,
   type EditorDay,
@@ -94,6 +104,9 @@ export default function ItineraryEditor({
     : (days[0]?.id ?? "");
 
   const byDay = stopsByDay(days, stops);
+  const pins = stopMapPins(stops, cityPlaces);
+  const center = mapCenter(stops.length > 0 ? stopMapPins(stops) : cityPlaces);
+  const plannedCount = new Set(stops.map((stop) => stop.placeId)).size;
   const unsavedTimes = stops.filter((stop) => stop.id in timeDrafts);
 
   // The page reads the stops again when something else changes the trip (router.refresh): take them, and
@@ -186,6 +199,13 @@ export default function ItineraryEditor({
       category: place.category,
       priceLevel: place.priceLevel,
     });
+  }
+
+  function addFromMap(placeId: string) {
+    const place = cityPlaces.find((item) => item.id === placeId);
+    // A pin that is not in the catalog is a place found on OpenStreetMap, and it is on the trip already.
+    if (place) addLocalPlace(place);
+    else setError(ALREADY_PLANNED_MESSAGE);
   }
 
   function addSavedPlace(placeId: string) {
@@ -301,153 +321,193 @@ export default function ItineraryEditor({
         </Button>
       </div>
 
-      <section
-        aria-labelledby="add-place-heading"
-        className="rounded-xl border border-slate-200 bg-white p-4"
-      >
-        <h2 id="add-place-heading" className="font-semibold">
-          Add a place
-        </h2>
-        <p className="mb-3 text-sm text-slate-500">
-          Search the places of {cityName}. Press Enter to also search
-          OpenStreetMap. The place goes at the end of the day, or among the
-          stops with a time if you give one.
-        </p>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="min-w-0 space-y-6">
+          <section
+            aria-labelledby="add-place-heading"
+            className="rounded-xl border border-slate-200 bg-white p-4"
+          >
+            <h2 id="add-place-heading" className="font-semibold">
+              Add a place
+            </h2>
+            <p className="mb-3 text-sm text-slate-500">
+              Search the places of {cityName}. Press Enter to also search
+              OpenStreetMap. The place goes at the end of the day, or among the
+              stops with a time if you give one.
+            </p>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="space-y-1">
-            <Label htmlFor="add-place-day">Day</Label>
-            <select
-              id="add-place-day"
-              value={activeDayId}
-              onChange={(event) => setTargetDayId(event.target.value)}
-              disabled={busy}
-              className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm sm:w-auto"
-            >
-              {days.map((day) => (
-                <option key={day.id} value={day.id}>
-                  {formatDayLabel(day.dayNumber, day.date)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="add-place-time">Time (optional)</Label>
-            <Input
-              id="add-place-time"
-              type="time"
-              value={addTime}
-              onChange={(event) => setAddTime(event.target.value)}
-              disabled={busy}
-              className="sm:w-32"
-            />
-          </div>
-
-          <div className="min-w-0 flex-1 space-y-1">
-            <Label htmlFor={SEARCH_INPUT_ID}>Place</Label>
-            <PlaceSearchAutocomplete
-              inputId={SEARCH_INPUT_ID}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              localPlaces={cityPlaces}
-              cityName={cityName}
-              onSelectLocalPlace={addLocalPlace}
-              onSelectOsmPlace={addOsmPlace}
-              disabled={busy}
-            />
-          </div>
-        </div>
-      </section>
-
-      <PlannerSavedPlaces
-        cityName={cityName}
-        cityPlaceIds={new Set(cityPlaces.map((place) => place.id))}
-        plannedIds={new Set(stops.map((stop) => stop.placeId))}
-        dayLabel={dayLabel(activeDayId)}
-        disabled={busy || !activeDayId}
-        onAdd={addSavedPlace}
-      />
-
-      {error && (
-        <p
-          role="alert"
-          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
-        >
-          {error}
-        </p>
-      )}
-      <p role="status" aria-live="polite" className="sr-only">
-        {busy ? "Saving…" : status}
-      </p>
-
-      {/* relative: the screen-reader-only labels inside are positioned against this strip, so they are
-          clipped with it and do not widen the page (the page scrolled sideways on a phone) */}
-      <ol className="relative flex snap-x gap-4 overflow-x-auto pb-4">
-        {days.map((day) => {
-          const dayStops = byDay.get(day.id) ?? [];
-          const label = formatDayLabel(day.dayNumber, day.date);
-
-          return (
-            <li
-              key={day.id}
-              aria-labelledby={`day-heading-${day.id}`}
-              className="flex w-72 shrink-0 snap-start flex-col rounded-xl border border-slate-200 bg-slate-50 p-3"
-            >
-              <div className="mb-3 flex items-start justify-between gap-2">
-                <h3
-                  id={`day-heading-${day.id}`}
-                  className="font-semibold leading-tight"
-                >
-                  {label}
-                </h3>
-                <Button
-                  id={addButtonId(day.id)}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => chooseDay(day.id)}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="space-y-1">
+                <Label htmlFor="add-place-day">Day</Label>
+                <select
+                  id="add-place-day"
+                  value={activeDayId}
+                  onChange={(event) => setTargetDayId(event.target.value)}
                   disabled={busy}
-                  aria-label={`Add a place to Day ${day.dayNumber}`}
+                  className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm sm:w-auto"
                 >
-                  <Plus />
-                  Add
-                </Button>
+                  {days.map((day) => (
+                    <option key={day.id} value={day.id}>
+                      {formatDayLabel(day.dayNumber, day.date)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {dayStops.length === 0 ? (
-                <p className="text-sm text-slate-500">No places yet</p>
-              ) : (
-                <ol className="space-y-2">
-                  {dayStops.map((stop) => (
-                    <StopCard
-                      key={stop.id}
-                      stop={stop}
-                      busy={busy}
-                      moves={MOVES.map((item) => ({
-                        ...item,
-                        option: moveOption(days, stops, stop.id, item.move),
-                      }))}
-                      onMove={(body, label) =>
-                        void change(
-                          stop,
-                          body,
-                          `${stop.place.name}: ${label.toLowerCase()}.`
-                        )
-                      }
-                      timeValue={timeDrafts[stop.id] ?? stop.visitTime ?? ""}
-                      onTimeChange={(value) => typeTime(stop, value)}
-                      onTimeSave={() =>
-                        void saveTime(stop, timeDrafts[stop.id] ?? "")
-                      }
-                      onRemove={() => remove(stop)}
-                    />
-                  ))}
-                </ol>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+              <div className="space-y-1">
+                <Label htmlFor="add-place-time">Time (optional)</Label>
+                <Input
+                  id="add-place-time"
+                  type="time"
+                  value={addTime}
+                  onChange={(event) => setAddTime(event.target.value)}
+                  disabled={busy}
+                  className="sm:w-32"
+                />
+              </div>
+
+              <div className="min-w-0 flex-1 space-y-1">
+                <Label htmlFor={SEARCH_INPUT_ID}>Place</Label>
+                <PlaceSearchAutocomplete
+                  inputId={SEARCH_INPUT_ID}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  localPlaces={cityPlaces}
+                  cityName={cityName}
+                  onSelectLocalPlace={addLocalPlace}
+                  onSelectOsmPlace={addOsmPlace}
+                  disabled={busy}
+                />
+              </div>
+            </div>
+          </section>
+
+          {error && (
+            <p
+              role="alert"
+              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
+            >
+              {error}
+            </p>
+          )}
+          <p role="status" aria-live="polite" className="sr-only">
+            {busy ? "Saving…" : status}
+          </p>
+
+          {/* relative: the screen-reader-only labels inside are positioned against this strip, so they are
+          clipped with it and do not widen the page (the page scrolled sideways on a phone) */}
+          <ol className="relative flex snap-x gap-4 overflow-x-auto pb-4">
+            {days.map((day) => {
+              const dayStops = byDay.get(day.id) ?? [];
+              const label = formatDayLabel(day.dayNumber, day.date);
+
+              return (
+                <li
+                  key={day.id}
+                  aria-labelledby={`day-heading-${day.id}`}
+                  className="flex w-72 shrink-0 snap-start flex-col rounded-xl border border-slate-200 bg-slate-50 p-3"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <h3
+                      id={`day-heading-${day.id}`}
+                      className="font-semibold leading-tight"
+                    >
+                      {label}
+                    </h3>
+                    <Button
+                      id={addButtonId(day.id)}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => chooseDay(day.id)}
+                      disabled={busy}
+                      aria-label={`Add a place to Day ${day.dayNumber}`}
+                    >
+                      <Plus />
+                      Add
+                    </Button>
+                  </div>
+
+                  {dayStops.length === 0 ? (
+                    <p className="text-sm text-slate-500">No places yet</p>
+                  ) : (
+                    <ol className="space-y-2">
+                      {dayStops.map((stop) => (
+                        <StopCard
+                          key={stop.id}
+                          stop={stop}
+                          catalogPlace={cityPlaces.find(
+                            (place) => place.id === stop.placeId
+                          )}
+                          busy={busy}
+                          moves={MOVES.map((item) => ({
+                            ...item,
+                            option: moveOption(days, stops, stop.id, item.move),
+                          }))}
+                          onMove={(body, label) =>
+                            void change(
+                              stop,
+                              body,
+                              `${stop.place.name}: ${label.toLowerCase()}.`
+                            )
+                          }
+                          timeValue={
+                            timeDrafts[stop.id] ?? stop.visitTime ?? ""
+                          }
+                          onTimeChange={(value) => typeTime(stop, value)}
+                          onTimeSave={() =>
+                            void saveTime(stop, timeDrafts[stop.id] ?? "")
+                          }
+                          onRemove={() => remove(stop)}
+                        />
+                      ))}
+                    </ol>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <section
+            aria-labelledby="trip-map-heading"
+            className="space-y-2 lg:sticky lg:top-4"
+          >
+            <h2 id="trip-map-heading" className="font-semibold">
+              Map of {cityName}
+            </h2>
+            <MapWrapper
+              places={pins}
+              center={center}
+              zoom={13}
+              addAction={
+                activeDayId
+                  ? {
+                      label: `Add to ${dayLabel(activeDayId)}`,
+                      disabled: busy,
+                      onAdd: addFromMap,
+                    }
+                  : undefined
+              }
+            />
+            <p className="text-sm text-slate-500">
+              Click a pin to add the place to the day chosen above.{" "}
+              {plannedCount === 1
+                ? "1 place is planned."
+                : `${plannedCount} places are planned.`}
+            </p>
+          </section>
+
+          <PlannerSavedPlaces
+            cityName={cityName}
+            cityPlaceIds={new Set(cityPlaces.map((place) => place.id))}
+            plannedIds={new Set(stops.map((stop) => stop.placeId))}
+            dayLabel={dayLabel(activeDayId)}
+            disabled={busy || !activeDayId}
+            onAdd={addSavedPlace}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -466,6 +526,8 @@ interface StopCardProps {
   onTimeChange: (value: string) => void;
   onTimeSave: () => void;
   onRemove: () => void;
+  // The catalog place of the stop; a place found on OpenStreetMap is not there, so it has no rating or page.
+  catalogPlace?: PlaceItem;
 }
 
 function StopCard({
@@ -477,6 +539,7 @@ function StopCard({
   onTimeChange,
   onTimeSave,
   onRemove,
+  catalogPlace,
 }: StopCardProps) {
   const config = getCategoryConfig(stop.place.category);
   const timeId = `stop-time-${stop.id}`;
@@ -498,6 +561,26 @@ function StopCard({
             <span className={config.textColor}>{config.label}</span>
             {stop.place.address && ` · ${stop.place.address}`}
           </p>
+          {catalogPlace && (
+            <p className="flex items-center gap-1.5 text-xs text-slate-600">
+              <Star
+                aria-hidden
+                className="h-3 w-3 fill-amber-500 text-amber-500"
+              />
+              {formatAverageRating(catalogPlace.averageRating)} ·{" "}
+              {formatReviewCount(catalogPlace.reviewCount)}
+              <a
+                href={`/places/${catalogPlace.id}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Details and reviews of ${stop.place.name} (opens in a new tab)`}
+                className="ml-auto inline-flex items-center gap-0.5 text-indigo-600 underline-offset-2 hover:underline"
+              >
+                Details
+                <ExternalLink aria-hidden className="h-3 w-3" />
+              </a>
+            </p>
+          )}
         </div>
       </div>
 

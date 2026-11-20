@@ -13,6 +13,25 @@ import type {
 } from "@/domain/itinerary/itinerary-editor";
 import type { PlaceItem } from "@/types/place";
 
+vi.mock("@/components/MapWrapper", () => ({
+  default: ({
+    places,
+    addAction,
+  }: {
+    places: { id: string }[];
+    addAction?: { label: string; onAdd: (id: string) => void };
+  }) => (
+    <div data-testid="map">
+      {places.length} pins
+      {places.map((place) => (
+        <button key={place.id} onClick={() => addAction?.onAdd(place.id)}>
+          {addAction?.label} ({place.id})
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
 const savedPlaces = vi.hoisted(() => ({ value: null as unknown }));
 vi.mock("@/components/SavedPlacesProvider", () => ({
   useSavedPlaces: () => savedPlaces.value,
@@ -333,6 +352,51 @@ describe("ItineraryEditor: removing a stop and saving a time", () => {
 
     finish(json({ stops }));
     await waitFor(() => expect(field.readOnly).toBe(false));
+  });
+});
+
+describe("the map", () => {
+  it("adds a place of the city to the chosen day", async () => {
+    render(<ItineraryEditor {...base} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 1 (louvre)" })
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body).toMatchObject({ dayId: "d1", placeId: "louvre" });
+  });
+
+  it("says a place that is already on the trip is planned, without calling the API", async () => {
+    render(<ItineraryEditor {...base} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 1 (p-A)" })
+    );
+
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("a stop of a catalog place", () => {
+  const withLouvre = [{ ...stop("L", "d1", 9), placeId: "louvre" }];
+
+  it("shows its rating and reviews, and a link to its page", () => {
+    render(<ItineraryEditor {...base} initialStops={withLouvre} />);
+
+    expect(screen.getByText(/3 reviews/)).toBeTruthy();
+    const link = screen.getByRole("link", { name: /Details and reviews of/ });
+    expect(link.getAttribute("href")).toBe("/places/louvre");
+  });
+
+  it("has no link for a place that is not in the catalog", () => {
+    render(<ItineraryEditor {...base} />);
+
+    expect(screen.queryByRole("link", { name: /Details/ })).toBeNull();
   });
 });
 

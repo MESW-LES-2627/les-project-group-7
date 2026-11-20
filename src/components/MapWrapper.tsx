@@ -6,7 +6,7 @@
  */
 
 import dynamic from "next/dynamic";
-import type { MapPlace, BoundingBox } from "./MapComponent";
+import type { MapPlace, BoundingBox, MapAddAction } from "./MapComponent";
 
 export interface MapWrapperProps {
   places?: MapPlace[];
@@ -16,6 +16,7 @@ export interface MapWrapperProps {
   selectedCityCenter?: [number, number] | null;
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
+  addAction?: MapAddAction;
 }
 
 const DynamicMap = dynamic(() => import("./MapComponent"), {
