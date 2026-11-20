@@ -49,7 +49,7 @@ export default function SavePlaceButtons({
 
   const compact = variant === "compact";
   const base = cn(
-    "inline-flex items-center justify-center gap-1.5 rounded-md border text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex items-center justify-center gap-1.5 rounded-md border text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
     FOCUS,
     compact ? "h-7 w-7" : "h-9 px-3 text-sm"
   );
@@ -90,8 +90,13 @@ export default function SavePlaceButtons({
             aria-pressed={saved}
             aria-label={compact ? `${action}: ${place.name}` : undefined}
             title={unavailable ? "Saved places are not loaded" : action}
-            disabled={unavailable || pending}
-            onClick={() => void savedPlaces.toggle(place, type)}
+            disabled={unavailable}
+            // aria-disabled, not disabled, while the request runs: a disabled button loses the focus and a
+            // keyboard user would have to tab from the top of the page again.
+            aria-disabled={pending || undefined}
+            onClick={() => {
+              if (!pending) void savedPlaces.toggle(place, type);
+            }}
             className={cn(
               base,
               saved

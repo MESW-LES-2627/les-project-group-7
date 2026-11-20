@@ -69,7 +69,8 @@ export default function MyPlacesView() {
           <section key={type} aria-labelledby={headingId}>
             <h2
               id={headingId}
-              className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-900"
+              tabIndex={-1}
+              className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-900 focus:outline-none"
             >
               <Icon className="h-5 w-5 text-slate-500" aria-hidden="true" />
               {labels.section}
@@ -93,9 +94,12 @@ export default function MyPlacesView() {
                     entry={entry}
                     removeLabel={labels.remove}
                     pending={savedPlaces.isPending(entry.place.id, type)}
-                    onRemove={() =>
-                      void savedPlaces.toggle(entry.place, entry.type)
-                    }
+                    onRemove={() => {
+                      // The row goes away at once, so the focus would be lost: move it to the heading of the
+                      // section, which also says the new count.
+                      document.getElementById(headingId)?.focus();
+                      void savedPlaces.toggle(entry.place, entry.type);
+                    }}
                   />
                 ))}
               </ul>
@@ -153,8 +157,10 @@ function SavedPlaceRow({
       <Button
         size="sm"
         variant="outline"
-        onClick={onRemove}
-        disabled={pending}
+        onClick={() => {
+          if (!pending) onRemove();
+        }}
+        aria-disabled={pending || undefined}
         aria-label={`${removeLabel}: ${place.name}`}
         className="shrink-0"
       >
