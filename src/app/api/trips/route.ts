@@ -5,7 +5,10 @@ import {
   buildTripDays,
   startOfTodayInTimeZone,
 } from "@/domain/trips/trip-days";
-import { toTripResponse } from "@/domain/trips/trip-response";
+import {
+  toTripResponse,
+  toTripSummaryResponse,
+} from "@/domain/trips/trip-response";
 import { validateTripInput } from "@/domain/trips/trip-validation";
 
 /**
@@ -98,6 +101,39 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { error: "Failed to create the trip" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET /api/trips
+ *
+ * Lists all trips belonging to the logged-in user (US-E1-01, #9).
+ * Needs a logged-in user (401 without one).
+ *
+ * Returns 200 with the list of trips ordered by start date (descending).
+ * Trips of other users are never returned.
+ */
+export async function GET(request: Request) {
+  const guard = await requireUser(request);
+  if (!guard.ok) return guard.response;
+
+  try {
+    const trips = await prisma.trip.findMany({
+      where: { userId: guard.user.id },
+      include: {
+        city: { select: { id: true, name: true, country: true } },
+        days: { select: { id: true } },
+      },
+      orderBy: { startDate: "desc" },
+    });
+
+    return NextResponse.json(trips.map(toTripSummaryResponse));
+  } catch (error) {
+    console.error("GET /api/trips failed:", error);
+    return NextResponse.json(
+      { error: "Failed to list trips" },
       { status: 500 }
     );
   }

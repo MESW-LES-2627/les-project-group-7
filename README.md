@@ -63,7 +63,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
-    │   ├── api/trips/      # POST /api/trips (creates a trip with one day for each date and an empty itinerary)
+    │   ├── api/trips/      # POST & GET /api/trips, PATCH & DELETE /api/trips/[id] (change the name and the dates, delete); GET & POST /api/trips/[id]/stops and PATCH & DELETE /api/trips/[id]/stops/[stopId] (list, add, move, set the time of and remove the stops of the itinerary)
     │   ├── api/register/   # POST /api/register (creates the account and logs the person in)
     │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
@@ -139,6 +139,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run test:watch` / `test:report`    | Vitest in watch mode / verbose report                           |
 | `npm run prisma:studio`                 | Opens Prisma Studio to browse the database                      |
 | `npm run import:osm -- <city>`          | Imports the places of one city from OpenStreetMap (see above) |
+| `npm run backfill:osm-price`            | Sets what OpenStreetMap says about the price of each place, from the snapshots (once, after the migration of #40; `--dry-run` only counts) |
 | `npm run format` / `format:check`       | Prettier on `src/` (write / check only)                         |
 | `npm run lint:docs` / `format:docs`     | Checks the links and anchors in `docs/` / formats `docs/*.md`   |
 | `npm run knip`                          | Finds unused files, exports and dependencies                    |

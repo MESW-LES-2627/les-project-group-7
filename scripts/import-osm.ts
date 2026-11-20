@@ -14,9 +14,11 @@
 import { PrismaClient } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
+import { CITY_AREAS } from "../src/domain/osm/city-areas";
 import {
   placeFromNominatim,
   gridTiles,
+  osmPriceLevelOf,
   type CityArea,
   type ImportedPlace,
 } from "../src/domain/osm/osm";
@@ -61,15 +63,8 @@ const CITIES: Record<string, CityConfig> = {
     latitude: 41.1579,
     longitude: -8.6291,
     timezone: "Europe/Lisbon",
-    // The zone that the app covers: from Perafita in the north to Vilar do Paraíso in the south, with
-    // the Douro and the coast, and no more (the airport, Maia or Valongo are outside)
-    area: {
-      name: "Porto",
-      minLat: 41.08,
-      maxLat: 41.24,
-      minLon: -8.73,
-      maxLon: -8.56,
-    },
+    // The zone that the app covers is in src/domain/osm/city-areas.ts
+    area: CITY_AREAS["city-porto"],
     // The zone also covers part of Vila Nova de Gaia and Matosinhos
     searches: [
       ...KINDS.map((kind) => `${kind} in Porto, Portugal`),
@@ -111,13 +106,7 @@ const CITIES: Record<string, CityConfig> = {
     latitude: 48.8566,
     longitude: 2.3522,
     timezone: "Europe/Paris",
-    area: {
-      name: "Paris",
-      minLat: 48.815,
-      maxLat: 48.902,
-      minLon: 2.224,
-      maxLon: 2.47,
-    },
+    area: CITY_AREAS["city-paris"],
     // "cafe in Paris, France" returns bars, "cafe in Paris" returns cafes: Nominatim reads it differently
     searches: KINDS.map((kind) =>
       kind === "cafe" ? "cafe in Paris" : `${kind} in Paris, France`
@@ -167,13 +156,7 @@ const CITIES: Record<string, CityConfig> = {
     latitude: 52.52,
     longitude: 13.405,
     timezone: "Europe/Berlin",
-    area: {
-      name: "Berlin",
-      minLat: 52.44,
-      maxLat: 52.59,
-      minLon: 13.25,
-      maxLon: 13.55,
-    },
+    area: CITY_AREAS["city-berlim"],
     searches: KINDS.map((kind) => `${kind} in Berlin, Germany`),
     landmarks: [
       "Brandenburger Tor, Berlin",
@@ -446,9 +429,16 @@ async function main() {
         latitude: place.latitude,
         longitude: place.longitude,
         openingHours: place.openingHours,
+        // What OpenStreetMap says, also for a place with reviews: they never change it
+        osmPriceLevel: osmPriceLevelOf(place.priceLevel),
         ...(reviewed.has(place.osmId) ? {} : { priceLevel: place.priceLevel }),
       },
-      create: { ...place, cityId: row.id, source: "IMPORTED" },
+      create: {
+        ...place,
+        osmPriceLevel: osmPriceLevelOf(place.priceLevel),
+        cityId: row.id,
+        source: "IMPORTED",
+      },
     });
   }
 

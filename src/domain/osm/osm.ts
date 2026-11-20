@@ -82,6 +82,15 @@ export function mapOsmPriceLevel(tags?: OsmTags | null): PriceLevel | null {
 }
 
 /**
+ * What OpenStreetMap says about the price of a place, as it is kept in `Place.osmPriceLevel`: FREE for a
+ * place tagged `fee=no`, and nothing for every other place (OpenStreetMap has no other price data, so
+ * any other level did not come from it).
+ */
+export function osmPriceLevelOf(priceLevel?: string | null): "FREE" | null {
+  return priceLevel === "FREE" ? "FREE" : null;
+}
+
+/**
  * The opening hours as OpenStreetMap writes them, or null when it has none (unknown: the app
  * cannot warn about closed places, and never invents hours).
  */
@@ -290,6 +299,20 @@ export interface CityArea {
   maxLon: number;
 }
 
+/** Whether a point lies in the area of a city (the borders count as inside). */
+export function isInsideArea(
+  area: CityArea,
+  latitude: number,
+  longitude: number
+): boolean {
+  return (
+    latitude >= area.minLat &&
+    latitude <= area.maxLat &&
+    longitude >= area.minLon &&
+    longitude <= area.maxLon
+  );
+}
+
 /**
  * Cuts a city area into `rows` x `cols` equal tiles, north to south and west to east. A search by
  * kind returns at most 50 places, mostly the central ones, so the import also searches every tile
@@ -354,12 +377,7 @@ export function placeFromNominatim(
   if (isNaN(latitude) || isNaN(longitude)) {
     return null;
   }
-  if (
-    latitude < area.minLat ||
-    latitude > area.maxLat ||
-    longitude < area.minLon ||
-    longitude > area.maxLon
-  ) {
+  if (!isInsideArea(area, latitude, longitude)) {
     return null;
   }
 

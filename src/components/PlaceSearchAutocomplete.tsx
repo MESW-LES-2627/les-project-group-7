@@ -24,6 +24,8 @@ interface PlaceSearchAutocompleteProps {
   cityName?: string;
   onSelectLocalPlace: (place: PlaceItem) => void;
   onSelectOsmPlace: (osmPlace: OsmSearchResult) => void;
+  inputId?: string;
+  disabled?: boolean;
 }
 
 export default function PlaceSearchAutocomplete({
@@ -33,6 +35,8 @@ export default function PlaceSearchAutocomplete({
   cityName,
   onSelectLocalPlace,
   onSelectOsmPlace,
+  inputId,
+  disabled = false,
 }: PlaceSearchAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [osmResults, setOsmResults] = useState<OsmSearchResult[]>([]);
@@ -108,8 +112,10 @@ export default function PlaceSearchAutocomplete({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <Input
+          id={inputId}
           type="text"
           value={searchQuery}
+          disabled={disabled}
           onFocus={() => setIsOpen(true)}
           onChange={(e) => {
             onSearchChange(e.target.value);
@@ -129,7 +135,7 @@ export default function PlaceSearchAutocomplete({
         )}
       </div>
 
-      {isOpen && searchQuery.trim().length >= 2 && (
+      {isOpen && !disabled && searchQuery.trim().length >= 2 && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
           {/* Section A: Local catalog */}
           {matchingLocalPlaces.length > 0 && (
