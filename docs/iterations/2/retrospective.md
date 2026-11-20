@@ -33,9 +33,11 @@ Iteration 3" is a proposal, to agree on at the retrospective meeting.
   on another page and a stop said nothing about its place. The redesign is in #174.
 - The checks of GitHub Actions do not start: the jobs fail after 1 to 4 seconds with "The job was not started because
   recent account payments have failed or your spending limit needs to be increased". So "build, lint and tests pass on
-  the pull request" was checked by hand. The pipeline (#80, pull request #152) is not merged and #81 has no pull request.
-- Two stories are not done, US-E4-01 (the settings of the itinerary, #144 and #145) and US-P2-01 (#80 and #81), so they
-  do not count for this iteration.
+  the pull request" was checked by hand. The pipeline (#80, pull request #152) is not merged. Since 20 Nov, when the
+  repository became public, the checks of GitHub Actions run again.
+- Two stories are not done. In US-E4-01 all the tasks of the sprint plan are done (#59, #60 and #61), but the story has
+  two more tasks that are not, the settings of the itinerary (#144 and #145), added on 12 Nov and moved to Iteration 3.
+  In US-P2-01 the pipeline (#80) is in review. They do not count for this iteration.
 - The plan and the snapshot of the sprint were only merged on 20 Nov (#172), and the tag `sprint-2-start` was never made.
 
 ## What we change in Iteration 3
