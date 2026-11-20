@@ -259,24 +259,25 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** B3 City search and filters
 - **As a:** Planner
 
-**I want** to search a city and browse its places,
+**I want** to choose a city and browse its places,
 
 **So that** I can see what there is to visit.
 
 **Acceptance criteria**
 
-1. **Given** I am on the home page, **when** I type part of a city name, **then** I see the matching cities and can choose one.
+1. **Given** I am on the home page, **when** I look at the cities, **then** I see a button for each city with its number of places, and I can choose one or "All Cities".
 2. **Given** I chose a city, **when** the page loads, **then** I see only that city's places, and the map is centred on it.
 3. **Given** I type in the place search, **when** a name or address matches, **then** only those places are listed.
 4. **Given** nothing matches, **when** the list is empty, **then** I see a message that says so.
 
 **Business rules**
 
-- Search ignores case and accents.
+- Place search ignores case and accents.
 
 **Out of scope**
 
 - Searching places outside the catalog (S18).
+- A search box for the city. It was built in #23 and removed on 20 Nov 2026: the catalog has three cities, so the buttons are enough, and the box took space above the filters.
 
 **Issues**
 
@@ -478,13 +479,14 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 
 1. **Given** I wrote a review, **when** I change its rating, price level or text, **then** the review is updated and the place's rating and price level are recalculated.
 2. **Given** I wrote a review, **when** I delete it, **then** it disappears and the place's rating and price level are recalculated.
-3. **Given** my review was the only review of the place, **when** I delete it, **then** the place shows "no reviews" and its rating and price level are empty.
+3. **Given** my review was the only review of the place, **when** I delete it, **then** the place shows "no reviews" and its rating is empty. Its price level is empty too, unless OpenStreetMap says the place is free: then it is FREE.
 4. **Given** a review written by someone else, **when** I look at it, **then** there are no edit or delete buttons.
 5. **Given** I delete my review of a place, **when** it is deleted, **then** the place stays in my visited list.
 
 **Business rules**
 
 - Recalculation uses the same functions as US-C1-01.
+- The price level is calculated from what OpenStreetMap says (free, or nothing) and the reviews that exist. It never depends on the price stored before, so editing or deleting a review can also take a place back to FREE (glossary, _Place_).
 - A visit survives the deletion of the review (glossary, _Visit_).
 
 **Out of scope**
@@ -668,7 +670,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** E2 Change a trip
 - **As a:** Planner
 
-**I want** to edit the dates of a trip,
+**I want** to edit the name and the dates of a trip,
 
 **So that** I can adapt it when my plans change.
 
@@ -678,12 +680,14 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 2. **Given** a trip with stops on day 3, **when** I shorten it so day 3 disappears, **then** I am warned first and, if I accept, the day and its stops are removed.
 3. **Given** I move the start date, **when** I save, **then** the dates of all days change and the stops stay on their day numbers.
 4. **Given** an invalid change, **when** I save, **then** I see an error and nothing changes.
+5. **Given** a trip, **when** I change its name, **then** the new name is saved and shown on the trip page and in My trips.
 
 **Business rules**
 
 - `syncDays()`: the days always match start to end, inclusive. Days are added or removed at the end, never in the middle. Unit tested.
 - The dates follow the same rules as when the trip is created (US-E1-01): the end date is not before the start date and a trip has at most 14 days.
 - The start date is checked against today (in the time zone of the trip's city) only when the person changes it. Extending the end date of a trip that has already started is allowed.
+- The name follows the same rule as when the trip is created (US-E1-01): 1 to 100 characters. Changing only the name does not touch the days.
 
 **Notes**
 
@@ -692,7 +696,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Day synchronisation with unit tests** · covers AC1 to AC3 · depends on: none
-2. **Edit trip API and UI with confirmation** · covers AC1 to AC4 · depends on: Day synchronisation with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
+2. **Edit trip API and UI with confirmation** · covers AC1 to AC5 · depends on: Day synchronisation with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
 
 ## E3 Delete a trip
 
@@ -742,11 +746,15 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 8. **Given** I set hour limits of 09:00 to 20:00, **when** I set the visit time of a stop to 22:30, **then** it is accepted (the warning is part of US-E6-01).
 9. **Given** an itinerary, **when** I set a budget level (`€`, `€€` or `€€€`) or hour limits, **then** they are saved, and when I clear them they are empty again. All of them are optional.
 10. **Given** hour limits where the start is not before the end, or a time that is not a time of the day, **when** I save them, **then** I see an error and nothing changes.
+11. **Given** stops at 10:00 and 14:00, **when** I add a place at 12:00 or set the time of a stop to 12:00, **then** it goes between them.
+12. **Given** a stop with a time, **when** I move it past a stop with a later or earlier time, **then** I am told that the times keep their order and nothing changes.
+13. **Given** stops at 10:00 and 14:00 and a stop without a time, **when** I move the stop without a time between them, **then** it stays there.
 
 **Business rules**
 
 - Positions in a day are 1, 2, 3 without gaps after any change. Unit tested.
 - A place appears at most once per trip.
+- The stops with a visit time are always in the order of their times; the stops without a time can be anywhere between them. A new stop without a time goes last. A new stop with a time goes right after the last stop with the same or an earlier time. A changed time moves the stop only if it breaks the order, and a move that would break it is refused. Unit tested.
 - Any visit time is allowed in a manual itinerary, as long as it is a time of the day (00:00 to 23:59). The hour limits and the budget level are the person's own settings: they only warn, they never block.
 - The settings are `budgetLevel` (`€`, `€€` or `€€€`) and `dayStart` and `dayEnd` (HH:mm). All of them are optional, and empty means no limit. When both hours are set the start is before the end. Unit tested.
 - A trip has exactly one itinerary. It is created empty together with the trip (US-E1-01) and is `MANUAL` until the generator fills it (US-E8-01).
@@ -764,7 +772,7 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 **Issues**
 
 1. **Stop ordering rules with unit tests** · covers AC2, AC4, AC5, AC6 · depends on: none
-2. **Stops API (add, move, set time, remove)** · covers AC1 to AC8 · depends on: Stop ordering rules with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
+2. **Stops API (add, move, set time, remove)** · covers AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC11, AC12, AC13 · depends on: Stop ordering rules with unit tests, Trip creation API with its days and an empty itinerary (US-E1-01)
 3. **Itinerary editing UI (day columns, add place, buttons to move)** · covers AC1 to AC5 · depends on: Stops API
 4. **Itinerary settings API: optional budget level and hour limits, with validation and unit tests** · covers AC9, AC10 · depends on: Trip creation API with its days and an empty itinerary (US-E1-01)
    - Validation of the settings with unit tests (budget level `€`, `€€` or `€€€` or empty; hour limits as HH:mm from 00:00 to 23:59, the start before the end when both are set; each one can be empty)
@@ -1336,6 +1344,7 @@ at sprint planning, with the same template.
 **Notes**
 
 - Needs a schema change: the city moves from the trip to the day.
+- The rule for the city of a place added to a stop changes here: it becomes the city of the day. With ADR-011 that is one new city rule in `city-rules.ts`, not a change in the routes (design.md, section 4.2).
 
 ## S14 Trip summary e-mail
 
@@ -1453,4 +1462,5 @@ at sprint planning, with the same template.
 
 - Was MVP feature B7; moved to Stretch because it depends on the public Overpass servers and is not needed for the demo scenario.
 - Known bug in ADR-002: in the prototype a saved place always goes to Porto. This story fixes it (AC2).
+- Design (ADR-011 in [design.md](design.md), section 4.2): a place found on the map is saved by one function, `saveDiscoveredPlace`, and the rule for its city is passed in. This story adds the rule `nearestCity`. The first step is #171, which moves the two existing copies (reviews and stops) to that function; the Porto assignment disappears with it. What to do with a place that is far from every city is not decided yet.
 - Search by name outside the catalog is S18.

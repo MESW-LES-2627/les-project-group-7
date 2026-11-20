@@ -21,6 +21,7 @@ import { formatPriceLevel } from "@/domain/reviews/rating";
 import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
+import SavePlaceButtons from "./SavePlaceButtons";
 
 export interface PlaceGridProps {
   paginatedPlaces: PlaceItem[];
@@ -139,6 +140,8 @@ export default function PlaceGrid({
                 </div>
 
                 <div className="flex items-center gap-1.5">
+                  <SavePlaceButtons place={place} />
+
                   <Button
                     size="sm"
                     variant="outline"

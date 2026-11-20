@@ -1,11 +1,73 @@
 import { describe, it, expect } from "vitest";
 import {
   newestFirst,
+  ownReviewsFirst,
   formatAverageRating,
   formatReviewCount,
 } from "./place-details";
 
 const r = (id: string, iso: string) => ({ id, createdAt: new Date(iso) });
+
+describe("ownReviewsFirst", () => {
+  const list = [
+    { id: "a", by: "ana" },
+    { id: "b", by: "rui" },
+    { id: "c", by: "eva" },
+    { id: "d", by: "rui" },
+  ];
+  const isRui = (review: { by: string }) => review.by === "rui";
+
+  it("puts the reviews of the user first and keeps the order of everything else", () => {
+    expect(ownReviewsFirst(list, isRui).map((x) => x.id)).toEqual([
+      "b",
+      "d",
+      "a",
+      "c",
+    ]);
+  });
+
+  it("changes nothing when the user has no review", () => {
+    expect(ownReviewsFirst(list, () => false).map((x) => x.id)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+    ]);
+  });
+
+  it("keeps a single own review in place when it is already first", () => {
+    const own = (review: { id: string }) => review.id === "a";
+
+    expect(ownReviewsFirst(list, own).map((x) => x.id)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+    ]);
+  });
+
+  it("works on an empty list and does not change the list it is given", () => {
+    const before = list.map((x) => x.id);
+
+    expect(ownReviewsFirst([], isRui)).toEqual([]);
+    ownReviewsFirst(list, isRui);
+    expect(list.map((x) => x.id)).toEqual(before);
+  });
+
+  it("goes after newestFirst: the user's review is first and the rest are newest first", () => {
+    const reviews = [
+      { id: "old", createdAt: new Date("2026-01-01"), mine: false },
+      { id: "mine", createdAt: new Date("2026-02-01"), mine: true },
+      { id: "new", createdAt: new Date("2026-03-01"), mine: false },
+    ];
+
+    expect(
+      ownReviewsFirst(newestFirst(reviews), (review) => review.mine).map(
+        (x) => x.id
+      )
+    ).toEqual(["mine", "new", "old"]);
+  });
+});
 
 describe("newestFirst (AC3)", () => {
   it("puts the newest review first", () => {

@@ -20,6 +20,21 @@ export function newestFirst<T extends { id: string; createdAt: Date }>(
 }
 
 /**
+ * Puts the reviews written by the logged-in user first, so a person finds theirs without scrolling
+ * through the others (a popular place can have thousands). Everything else keeps the order it came in:
+ * call it after `newestFirst`. A person has one review per place, but several would stay in order.
+ */
+export function ownReviewsFirst<T>(
+  reviews: readonly T[],
+  isOwn: (review: T) => boolean
+): T[] {
+  return [
+    ...reviews.filter((review) => isOwn(review)),
+    ...reviews.filter((review) => !isOwn(review)),
+  ];
+}
+
+/**
  * Formats arithmetic average rating rounded to 1 decimal place,
  * or returns "No rating yet" if missing, invalid, or out of [1, 5] range.
  */

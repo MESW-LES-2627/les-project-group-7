@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PlaceExplorer from "@/components/PlaceExplorer";
+import CreateTripDialog from "@/components/CreateTripDialog";
 
 // Ensure fresh data is fetched from the database on every request
 export const dynamic = "force-dynamic";
@@ -86,6 +87,13 @@ export default async function Home() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <main>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-prose text-slate-600">
+            Pick a city and your dates, then build your itinerary day by day.
+          </p>
+          <CreateTripDialog cities={cities} loggedIn={session !== null} />
+        </div>
+
         <PlaceExplorer
           initialPlaces={places}
           initialCities={cities}

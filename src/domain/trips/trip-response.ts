@@ -47,3 +47,29 @@ export function toTripResponse(trip: TripRecord) {
     },
   };
 }
+
+export interface TripSummaryRecord {
+  id: string;
+  name: string;
+  city: { id: string; name: string; country: string };
+  startDate: Date;
+  endDate: Date;
+  createdAt: Date;
+  days: { id: string }[];
+}
+
+export function toTripSummaryResponse(trip: TripSummaryRecord) {
+  return {
+    id: trip.id,
+    name: trip.name,
+    city: {
+      id: trip.city.id,
+      name: trip.city.name,
+      country: trip.city.country,
+    },
+    startDate: formatDateOnly(trip.startDate),
+    endDate: formatDateOnly(trip.endDate),
+    daysCount: trip.days.length,
+    createdAt: trip.createdAt.toISOString(),
+  };
+}

@@ -30,7 +30,7 @@ iteration: the order is decided at each sprint planning.
 |---|---|---|
 | B1 | Place import | (Admin) import places from OpenStreetMap with the import script, for each MVP city (Porto, Paris and Berlin) |
 | B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one |
-| B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating |
+| B3 | City search and filters | Choose a city, browse its places, filter by type, price level and rating, sort by rating |
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
 | B5 | Map view | See a city's places as pins on a map, with clustering |
 | B6 | Top-rated places | See the top-rated places per city and type, ranked by a weighted rating (see section 4) |
@@ -118,7 +118,11 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   The seed script creates demo users and sample reviews (the schema does not mark
   them as demo data).
   A place's price level is the most common (mode) price level given in its reviews, except that a
-  free place (`fee=no`) stays free until at least 2 reviews give a paid price.
+  free place (`fee=no`) stays free until at least 2 reviews give a paid price. The price that
+  OpenStreetMap gives (free or nothing) is kept apart from the reviews, so when a review is edited or
+  deleted the price level is calculated again from it: a place tagged free gets its FREE back when
+  the paid reviews are gone, and a place that is not tagged free has no price when its last review
+  is deleted.
 - **Ranking:** places are ranked by a **weighted rating**, not by the plain average, so that
   one review cannot outrank many (ADR-008 in [design.md](design.md)). A place's score is
   `(n / (n + m)) × average + (m / (n + m)) × C`, with `n` its number of reviews, `m = 6` and
@@ -129,6 +133,17 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
   shows a warning. The only hard limit is the day itself, so a visit time is any time from
   00:00 to 23:59. When both are set, the start is before the end. The generator keeps every
   stop inside them (the Generate panel suggests 09:00 to 20:00).
+- **Order of the stops:** a stop is added at the end of its day and can be moved anywhere,
+  to another day too. One rule protects the visit times: the stops that have a time stay in the
+  order of their times, whatever stops without a time are between them. A new stop with a time
+  goes right after the last stop with the same or an earlier time. A changed time moves the stop
+  only if the order would break, and moving a stop with a time past a stop with a different
+  time is refused (the time has to change first). A stop without a time can be put anywhere.
+- **Places on the map:** any place on the map can be added to a trip, also one found live on
+  OpenStreetMap that is not in the catalog yet. It is saved in the catalog, in the city of the
+  trip, when it is first added, and only if its position is inside the area of that city (the
+  same area as the import of the places). A place outside it, or a place of another city, is
+  refused. A place is in a trip at most once.
 - **Trip dates and length:** a trip is a name, a city and dates. It has one day for each date
   from its start date to its end date, both included, and at most **14 days**. The start date is
   today or later, and the end date is not before the start date. Every trip is created together
@@ -181,7 +196,7 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 The MVP is shown, at each sprint review and at the final release, with this scenario on the prod server:
 
 1. Register and log in.
-2. Search a city, filter restaurants by price level, open the map and a place page.
+2. Choose a city, filter restaurants by price level, open the map and a place page.
 3. Post a review with a price level; see the rating and top-rated list change and
    the place appear in "visited".
 4. Add a place to the wishlist and to a custom list.

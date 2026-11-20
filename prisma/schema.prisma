@@ -90,6 +90,7 @@ model Place {
   longitude     Float
   openingHours  String?       // OSM opening_hours string; null when OpenStreetMap has none (unknown)
   priceLevel    String?       // "FREE" | "€" | "€€" | "€€€" (the mode of the reviews; FREE if OSM fee=no, until 2 reviews give a paid price)
+  osmPriceLevel String?       // "FREE" if OpenStreetMap tags the place fee=no, else null. Set by the import and when a place is saved from the map, never by a review: it is what priceLevel goes back to when the reviews no longer say otherwise
   averageRating Float?        // 1.0 .. 5.0
   reviewCount   Int           @default(0)
   source        String        @default("IMPORTED") // "IMPORTED" | "SUGGESTED" | "LAZY_OSM"

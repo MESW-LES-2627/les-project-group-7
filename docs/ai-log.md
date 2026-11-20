@@ -31,6 +31,10 @@ tool or written in the repository.
    dependency must exist, be maintained and have a licence the project can use.
 10. **No invented data.** A value the team does not know (a price level, opening hours) stays empty. AI does not fill
     it with a guess.
+11. **Reviews.** A review by an AI tool, including GitHub Copilot, does not replace the approval of a teammate. For a
+    change to a page, the reviewer also opens the page in a browser and uses it.
+12. **Parallel writes.** Code that changes the same data from requests that can arrive together is tested with
+    parallel requests against a real database, not only with unit tests.
 
 ## Iteration 1 (23 Oct to 6 Nov 2026)
 
@@ -79,3 +83,57 @@ When we do not know a value, such as a price level or opening hours, we leave it
 - Claude Code (Anthropic)
 - GitHub Copilot
 - ChatGPT
+
+## Iteration 2 (6 to 20 Nov 2026)
+
+### What the team used it for
+
+- Claude Code was used for the Edit trip API and its dialog with the warning before stops are lost
+  ([#165](https://github.com/MESW-LES-2627/les-project-group-7/pull/165)), for the map, the rating of a place and the
+  saved places in the planner ([#169](https://github.com/MESW-LES-2627/les-project-group-7/pull/169),
+  [#170](https://github.com/MESW-LES-2627/les-project-group-7/pull/170)), for the fixes asked in the reviews of #160 and
+  #166.
+- It also helped to compare the reviews of #160 and #166 with the code, and to write the plan of the usability review of
+  Iteration 3.
+- GalaxyXYZ888: I used Claude Code for the Create trip API with its days and an empty itinerary
+  ([#148](https://github.com/MESW-LES-2627/les-project-group-7/pull/148)), the day synchronisation when the dates of a
+  trip change ([#154](https://github.com/MESW-LES-2627/les-project-group-7/pull/154)), and the polish of the My trips
+  page ([#153](https://github.com/MESW-LES-2627/les-project-group-7/pull/153)). I used it for the Stops API: add, list,
+  move, set the time of and remove the stops of an itinerary, with the order rule for stops with a time
+  ([#156](https://github.com/MESW-LES-2627/les-project-group-7/pull/156)), and for the lock that makes the changes of
+  one itinerary wait for each other
+  ([#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)). I also used it for the order of the reviews,
+  the "Open place page" button and the matching buttons of the review form
+  ([#163](https://github.com/MESW-LES-2627/les-project-group-7/pull/163)), and for the backfill script of the
+  OpenStreetMap price ([#157](https://github.com/MESW-LES-2627/les-project-group-7/pull/157)).
+- A script outside the repository runs the deploy workflow with `act` in Docker while GitHub Actions does not start. I
+  used Claude Code to run it and deploy `dev` after merges, and to take a snapshot of the Neon `dev` database before
+  the migrations. The secrets are in files outside the repository. The tool ran the script that reads them and did not
+  print them, and I had the log of each deploy searched for their values.
+
+### Problems we found in code written with AI
+
+| Problem | How we found it | Fix |
+| :-- | :-- | :-- |
+| The Stops API ran every change in a serializable transaction. Two parallel moves deadlocked and the person got a 500, and in a rare case a change that was not saved. When several changes arrived together, all but one failed with "try again". | Calling the API with parallel requests against a real PostgreSQL, while reviewing #157. The unit tests did not show it. | Every writer locks the itinerary first (`FOR NO KEY UPDATE`), the transaction is read committed, and a deadlock that still happens is answered 409 and not 500 ([#161](https://github.com/MESW-LES-2627/les-project-group-7/pull/161)). Convention 12. |
+| The planner of #61 was merged working, but it was a form above columns that scrolled sideways, with no map to choose from, and a stop said nothing about its place. A review by a tool had not said anything about it: on #158 the only review was a Copilot comment that said it could not review because of quota, and no teammate approved it. | Using the page on 19 Nov, after the merge. | A usability review of the whole demo scenario in Iteration 3, a redesign of the planner ([#174](https://github.com/MESW-LES-2627/les-project-group-7/pull/174)), and convention 11. |
+| The header of the logged-in pages was 411 px wide with the link "My places", and 467 px with the link of #166, so every page scrolled sideways on a phone. The two pull requests also conflicted in the same file. | The review of #160 and #166, with a real browser at 390 px. | The username is only for screen readers below `sm`, and the two links were solved together. |
+
+### How we checked the work
+
+- Parallel requests against a local PostgreSQL, which found the deadlock of #161.
+- The reviews of #160 and #166 used a merged tree of `dev` and the branch, a real database and a browser at 390 px, in
+  light and dark.
+- While GitHub Actions does not start, the checks of the pipeline are run by hand on a computer: format, types, lint,
+  knip and the tests, and the pull request is only merged after they pass.
+
+### What we changed because of it
+
+Two conventions, 11 and 12 above. The team agrees on them at the retrospective.
+
+### Tools
+
+- Claude Code (Anthropic)
+- GitHub Copilot (asked to review pull requests; its review did not run on #158)
+- ChatGPT
+

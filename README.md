@@ -13,7 +13,7 @@ All design deliverables and domain specifications are stored in this repository:
 - **[Vision](docs/vision.md):** The long-term product vision and feature roadmap.
 - **[MVP Specification](docs/mvp.md):** Target scope committed for release by 18 Dec 2026.
 - **[User stories](docs/user-stories.md):** One user story per MVP and Stretch feature, with acceptance criteria and the issues each is split into.
-- **[Design & Architecture](docs/design.md):** Overview of EventStorming, Domain Model, and Component Diagram.
+- **[Design Report](docs/design.md):** Project overview, EventStorming, domain model, component diagram and ADRs, change scenarios with coupling and cohesion analysis (design patterns and code smells to come).
 - **[Domain Glossary & Rules (Ubiquitous Language)](docs/GLOSSARY.md):** Canonical definitions of `Place`, `Review`, `Visit`, `Wishlist`, `Bookmark`, `Trip`, `Itinerary`, cost points, and budget calculations.
 - **[Deployment](docs/deployment.md):** How the app reaches the two sites (Vercel and Neon), the backup steps before a release and the known problems.
 
@@ -63,7 +63,7 @@ Every push to `dev` or `main` deploys through GitHub Actions (see [deployment](d
     ├── app/                # Next.js App Router (pages and API routes)
     │   ├── api/places/     # GET /api/places
     │   ├── api/reviews/    # GET & POST /api/reviews
-    │   ├── api/trips/      # POST /api/trips (creates a trip with one day for each date and an empty itinerary)
+    │   ├── api/trips/      # POST & GET /api/trips, PATCH & DELETE /api/trips/[id] (change the name and the dates, delete); GET & POST /api/trips/[id]/stops and PATCH & DELETE /api/trips/[id]/stops/[stopId] (list, add, move, set the time of and remove the stops of the itinerary)
     │   ├── api/register/   # POST /api/register (creates the account and logs the person in)
     │   ├── api/auth/       # Better Auth routes: sign in, sign out, get-session (ADR-009)
     │   ├── api/osm/        # GET /api/osm (live discovery) and /api/osm/search (Nominatim search)
@@ -139,6 +139,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run test:watch` / `test:report`    | Vitest in watch mode / verbose report                           |
 | `npm run prisma:studio`                 | Opens Prisma Studio to browse the database                      |
 | `npm run import:osm -- <city>`          | Imports the places of one city from OpenStreetMap (see above) |
+| `npm run backfill:osm-price`            | Sets what OpenStreetMap says about the price of each place, from the snapshots (once, after the migration of #40; `--dry-run` only counts) |
 | `npm run format` / `format:check`       | Prettier on `src/` (write / check only)                         |
 | `npm run lint:docs` / `format:docs`     | Checks the links and anchors in `docs/` / formats `docs/*.md`   |
 | `npm run knip`                          | Finds unused files, exports and dependencies                    |
@@ -160,7 +161,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Reviews:** A 1–5 star rating, a price level and a text, all required and with nothing preselected. A user can review a place only once (a second review gets a 409 and a notice; the database refuses it too). Posting a review recalculates the place's average rating, review count and price level, and records a visit. Not built yet: editing or deleting a review.
 - **Accounts:** Registration (`/register`), login by username or e-mail (`/login`) and logout, with Better Auth. Posting a review needs a logged-in user, and the author is always the user of the session.
 - **Visited:** A "Visited" badge on the places the logged-in user reviewed, in the list, the cards, the review dialog and the place page.
-- **Search & Filter:** A city search and a place search (ignoring case and accents), with filters for type, price level and minimum rating. The list shows every matching place of the city, best rating score first, wherever the map is.
+- **Search & Filter:** A place search (ignoring case and accents) and a button for each city, with filters for type, price level and minimum rating. The list shows every matching place of the city, best rating score first, wherever the map is.
 - **Map:** Leaflet map of the places in PostgreSQL, plus places discovered live from OpenStreetMap, which are saved when first reviewed (built in the tracer bullet, outside the committed MVP).
 - **Place page:** `/places/[id]` shows a place's details, rating, price level and reviews, newest first, and lets a logged-in user write a review. The opening hours are shown in a readable form, or as "Unknown" when the place has none.
 - **Dark mode:** The site opens in dark mode; the top bar button switches the theme and the browser remembers it.
