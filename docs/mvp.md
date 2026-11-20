@@ -30,7 +30,7 @@ iteration: the order is decided at each sprint planning.
 |---|---|---|
 | B1 | Place import | (Admin) import places from OpenStreetMap with the import script, for each MVP city (Porto, Paris and Berlin) |
 | B2 | Demo data | (Team) load the cities, demo users and sample reviews so rankings work from day one |
-| B3 | City search and filters | Search a city, browse its places, filter by type, price level and rating, sort by rating |
+| B3 | City search and filters | Choose a city, browse its places, filter by type, price level and rating, sort by rating |
 | B4 | Place page | See details, opening hours (or "unknown"), rating, price level and reviews |
 | B5 | Map view | See a city's places as pins on a map, with clustering |
 | B6 | Top-rated places | See the top-rated places per city and type, ranked by a weighted rating (see section 4) |
@@ -196,7 +196,7 @@ so that its user story can name it (see [user-stories.md](user-stories.md)).
 The MVP is shown, at each sprint review and at the final release, with this scenario on the prod server:
 
 1. Register and log in.
-2. Search a city, filter restaurants by price level, open the map and a place page.
+2. Choose a city, filter restaurants by price level, open the map and a place page.
 3. Post a review with a price level; see the rating and top-rated list change and
    the place appear in "visited".
 4. Add a place to the wishlist and to a custom list.
