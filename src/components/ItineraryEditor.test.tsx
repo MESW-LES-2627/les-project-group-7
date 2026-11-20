@@ -119,19 +119,69 @@ afterEach(() => {
 const move = (label: string, name: string) =>
   screen.getByRole("button", { name: `${label}: ${name}` });
 
-describe("ItineraryEditor: the strip of days", () => {
-  it("is positioned, so the screen-reader labels inside it do not widen the page", () => {
-    const { container } = render(<ItineraryEditor {...base} />);
+const tab = (name: string | RegExp) => screen.getByRole("tab", { name });
+const chooseDay = (n: number) => userEvent.click(tab(new RegExp(`^Day ${n}`)));
+const openSearch = () => userEvent.click(tab("Search"));
 
-    expect(container.querySelector("ol.snap-x")?.className).toMatch(
-      /\brelative\b/
-    );
+describe("ItineraryEditor: the strip of days", () => {
+  it("has one tab for each day, with the number of places, and Day 1 is chosen", () => {
+    render(<ItineraryEditor {...base} />);
+
+    expect(screen.getAllByRole("tab", { name: /^Day \d/ })).toHaveLength(3);
+    expect(tab("Day 1, 3 places").getAttribute("aria-selected")).toBe("true");
+    expect(tab("Day 2, 1 place").getAttribute("aria-selected")).toBe("false");
+    expect(tab("Day 3, 0 places")).toBeTruthy();
   });
 
-  it("has one column for each day", () => {
-    const { container } = render(<ItineraryEditor {...base} />);
+  it("shows the stops of the chosen day only", async () => {
+    render(<ItineraryEditor {...base} />);
 
-    expect(container.querySelectorAll("ol.snap-x > li")).toHaveLength(3);
+    expect(screen.getByText("Place A")).toBeTruthy();
+    expect(screen.queryByText("Place D")).toBeNull();
+
+    await chooseDay(2);
+
+    expect(screen.getByText("Place D")).toBeTruthy();
+    expect(screen.queryByText("Place A")).toBeNull();
+  });
+
+  it("moves between the days with the arrow keys, and the tab of the chosen day is the one in the tab order", async () => {
+    render(<ItineraryEditor {...base} />);
+
+    tab(/^Day 1/).focus();
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect(tab(/^Day 2/).getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(tab(/^Day 2/));
+    expect(tab(/^Day 1/).getAttribute("tabindex")).toBe("-1");
+
+    await userEvent.keyboard("{End}");
+    expect(tab(/^Day 3/).getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("says what to do in a day with nothing planned, with the date of the day", async () => {
+    render(<ItineraryEditor {...base} />);
+
+    await chooseDay(3);
+
+    expect(
+      screen.getByText("Nothing planned for Thu 3 Dec 2026 yet.")
+    ).toBeTruthy();
+  });
+
+  it("opens the search for the chosen day, with the focus in its box, from Add a place", async () => {
+    render(<ItineraryEditor {...base} />);
+    await chooseDay(2);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add a place to Day 2" })
+    );
+
+    expect(tab("Search").getAttribute("aria-selected")).toBe("true");
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("Place"))
+    );
+    expect(screen.getByText(/Adding to/).textContent).toMatch(/Day 2/);
   });
 });
 
@@ -214,6 +264,7 @@ describe("ItineraryEditor: the move buttons keep the focus and say why they do n
 
 describe("ItineraryEditor: the day to add to", () => {
   async function addLouvre() {
+    if (!screen.queryByLabelText("Place")) await openSearch();
     await userEvent.type(screen.getByLabelText("Place"), "Lou");
     await userEvent.click(await screen.findByText("Louvre"));
   }
@@ -222,7 +273,7 @@ describe("ItineraryEditor: the day to add to", () => {
     fetchMock.mockImplementation(async () => json({ stops }));
     render(<ItineraryEditor {...base} />);
 
-    await userEvent.selectOptions(screen.getByLabelText("Day"), "d3");
+    await chooseDay(3);
     await addLouvre();
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
@@ -234,7 +285,7 @@ describe("ItineraryEditor: the day to add to", () => {
 
   it("falls back to the first day when the chosen day is gone (the trip was made shorter)", async () => {
     const view = render(<ItineraryEditor {...base} />);
-    await userEvent.selectOptions(screen.getByLabelText("Day"), "d3");
+    await chooseDay(3);
 
     // The Edit trip dialog shortens the trip and the page reads its data again
     view.rerender(
@@ -245,9 +296,7 @@ describe("ItineraryEditor: the day to add to", () => {
       />
     );
 
-    expect((screen.getByLabelText("Day") as HTMLSelectElement).value).toBe(
-      "d1"
-    );
+    expect(tab(/^Day 1/).getAttribute("aria-selected")).toBe("true");
 
     await addLouvre();
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
@@ -260,13 +309,11 @@ describe("ItineraryEditor: the day to add to", () => {
 
   it("goes back to the chosen day if it is still there after the page is read again", async () => {
     const view = render(<ItineraryEditor {...base} />);
-    await userEvent.selectOptions(screen.getByLabelText("Day"), "d2");
+    await chooseDay(2);
 
     view.rerender(<ItineraryEditor {...base} initialStops={[...stops]} />);
 
-    expect((screen.getByLabelText("Day") as HTMLSelectElement).value).toBe(
-      "d2"
-    );
+    expect(tab(/^Day 2/).getAttribute("aria-selected")).toBe("true");
   });
 
   it("puts the focus back in the search box after a place was added", async () => {
@@ -281,8 +328,9 @@ describe("ItineraryEditor: the day to add to", () => {
 });
 
 describe("ItineraryEditor: the page is read again", () => {
-  it("shows the stops it is given again, and drops the ones that are gone", () => {
+  it("shows the stops it is given again, and drops the ones that are gone", async () => {
     const view = render(<ItineraryEditor {...base} />);
+    await chooseDay(2);
     expect(screen.getByText("Place D")).toBeTruthy();
 
     view.rerender(
@@ -293,11 +341,13 @@ describe("ItineraryEditor: the page is read again", () => {
     );
 
     expect(screen.queryByText("Place D")).toBeNull();
+    await chooseDay(1);
     expect(screen.getByText("Place A")).toBeTruthy();
   });
 
   it("forgets the unsaved time of a stop that is gone", async () => {
     const view = render(<ItineraryEditor {...base} />);
+    await chooseDay(2);
     const field = screen.getByLabelText("Visit time of Place D");
 
     await userEvent.type(field, "1030");
@@ -320,6 +370,7 @@ describe("ItineraryEditor: removing a stop and saving a time", () => {
       async () => new Response(null, { status: 204 })
     );
     render(<ItineraryEditor {...base} />);
+    await chooseDay(2);
 
     await userEvent.click(
       screen.getByRole("button", { name: "Remove Place D" })
@@ -339,6 +390,7 @@ describe("ItineraryEditor: removing a stop and saving a time", () => {
       () => new Promise<Response>((resolve) => (finish = resolve))
     );
     render(<ItineraryEditor {...base} />);
+    await chooseDay(2);
     const field = screen.getByLabelText(
       "Visit time of Place D"
     ) as HTMLInputElement;
@@ -414,6 +466,7 @@ describe("the saved places panel", () => {
       ],
     };
     render(<ItineraryEditor {...base} />);
+    await userEvent.click(tab("Saved"));
 
     await userEvent.click(
       screen.getByRole("button", { name: "Add Louvre to Day 1" })
@@ -429,6 +482,7 @@ describe("the saved places panel", () => {
   it("is not on the page outside the saved places provider", () => {
     render(<ItineraryEditor {...base} />);
 
+    expect(screen.queryByRole("tab", { name: "Saved" })).toBeNull();
     expect(screen.queryByText(/Your saved places in/)).toBeNull();
   });
 });

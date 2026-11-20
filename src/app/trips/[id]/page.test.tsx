@@ -93,13 +93,11 @@ describe("TripPage", () => {
     expect(html).toContain("Porto, Portugal");
     expect(html).toContain("Delete trip");
     expect(html).toContain("Edit trip");
-    const headings = [...html.matchAll(/<h3[^>]*>(Day \d+ — [^<]+)</g)];
-    expect(headings.map((match) => match[1])).toEqual([
-      "Day 1 — Tue 1 Dec 2026",
-      "Day 2 — Wed 2 Dec 2026",
-      "Day 3 — Thu 3 Dec 2026",
-    ]);
-    expect(html.match(/No places yet/g)).toHaveLength(3);
+    const tabs = [
+      ...html.matchAll(/role="tab"[^>]*aria-label="(Day \d+), 0 places"/g),
+    ];
+    expect(tabs.map((match) => match[1])).toEqual(["Day 1", "Day 2", "Day 3"]);
+    expect(html).toContain("Nothing planned for Tue 1 Dec 2026 yet.");
   });
 
   it("shows the stops of each day in order, with their times, and reads only the itinerary of the trip (#61)", async () => {
@@ -118,7 +116,9 @@ describe("TripPage", () => {
     expect(html).toContain("Remove Serralves");
     expect(html).toContain("Save trip");
     expect(html).toContain("All changes saved");
-    expect(html.match(/No places yet/g)).toHaveLength(2);
+    // the page opens on the first day that has stops, Day 2 here
+    expect(html).toContain("Wed 2 Dec 2026");
+    expect(html).toContain('aria-label="Day 2, 2 places"');
     expect(findStops).toHaveBeenCalledWith(
       expect.objectContaining({ where: { itineraryId: "i1" } })
     );

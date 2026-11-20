@@ -189,9 +189,9 @@ The trip's `budgetLevel` is a **soft target for the average cost points of the w
 
 ### Catalog Search (MVP)
 
-- **Definition:** Searching a city, browsing its places, filtering by type, price level and rating, and sorting by rating. It runs on our own PostgreSQL data only.
+- **Definition:** Choosing a city, browsing its places, filtering by type, price level and rating, and sorting by rating. It runs on our own PostgreSQL data only.
 - **Behavior:**
-  - **City search:** typing part of a city name filters the city buttons, ignoring case and accents (`ß` is read as `ss`), with a message when no city matches. Choosing a city lists only its places and flies the map to zoom 13, so the whole city is in view.
+  - **City choice:** one button for each city (with its number of places) and "All Cities". There is no city search box: the catalog has three cities. Choosing a city lists only its places and flies the map to zoom 13, so the whole city is in view.
   - **Place search:** a place matches when its name or address contains the text, with the same rule (case, accents, `ß`). The list, the map pins and the search popup use the same rule.
   - **Choosing a place in the search popup** does not open the review dialog: the map flies to the place (zoom 16) and its name fills the search box. Its pin stays visible whatever the filters say, until the user types again, chooses another place or city, or rates it. Rating stays reachable from the pin.
   - **Filters and order:** type, price level and minimum rating combine with AND. The list is always sorted by rating score (there is no sort control yet) and shows every matching place of the city, in pages, wherever the map is: moving the map does not change the ranking.

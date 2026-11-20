@@ -67,7 +67,7 @@ in the [MVP](mvp.md). Each idea is tagged:
 
 | Idea | Tier |
 |---|---|
-| Search a city and browse its places | MVP |
+| Choose a city and browse its places | MVP |
 | Filter by type (restaurant, museum, monument, park), price level and rating | MVP |
 | Top-rated places per city and per type, ranked by a weighted rating | MVP |
 | Place detail page with description, address, rating and reviews | MVP |

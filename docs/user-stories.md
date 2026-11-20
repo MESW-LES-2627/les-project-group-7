@@ -259,24 +259,25 @@ This file is the draft that the GitHub issues are created from. Once the issues 
 - **MVP feature:** B3 City search and filters
 - **As a:** Planner
 
-**I want** to search a city and browse its places,
+**I want** to choose a city and browse its places,
 
 **So that** I can see what there is to visit.
 
 **Acceptance criteria**
 
-1. **Given** I am on the home page, **when** I type part of a city name, **then** I see the matching cities and can choose one.
+1. **Given** I am on the home page, **when** I look at the cities, **then** I see a button for each city with its number of places, and I can choose one or "All Cities".
 2. **Given** I chose a city, **when** the page loads, **then** I see only that city's places, and the map is centred on it.
 3. **Given** I type in the place search, **when** a name or address matches, **then** only those places are listed.
 4. **Given** nothing matches, **when** the list is empty, **then** I see a message that says so.
 
 **Business rules**
 
-- Search ignores case and accents.
+- Place search ignores case and accents.
 
 **Out of scope**
 
 - Searching places outside the catalog (S18).
+- A search box for the city. It was built in #23 and removed on 20 Nov 2026: the catalog has three cities, so the buttons are enough, and the box took space above the filters.
 
 **Issues**
 
