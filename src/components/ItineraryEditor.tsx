@@ -50,6 +50,8 @@ import {
 } from "@/lib/itinerary-stops";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
+import { calculateTripAverage } from "@/domain/itinerary/trip-average";
+import { formatPriceLevel } from "@/domain/reviews/rating";
 
 interface ItineraryEditorProps {
   tripId: string;
@@ -57,6 +59,7 @@ interface ItineraryEditorProps {
   days: EditorDay[];
   initialStops: EditorStop[];
   cityPlaces: PlaceItem[];
+  budgetLevel: string | null;
 }
 
 const SEARCH_INPUT_ID = "itinerary-place-search";
@@ -86,9 +89,21 @@ export default function ItineraryEditor({
   days,
   initialStops,
   cityPlaces,
+  budgetLevel,
 }: ItineraryEditorProps) {
   const router = useRouter();
   const [stops, setStops] = useState(initialStops);
+  const tripAverage = calculateTripAverage(
+    stops.map((stop) => ({
+      priceLevel: stop.place.priceLevel,
+    })),
+    budgetLevel === "FREE" ||
+      budgetLevel === "€" ||
+      budgetLevel === "€€" ||
+      budgetLevel === "€€€"
+      ? budgetLevel
+      : null
+  );
   const [timeDrafts, setTimeDrafts] = useState<Record<string, string>>({});
   const [leaving, setLeaving] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -355,6 +370,50 @@ export default function ItineraryEditor({
       <p role="status" aria-live="polite" className="sr-only">
         {busy ? "Saving…" : status}
       </p>
+
+      <section
+        aria-label="Trip price summary"
+        className="rounded-2xl border border-slate-200 bg-white p-4"
+      >
+        <h2 className="font-semibold text-slate-900">Trip price summary</h2>
+
+        <div className="mt-3 flex flex-wrap gap-6 text-sm">
+          <div>
+            <p className="text-slate-500">Average price</p>
+            <p className="text-lg font-semibold">
+              {tripAverage.averageCostPoints === null
+                ? "Unknown"
+                : `${tripAverage.averageCostPoints.toFixed(1)} / 3`}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-slate-500">Trip budget</p>
+            <p className="text-lg font-semibold">
+              {budgetLevel === null ? "Not set" : budgetLevel}
+            </p>
+          </div>
+        </div>
+
+        {tripAverage.unknownPriceCount > 0 && (
+          <p className="mt-3 text-sm text-slate-600">
+            {tripAverage.unknownPriceCount}{" "}
+            {tripAverage.unknownPriceCount === 1 ? "stop has" : "stops have"} an
+            unknown price and{" "}
+            {tripAverage.unknownPriceCount === 1 ? "is" : "are"} excluded from
+            the average.
+          </p>
+        )}
+
+        {tripAverage.isOverBudget && (
+          <p
+            role="alert"
+            className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+          >
+            Warning: the average trip price exceeds your budget.
+          </p>
+        )}
+      </section>
 
       {/* The plan leads and the places to pick from support it. On a phone the panel goes under the plan. */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start">
@@ -693,6 +752,11 @@ function StopCard({
               <span className={config.textColor}>{config.label}</span>
               {stop.place.address && ` · ${stop.place.address}`}
             </p>
+
+            <p className="mt-1 text-xs text-slate-600">
+              Price: {formatPriceLevel(stop.place.priceLevel)}
+            </p>
+
             {catalogPlace && (
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-600">
                 <Star

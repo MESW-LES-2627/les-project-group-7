@@ -88,6 +88,7 @@ export default async function TripPage({ params }: TripPageProps) {
           days={trip.days}
           initialStops={stops.map(toStopResponse)}
           cityPlaces={cityPlaces}
+          budgetLevel={itinerary.budgetLevel}
         />
       </SavedPlacesProvider>
     </main>
