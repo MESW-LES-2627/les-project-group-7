@@ -98,6 +98,7 @@ const base = {
   days,
   initialStops: stops,
   cityPlaces,
+  budgetLevel: null,
 };
 
 const json = (body: unknown, status = 200) =>
@@ -484,5 +485,193 @@ describe("the saved places panel", () => {
 
     expect(screen.queryByRole("tab", { name: "Saved" })).toBeNull();
     expect(screen.queryByText(/Your saved places in/)).toBeNull();
+  });
+});
+
+describe("ItineraryEditor: trip price summary", () => {
+  it("shows the average price, unknown prices and over-budget warning", () => {
+    const pricedStops = stops.map((item, index) => ({
+      ...item,
+      place: {
+        ...item.place,
+        priceLevel: index === 0 ? "€€" : index === 1 ? "€€€" : null,
+      },
+    }));
+
+    render(
+      <ItineraryEditor {...base} initialStops={pricedStops} budgetLevel="€" />
+    );
+
+    expect(screen.getByText("2.5 / 3")).toBeTruthy();
+    expect(screen.getByText("Trip budget")).toBeTruthy();
+
+    expect(
+      screen.getByText("Warning: the average trip price exceeds your budget.")
+    ).toBeTruthy();
+
+    expect(
+      screen.getByText(
+        "2 stops have an unknown price and are excluded from the average."
+      )
+    ).toBeTruthy();
+
+    expect(screen.getByText("Price: €€")).toBeTruthy();
+    expect(screen.getByText("Price: €€€")).toBeTruthy();
+  });
+
+  it("does not show a warning when the average is within budget", () => {
+    const pricedStops = [
+      {
+        ...stop("A", "d1", 1),
+        place: {
+          ...stop("A", "d1", 1).place,
+          priceLevel: "€",
+        },
+      },
+      {
+        ...stop("B", "d1", 2),
+        place: {
+          ...stop("B", "d1", 2).place,
+          priceLevel: "€€",
+        },
+      },
+    ];
+
+    render(
+      <ItineraryEditor {...base} initialStops={pricedStops} budgetLevel="€€" />
+    );
+
+    expect(screen.getByText("1.5 / 3")).toBeTruthy();
+
+    expect(
+      screen.queryByText("Warning: the average trip price exceeds your budget.")
+    ).toBeNull();
+  });
+
+  it("shows an unknown average when no stops have known prices", () => {
+    render(<ItineraryEditor {...base} budgetLevel="€" />);
+
+    expect(screen.getByText("Unknown")).toBeTruthy();
+
+    expect(
+      screen.getByText(
+        "4 stops have an unknown price and are excluded from the average."
+      )
+    ).toBeTruthy();
+
+    expect(
+      screen.queryByText("Warning: the average trip price exceeds your budget.")
+    ).toBeNull();
+
+    expect(screen.getAllByText("Price: Price unknown")).toHaveLength(3);
+  });
+
+  it("updates the average and warning when a stop is removed", async () => {
+    const pricedStops = [
+      {
+        ...stop("A", "d1", 1),
+        place: {
+          ...stop("A", "d1", 1).place,
+          priceLevel: "€",
+        },
+      },
+      {
+        ...stop("B", "d1", 2),
+        place: {
+          ...stop("B", "d1", 2).place,
+          priceLevel: "€€€",
+        },
+      },
+    ];
+
+    fetchMock.mockImplementation(
+      async () => new Response(null, { status: 204 })
+    );
+
+    render(
+      <ItineraryEditor {...base} initialStops={pricedStops} budgetLevel="€" />
+    );
+
+    // Initially: (1 + 3) / 2 = 2.0, above the budget.
+    expect(screen.getByText("2.0 / 3")).toBeTruthy();
+    expect(
+      screen.getByText("Warning: the average trip price exceeds your budget.")
+    ).toBeTruthy();
+
+    // Remove the expensive stop.
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove Place B" })
+    );
+
+    // Remaining average: 1.0, equal to the budget.
+    await waitFor(() => {
+      expect(screen.getByText("1.0 / 3")).toBeTruthy();
+    });
+
+    expect(
+      screen.queryByText("Warning: the average trip price exceeds your budget.")
+    ).toBeNull();
+  });
+
+  it("updates the average and warning when a stop is added", async () => {
+    const initial = [
+      {
+        ...stop("A", "d1", 1),
+        place: {
+          ...stop("A", "d1", 1).place,
+          priceLevel: "€",
+        },
+      },
+    ];
+
+    const expensiveStop = {
+      ...stop("B", "d1", 2),
+      place: {
+        ...stop("B", "d1", 2).place,
+        priceLevel: "€€€",
+      },
+    };
+
+    fetchMock.mockImplementation(async () =>
+      json({ stops: [...initial, expensiveStop] })
+    );
+
+    render(
+      <ItineraryEditor
+        {...base}
+        initialStops={initial}
+        budgetLevel="€"
+        cityPlaces={[
+          {
+            ...cityPlaces[0],
+            id: expensiveStop.placeId,
+            name: expensiveStop.place.name,
+            priceLevel: "€€€",
+          },
+        ]}
+      />
+    );
+
+    // Initially: 1.0, equal to the budget.
+    expect(screen.getByText("1.0 / 3")).toBeTruthy();
+    expect(
+      screen.queryByText("Warning: the average trip price exceeds your budget.")
+    ).toBeNull();
+
+    // Add the expensive place from the map.
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Add to Day 1 (p-B)",
+      })
+    );
+
+    // New average: (1 + 3) / 2 = 2.0.
+    await waitFor(() => {
+      expect(screen.getByText("2.0 / 3")).toBeTruthy();
+    });
+
+    expect(
+      screen.getByText("Warning: the average trip price exceeds your budget.")
+    ).toBeTruthy();
   });
 });
