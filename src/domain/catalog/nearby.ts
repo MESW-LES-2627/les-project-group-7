@@ -21,10 +21,14 @@ export interface NearbySuggestion<T extends NearbyCandidate> {
   place: T;
   distanceKm: number;
   walkingMinutes: number;
+  /** The weighted rating of ADR-008 that ranks the place, `null` when it is not rated. */
+  score: number | null;
 }
 
-const NEAR_KM = 1;
-const WIDER_KM = 2;
+type RadiusKm = 1 | 2;
+
+const NEAR_KM: RadiusKm = 1;
+const WIDER_KM: RadiusKm = 2;
 // Fewer than this many places within NEAR_KM and the search widens to WIDER_KM.
 const MIN_NEAR_PLACES = 3;
 
@@ -36,14 +40,11 @@ function bestRatedThenNearest<T extends NearbyCandidate>(
   a: NearbySuggestion<T>,
   b: NearbySuggestion<T>
 ): number {
-  const scoreA = ratingScore(a.place.averageRating, a.place.reviewCount);
-  const scoreB = ratingScore(b.place.averageRating, b.place.reviewCount);
+  if (a.score === b.score) return a.distanceKm - b.distanceKm;
+  if (a.score === null) return 1;
+  if (b.score === null) return -1;
 
-  if (scoreA === scoreB) return a.distanceKm - b.distanceKm;
-  if (scoreA === null) return 1;
-  if (scoreB === null) return -1;
-
-  return scoreB - scoreA;
+  return b.score - a.score;
 }
 
 /**
@@ -54,10 +55,7 @@ export function nearbyPlaces<T extends NearbyCandidate>(
   origin: { latitude: number; longitude: number },
   places: readonly T[],
   options: NearbyOptions
-): {
-  radiusKm: typeof NEAR_KM | typeof WIDER_KM;
-  suggestions: NearbySuggestion<T>[];
-} {
+): { radiusKm: RadiusKm; suggestions: NearbySuggestion<T>[] } {
   const ranked = places
     .filter(
       (place) =>
@@ -76,6 +74,7 @@ export function nearbyPlaces<T extends NearbyCandidate>(
         place,
         distanceKm,
         walkingMinutes: estimateWalkingMinutes(distanceKm),
+        score: ratingScore(place.averageRating, place.reviewCount),
       };
     });
 

@@ -391,3 +391,21 @@ describe("nearbyPlaces: AC1, the rating is the weighted rating of ADR-008", () =
     expect(suggestions.map((s) => s.place.id)).toEqual(["rated", "no-count"]);
   });
 });
+
+describe("nearbyPlaces: the score of each suggestion", () => {
+  it("gives the weighted rating (ADR-008) that was used to rank it, or null when it is not rated", () => {
+    const { suggestions } = nearbyPlaces(
+      ORIGIN,
+      [
+        place("one-review", 0.002, 5.0, "RESTAURANT", 1),
+        place("unrated", 0.003, null),
+      ],
+      ANY
+    );
+
+    expect(suggestions.map((s) => [s.place.id, s.score])).toEqual([
+      ["one-review", 4.14],
+      ["unrated", null],
+    ]);
+  });
+});
