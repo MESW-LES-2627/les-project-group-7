@@ -166,30 +166,33 @@ function parseWeek(openingHours: string): Interval[][] | null {
   return understood > 0 ? week : null;
 }
 
+export type OpeningStatus = "inside" | "outside" | "unknown";
+
 /**
- * Whether a visit is outside the opening hours of a place (US-E6-01, #66). The end of an interval
- * is already closed. Hours that are unknown, or that this function does not understand, never
- * warn: the answer is `false`, it is the stop that says the hours are unknown.
+ * Whether a visit is inside or outside the opening hours of a place (US-E6-01, #66). The end of an
+ * interval is already closed. It is "unknown" when the hours are missing, when they are there but this
+ * function does not understand them, or when the date or the time cannot be read: the caller can then
+ * tell "open" from "we cannot say" (AC3).
  *
  * @param openingHours the OSM `opening_hours` of the place, `null` when unknown
  * @param date the date of the visit (Day.date, midnight UTC), its weekday decides the rule
  * @param time the visit time "HH:mm"
  */
-export function isOutsideOpeningHours(
+export function openingStatus(
   openingHours: string | null | undefined,
   date: Date,
   time: string
-): boolean {
+): OpeningStatus {
   const hours = openingHours?.trim();
   const match = TIME_OF_DAY.exec(time);
 
-  if (!hours || !match || Number.isNaN(date.getTime())) return false;
+  if (!hours || !match || Number.isNaN(date.getTime())) return "unknown";
 
   // shortcut: the text is parsed on every call, fine for the stops of a page; keep the result by
   // text if many stops are checked at once.
   const week = parseWeek(hours);
 
-  if (!week) return false;
+  if (!week) return "unknown";
 
   const minute = Number(match[1]) * 60 + Number(match[2]);
   // getUTCDay() counts from Sunday, the days of the week here from Monday.
@@ -204,5 +207,14 @@ export function isOutsideOpeningHours(
     ([, end]) => minute < end - MINUTES_PER_DAY
   );
 
-  return !(openToday || openFromYesterday);
+  return openToday || openFromYesterday ? "inside" : "outside";
+}
+
+/** Whether a visit is outside the opening hours: only when it is sure, "unknown" never warns. */
+export function isOutsideOpeningHours(
+  openingHours: string | null | undefined,
+  date: Date,
+  time: string
+): boolean {
+  return openingStatus(openingHours, date, time) === "outside";
 }

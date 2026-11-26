@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { formatOpeningHours, isOutsideOpeningHours } from "./opening-hours";
+import {
+  formatOpeningHours,
+  isOutsideOpeningHours,
+  openingStatus,
+} from "./opening-hours";
 
 describe("formatOpeningHours", () => {
   it("formats weekday ranges", () => {
@@ -523,5 +527,117 @@ describe("isOutsideOpeningHours: the function stays a function", () => {
     expect(
       isOutsideOpeningHours("Mo-Su 09:00-18:00", new Date("nope"), "20:00")
     ).toBe(false);
+  });
+});
+
+// Real values of the `opening_hours` of the places of Porto, Paris and Berlin that the check does not
+// understand yet (review of #181: they must not look like "open"). When the check learns one of
+// them, that line moves to the tests above on purpose.
+const NOT_UNDERSTOOD_YET = [
+  "Mo-Fr 09:00-17:00; Jan 01 off; Dec 25 off",
+  "Oct-Mar: Mo-Su 08:00-19:00; Apr-Sep: Mo-Su 08:00-21:00",
+  "Apr-Sep Mo-Su 07:00-20:00; Oct-Mar Mo-Su 07:00-18:00",
+  "Mo-Sa 12:30-15:30,19:30-23:30; Su,PH off",
+  "Mo-Tu, Th-Fr 09:00-16:00; Sa-Su 09:00-17:00",
+  "Mo-Th, Su 10:00-23:00; Fr-Sa 10:00-0:00",
+  "Su-Th 19:00-02:00, Fr,Sa 19:00-04:00",
+  "Mo-Su 10:00+",
+  "sunrise-sunset",
+];
+
+describe("openingStatus: inside, outside or unknown", () => {
+  it("is inside when the place is open at the visit time (AC2)", () => {
+    expect(openingStatus("Mo-Su 09:00-18:00", on("Mo"), "10:00")).toBe(
+      "inside"
+    );
+  });
+
+  it("is outside when the place is closed at the visit time (AC1)", () => {
+    expect(openingStatus("Mo-Su 09:00-18:00", on("Mo"), "20:00")).toBe(
+      "outside"
+    );
+  });
+
+  it("uses the weekday of the visit (AC5)", () => {
+    const hours = "Mo-Fr 09:00-18:00; Sa 10:00-14:00; Su off";
+
+    expect(
+      WEEKDAYS.map((day) => openingStatus(hours, on(day), "16:00"))
+    ).toEqual([
+      "inside",
+      "inside",
+      "inside",
+      "inside",
+      "inside",
+      "outside",
+      "outside",
+    ]);
+  });
+
+  it("is unknown when the place has no opening hours (AC3)", () => {
+    for (const hours of [null, undefined, "", "   "]) {
+      expect(openingStatus(hours, on("Mo"), "10:00")).toBe("unknown");
+    }
+  });
+
+  it.each(NOT_UNDERSTOOD_YET)(
+    "is unknown, not inside, when the hours are there but not understood: %s",
+    (hours) => {
+      for (const time of ["03:00", "12:00", "23:30"]) {
+        expect(openingStatus(hours, on("Mo"), time)).toBe("unknown");
+      }
+    }
+  );
+
+  it("one rule that is not understood makes the whole text unknown", () => {
+    expect(
+      openingStatus(
+        "Mo-Fr 09:00-12:00; Jul-Aug Mo-Fr 09:00-20:00",
+        on("Mo"),
+        "19:00"
+      )
+    ).toBe("unknown");
+  });
+
+  it("a rule for public holidays is still ignored, the rest decides", () => {
+    expect(openingStatus("Tu-Su 10:00-17:30; PH off", on("Mo"), "12:00")).toBe(
+      "outside"
+    );
+    expect(openingStatus("Tu-Su 10:00-17:30; PH off", on("We"), "12:00")).toBe(
+      "inside"
+    );
+  });
+
+  it("is unknown when the time or the date cannot be read", () => {
+    expect(openingStatus("Mo-Su 09:00-18:00", on("Mo"), "9:00")).toBe(
+      "unknown"
+    );
+    expect(openingStatus("Mo-Su 09:00-18:00", on("Mo"), "")).toBe("unknown");
+    expect(openingStatus("Mo-Su 09:00-18:00", new Date("nope"), "10:00")).toBe(
+      "unknown"
+    );
+  });
+
+  it("24/7 is always inside", () => {
+    expect(
+      ALL_TIMES.every((t) => openingStatus("24/7", on("Su"), t) === "inside")
+    ).toBe(true);
+  });
+
+  it("isOutsideOpeningHours is true only when the status is outside, for every minute of a week", () => {
+    for (const hours of [
+      "Mo-Fr 09:00-18:00",
+      "Mo-Su 18:00-02:00",
+      ...NOT_UNDERSTOOD_YET,
+      null,
+    ]) {
+      for (const day of WEEKDAYS) {
+        for (const time of ALL_TIMES.filter((_, i) => i % 7 === 0)) {
+          expect(isOutsideOpeningHours(hours, on(day), time)).toBe(
+            openingStatus(hours, on(day), time) === "outside"
+          );
+        }
+      }
+    }
   });
 });
