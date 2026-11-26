@@ -77,10 +77,15 @@ export function formatOpeningHours(
     .join("; ");
 }
 
-const WEEKDAY_CODES = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+// The day codes of OSM, Monday first: the same table the display uses.
+const DAY_CODES = Object.keys(DAYS);
 const MINUTES_PER_DAY = 24 * 60;
 const TIME_OF_DAY = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const INTERVAL = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/;
+
+// One rule: the days (optional, then it is every day) and the schedule, like "Mo-Fr 09:00-18:00",
+// "Sa off" or "09:00-18:00".
+const RULE = /^(?:([A-Za-z,-]+)\s+)?(\S.*)$/;
 
 type Interval = [start: number, end: number];
 
@@ -90,14 +95,14 @@ function toMinutes(hh: string, mm: string, allow24 = false): number | null {
   return Number(mm) < 60 && minutes <= max ? minutes : null;
 }
 
-/** The weekdays (0 = Sunday) of "Mo", "Mo-Fr", "Sa-Mo" or "Mo,We,Fr"; null if not understood. */
+/** The days (0 = Monday) of "Mo", "Mo-Fr", "Sa-Mo" or "Mo,We,Fr"; null if not understood. */
 function parseDays(selector: string): number[] | null {
   const days: number[] = [];
 
   for (const part of selector.split(",")) {
     const [from, to = from] = part.trim().split("-");
-    const start = WEEKDAY_CODES.indexOf(from);
-    const end = WEEKDAY_CODES.indexOf(to);
+    const start = DAY_CODES.indexOf(from);
+    const end = DAY_CODES.indexOf(to);
 
     if (start < 0 || end < 0) return null;
 
@@ -134,7 +139,7 @@ function parseSchedule(schedule: string): Interval[] | null {
   return intervals;
 }
 
-/** The intervals of each weekday (0 = Sunday), or null when an OSM rule is not understood. */
+/** The intervals of each day (0 = Monday), or null when an OSM rule is not understood. */
 function parseWeek(openingHours: string): Interval[][] | null {
   const week: Interval[][] = Array.from({ length: 7 }, () => []);
 
@@ -146,8 +151,10 @@ function parseWeek(openingHours: string): Interval[][] | null {
     // PH needs a calendar of holidays; ignoring "PH off" only misses a warning, it never invents one.
     if (rule === "" || /^PH\s+off$/.test(rule)) continue;
 
-    const match = /^(?:([A-Za-z,-]+)\s+)?(\S.*)$/.exec(rule);
-    const days = match?.[1] ? parseDays(match[1]) : [0, 1, 2, 3, 4, 5, 6];
+    const match = RULE.exec(rule);
+    const days = match?.[1]
+      ? parseDays(match[1])
+      : DAY_CODES.map((_, day) => day);
     const intervals = match && parseSchedule(match[2]);
 
     if (!days || !intervals) return null;
@@ -178,12 +185,15 @@ export function isOutsideOpeningHours(
 
   if (!hours || !match || Number.isNaN(date.getTime())) return false;
 
+  // shortcut: the text is parsed on every call, fine for the stops of a page; keep the result by
+  // text if many stops are checked at once.
   const week = parseWeek(hours);
 
   if (!week) return false;
 
   const minute = Number(match[1]) * 60 + Number(match[2]);
-  const today = date.getUTCDay();
+  // getUTCDay() counts from Sunday, the days of the week here from Monday.
+  const today = (date.getUTCDay() + 6) % 7;
   const yesterday = (today + 6) % 7;
 
   const openToday = week[today].some(
