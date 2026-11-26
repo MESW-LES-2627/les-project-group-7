@@ -100,7 +100,11 @@ function parseDays(selector: string): number[] | null {
   const days: number[] = [];
 
   for (const part of selector.split(",")) {
-    const [from, to = from] = part.trim().split("-");
+    const ends = part.trim().split("-");
+
+    if (ends.length > 2) return null;
+
+    const [from, to = from] = ends;
     const start = DAY_CODES.indexOf(from);
     const end = DAY_CODES.indexOf(to);
 

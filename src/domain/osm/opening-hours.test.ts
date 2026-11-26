@@ -618,6 +618,16 @@ describe("openingStatus: inside, outside or unknown", () => {
     );
   });
 
+  it("days written wrongly are unknown, they are not read as a shorter range", () => {
+    // "Mo-Fr-Su" is not OSM. Read as Mo-Fr, Sunday would get the wrong rule and a false warning.
+    for (const hours of [
+      "Mo-Fr-Su 09:00-18:00",
+      "Mo-Fr,Sa-Su-Mo 09:00-18:00",
+    ]) {
+      expect(openingStatus(hours, on("Su"), "10:00")).toBe("unknown");
+    }
+  });
+
   it("24/7 is always inside", () => {
     expect(
       ALL_TIMES.every((t) => openingStatus("24/7", on("Su"), t) === "inside")
