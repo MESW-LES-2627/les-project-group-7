@@ -25,6 +25,15 @@ import { discoveredPlaceId } from "@/domain/osm/osm";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
 import { cityInView } from "@/domain/catalog/city-in-view";
+import {
+  cameBackByHistory,
+  recallExplore,
+  rememberExplore,
+} from "@/lib/explore-memory";
+
+/** Where the map opens when nothing is remembered: Porto. */
+const START_CENTER: [number, number] = [41.147, -8.615];
+const START_ZOOM = 14;
 export type { PlaceItem };
 
 const PAGE_SIZE = 18;
@@ -52,15 +61,65 @@ export default function PlaceExplorer({
     [number, number] | null
   >(null);
   const [focusedPlace, setFocusedPlace] = useState<PlaceItem | null>(null);
-  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  // The page as it was left, when the person comes back to it (Back, the Tripbook link); empty after a
+  // refresh (#187)
+  const [remembered] = useState(recallExplore);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(
+    remembered.cityId ?? null
+  );
   const [fitPoints, setFitPoints] = useState<[number, number][] | null>(null);
   // The ranking follows the city of the map (#187), but only after a move of the person: a move the
   // page makes itself (a Map button, a search result) leaves the city as it is.
-  const ignoreMapMovesUntil = useRef(0);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<PlaceFilters>(NO_PLACE_FILTERS);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  // Coming back, the map reports where it is when it opens: the city stays the one it was left on
+  const ignoreMapMovesUntil = useRef(
+    remembered.cityId !== undefined ? Date.now() + 1500 : 0
+  );
+  const [searchQuery, setSearchQuery] = useState(remembered.searchQuery ?? "");
+  const [filters, setFilters] = useState<PlaceFilters>(
+    remembered.filters ?? NO_PLACE_FILTERS
+  );
+  const [currentPage, setCurrentPage] = useState(remembered.currentPage ?? 1);
+  const [viewMode, setViewMode] = useState<"table" | "grid">(
+    remembered.viewMode ?? "table"
+  );
+
+  useEffect(() => {
+    rememberExplore({
+      cityId: selectedCityId,
+      searchQuery,
+      filters,
+      currentPage,
+      viewMode,
+    });
+  }, [selectedCityId, searchQuery, filters, currentPage, viewMode]);
+
+  // How far down the page is when the person leaves it, given back on Back or Forward; a link (the
+  // Tripbook link) starts at the top. It is taken on the click that leaves (any click, before the next
+  // page scrolls to its top) and on Back or Forward away from here, which only this page hears.
+  useEffect(() => {
+    const keepScroll = () => rememberExplore({ scrollY: window.scrollY });
+    document.addEventListener("click", keepScroll, true);
+    window.addEventListener("popstate", keepScroll);
+    return () => {
+      document.removeEventListener("click", keepScroll, true);
+      window.removeEventListener("popstate", keepScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const y = remembered.scrollY;
+    if (!y || !cameBackByHistory()) return;
+
+    // After the page is drawn, so it is as long as it was when it was left
+    const frame = requestAnimationFrame(() => window.scrollTo(0, y));
+    return () => cancelAnimationFrame(frame);
+  }, [remembered]);
+
+  const handleViewChange = useCallback(
+    (center: [number, number], zoom: number) =>
+      rememberExplore({ center, zoom }),
+    []
+  );
 
   const activeCityName = initialCities.find(
     (c) => c.id === selectedCityId
@@ -84,10 +143,15 @@ export default function PlaceExplorer({
       pageSize: PAGE_SIZE,
     });
 
-  // Reset pagination on filter or city change
+  // Back to page 1 when the filters, the search or the city change, not when the page opens with the
+  // page it was left on (compared by value: React runs this twice when it starts, in development)
+  const listedBy = JSON.stringify([filters, searchQuery, selectedCityId]);
+  const lastListedBy = useRef(listedBy);
   useEffect(() => {
+    if (listedBy === lastListedBy.current) return;
+    lastListedBy.current = listedBy;
     setCurrentPage(1);
-  }, [filters, searchQuery, selectedCityId]);
+  }, [listedBy]);
 
   // Moving the map replaces the OpenStreetMap places, so the list can get shorter than the page
   useEffect(() => {
@@ -300,6 +364,9 @@ export default function PlaceExplorer({
           selectedCenter={selectedMapCenter}
           selectedCityCenter={selectedCityCenter}
           fitPoints={fitPoints}
+          center={remembered.center ?? START_CENTER}
+          zoom={remembered.zoom ?? START_ZOOM}
+          onViewChange={handleViewChange}
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           filters={filters}

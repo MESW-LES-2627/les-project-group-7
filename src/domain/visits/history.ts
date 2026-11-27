@@ -12,31 +12,19 @@ import {
   citiesWithPlaces,
   type CityCount,
 } from "@/domain/catalog/city-filter";
+import { pageView, type PageView } from "@/domain/catalog/pages";
 
 export type { CityCount };
 
 /** 24 fills whole rows of 2, 3 and 4 cards. */
 export const HISTORY_PAGE_SIZE = 24;
 
-export interface HistoryView {
+export interface HistoryView extends PageView {
   /** The chosen city, null for all cities. */
   cityId: string | null;
-  page: number;
-  totalPages: number;
-  /** The places in the chosen city, or in all of them. */
-  total: number;
-  skip: number;
-  take: number;
-  /** "Showing 25 to 48 of 68": 0 and 0 when there is nothing to show. */
-  firstShown: number;
-  lastShown: number;
 }
 
 type Param = string | string[] | undefined;
-
-function first(value: Param): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
 
 /** The cities with places of the person, by name: the buttons of the filter. */
 export const citiesWithVisits = citiesWithPlaces;
@@ -57,22 +45,9 @@ export function historyView(
   const total = city
     ? city.count
     : withVisits.reduce((sum, c) => sum + c.count, 0);
-  const totalPages = Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE));
-
-  const raw = first(params.page);
-  const asked = raw !== undefined && /^\d+$/.test(raw) ? Number(raw) : 1;
-  const page = Math.min(Math.max(asked, 1), totalPages);
-  const skip = (page - 1) * HISTORY_PAGE_SIZE;
-
   return {
     cityId: city?.id ?? null,
-    page,
-    totalPages,
-    total,
-    skip,
-    take: HISTORY_PAGE_SIZE,
-    firstShown: total === 0 ? 0 : skip + 1,
-    lastShown: Math.min(skip + HISTORY_PAGE_SIZE, total),
+    ...pageView(total, params.page, HISTORY_PAGE_SIZE),
   };
 }
 

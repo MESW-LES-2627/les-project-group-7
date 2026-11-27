@@ -19,19 +19,33 @@ import SavedPlacesProvider from "@/components/SavedPlacesProvider";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import { formatOpeningHours } from "@/domain/osm/opening-hours";
 import ReviewActions from "@/components/ReviewActions";
+import { placeLocation } from "@/domain/catalog/place-location";
+import PageLinks from "@/components/PageLinks";
+import { pageView } from "@/domain/catalog/pages";
+import FilterLinks from "@/components/FilterLinks";
+import { chosenStars, starCounts } from "@/domain/reviews/review-filter";
 
 export const dynamic = "force-dynamic";
 
 interface PlacePageProps {
   params: Promise<{ id: string }>;
+  /** `?page=2`: the page of the reviews (#187). */
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
+
+/** Reviews on each page of a place (#187). */
+const REVIEWS_PER_PAGE = 10;
 
 /**
  * Place page server component (US-B4-01, #29).
  * Renders catalog place details, rating summary, price level and reviews.
  */
-export default async function PlacePage({ params }: PlacePageProps) {
+export default async function PlacePage({
+  params,
+  searchParams,
+}: PlacePageProps) {
   const { id } = await params;
+  const query = (await searchParams) ?? {};
 
   const place = await prisma.place.findUnique({
     where: { id },
@@ -89,19 +103,46 @@ export default async function PlacePage({ params }: PlacePageProps) {
     isVisited,
   };
 
-  // shortcut: all reviews of a place are loaded and sorted in memory; add pagination when a place passes ~100 reviews.
+  // shortcut: all reviews of a place are loaded and sorted in memory, then cut into pages of 10 (#187); ask the
+  // database for one page when a place passes ~100 reviews.
   // The review of the logged-in user comes first, then the others, newest first
   const orderedReviews = ownReviewsFirst(
     newestFirst(place.reviews),
     (rev) => session !== null && rev.userId === session.user.id
   );
+  // All reviews, or only the ones of the rating chosen in the address (#187)
+  const stars = starCounts(orderedReviews);
+  const chosen = chosenStars(query.stars, stars);
+  const listedReviews =
+    chosen === null
+      ? orderedReviews
+      : orderedReviews.filter((rev) => rev.rating === chosen);
+  const reviewPage = pageView(
+    listedReviews.length,
+    query.page,
+    REVIEWS_PER_PAGE
+  );
+  const pageReviews = listedReviews.slice(
+    reviewPage.skip,
+    reviewPage.skip + reviewPage.take
+  );
+  // The links land on the reviews, not on the top of the page; a rating keeps its pages, and choosing
+  // one goes back to page 1
+  const reviewsHref = (rating: number | null, page = 1) => {
+    const params = new URLSearchParams();
+    if (rating !== null) params.set("stars", String(rating));
+    if (page > 1) params.set("page", String(page));
+    const search = params.toString();
+    return `/places/${place.id}${search ? `?${search}` : ""}#reviews`;
+  };
   // One review per person and place: who wrote one changes it with Edit, there is nothing to write (#187)
   const hasOwnReview =
     session !== null &&
     place.reviews.some((rev) => rev.userId === session.user.id);
 
+  // Full width, like the header and the other pages (#187)
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="px-4 py-10 sm:px-6 lg:px-8">
       <main className="space-y-8">
         <div>
           <Link
@@ -141,7 +182,11 @@ export default async function PlacePage({ params }: PlacePageProps) {
           <div className="flex items-center gap-1.5 text-sm text-slate-600">
             <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
             <span>
-              {place.address}, {place.city.name}, {place.city.country}
+              {placeLocation(
+                place.address,
+                place.city.name,
+                place.city.country
+              )}
             </span>
           </div>
 
@@ -192,6 +237,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
         </section>
 
         <section
+          id="reviews"
           aria-labelledby="reviews-heading"
           className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
         >
@@ -216,6 +262,18 @@ export default async function PlacePage({ params }: PlacePageProps) {
             )}
           </div>
 
+          <FilterLinks
+            options={stars.map((entry) => ({
+              id: String(entry.stars),
+              name: `${entry.stars} ★`,
+              count: entry.count,
+            }))}
+            selectedId={chosen === null ? null : String(chosen)}
+            hrefFor={(id) => reviewsHref(id === null ? null : Number(id))}
+            label="Filter by stars"
+            allLabel="All reviews"
+          />
+
           {orderedReviews.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center">
               <p className="text-sm font-medium text-slate-600">
@@ -228,7 +286,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
             </div>
           ) : (
             <ol className="divide-y divide-slate-100">
-              {orderedReviews.map((rev) => {
+              {pageReviews.map((rev) => {
                 const author =
                   rev.user.displayUsername ?? rev.user.username ?? "Anonymous";
 
@@ -280,14 +338,24 @@ export default async function PlacePage({ params }: PlacePageProps) {
                       </div>
                     </div>
 
+                    {/* About 65 letters a line: a long review stays easy to read on a big screen (#187) */}
                     {hasText && (
-                      <p className="mt-2 text-sm text-slate-700">{rev.text}</p>
+                      <p className="mt-2 max-w-prose text-sm text-slate-700">
+                        {rev.text}
+                      </p>
                     )}
                   </li>
                 );
               })}
             </ol>
           )}
+
+          <PageLinks
+            view={reviewPage}
+            hrefFor={(page) => reviewsHref(chosen, page)}
+            noun="reviews"
+            label="Pages of the reviews"
+          />
         </section>
       </main>
     </div>

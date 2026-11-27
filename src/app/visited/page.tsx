@@ -1,17 +1,12 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Star,
-} from "lucide-react";
+import { CalendarDays, MapPin, Star } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCategoryConfig } from "@/domain/catalog/categories";
-import CityFilter from "@/components/CityFilter";
+import FilterLinks from "@/components/FilterLinks";
+import PageLinks from "@/components/PageLinks";
 import { placeLocation } from "@/domain/catalog/place-location";
 import {
   citiesWithVisits,
@@ -19,8 +14,6 @@ import {
   historyView,
   type CityCount,
 } from "@/domain/visits/history";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -108,10 +101,12 @@ export default async function VisitedPage({
         </p>
       </div>
 
-      <CityFilter
-        cities={filterCities}
+      <FilterLinks
+        options={filterCities}
         selectedId={view.cityId}
         hrefFor={(cityId) => historyHref(cityId)}
+        label="Filter by city"
+        allLabel="All cities"
       />
 
       {visits.length === 0 ? (
@@ -206,74 +201,12 @@ export default async function VisitedPage({
       )}
 
       {/* The same controls as the ranking of the home page (#187, AC4) */}
-      {view.totalPages > 1 && (
-        <nav
-          aria-label="Pages of your history"
-          className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-4 sm:flex-row"
-        >
-          <span className="text-xs text-slate-500">
-            Showing {view.firstShown} to {view.lastShown} of {view.total} places
-          </span>
-
-          <div className="flex items-center gap-2">
-            <PageLink
-              href={historyHref(view.cityId, view.page - 1)}
-              disabled={view.page <= 1}
-            >
-              <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              Previous
-            </PageLink>
-
-            <span
-              aria-current="page"
-              className="px-2 text-xs font-medium text-slate-700"
-            >
-              Page {view.page} of {view.totalPages}
-            </span>
-
-            <PageLink
-              href={historyHref(view.cityId, view.page + 1)}
-              disabled={view.page >= view.totalPages}
-            >
-              Next
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </PageLink>
-          </div>
-        </nav>
-      )}
+      <PageLinks
+        view={view}
+        hrefFor={(page) => historyHref(view.cityId, page)}
+        noun="places"
+        label="Pages of your history"
+      />
     </main>
-  );
-}
-
-/** Previous or Next: a link, or the same look greyed out on the first or the last page. */
-function PageLink({
-  href,
-  disabled,
-  children,
-}: {
-  href: string;
-  disabled: boolean;
-  children: React.ReactNode;
-}) {
-  const className = cn(
-    buttonVariants({ size: "sm", variant: "outline" }),
-    "h-8 gap-1 text-xs"
-  );
-
-  if (disabled) {
-    return (
-      <span
-        aria-disabled="true"
-        className={cn(className, "pointer-events-none opacity-50")}
-      >
-        {children}
-      </span>
-    );
-  }
-
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
   );
 }

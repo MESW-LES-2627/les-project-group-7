@@ -62,6 +62,10 @@ interface MapExplorerCardProps {
   onFocusPlace: (place: PlaceItem) => void;
   onSelectDiscoveredPlace?: (osmPlace: OsmSearchResult) => void;
   onMapMove: (bounds: BoundingBox) => void;
+  /** Where the map opens; the home page gives where it was left (#187). */
+  center: [number, number];
+  zoom: number;
+  onViewChange: (center: [number, number], zoom: number) => void;
 }
 
 export default function MapExplorerCard({
@@ -84,6 +88,9 @@ export default function MapExplorerCard({
   onFocusPlace,
   onSelectDiscoveredPlace,
   onMapMove,
+  center,
+  zoom,
+  onViewChange,
 }: MapExplorerCardProps) {
   const activeCategory = filters.category ?? "ALL";
   return (
@@ -236,8 +243,9 @@ export default function MapExplorerCard({
       <CardContent>
         <MapWrapper
           places={places}
-          center={[41.147, -8.615]}
-          zoom={14}
+          center={center}
+          zoom={zoom}
+          onViewChange={onViewChange}
           selectedCenter={selectedCenter}
           selectedCityCenter={selectedCityCenter}
           fitPoints={fitPoints}

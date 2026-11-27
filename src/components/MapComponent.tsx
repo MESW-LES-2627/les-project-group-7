@@ -97,8 +97,10 @@ function MapEventHandler({
   onMapMove,
   onBoundsChange,
   onZoomChange,
+  onViewChange,
 }: {
   onMapMove?: (bounds: BoundingBox) => void;
+  onViewChange?: (center: [number, number], zoom: number) => void;
   onBoundsChange?: (bounds: BoundingBox) => void;
   onZoomChange?: (zoom: number) => void;
 }) {
@@ -116,6 +118,8 @@ function MapEventHandler({
       onBoundsChange?.(bbox);
       onZoomChange?.(map.getZoom());
       onMapMove?.(bbox);
+      const center = map.getCenter();
+      onViewChange?.([center.lat, center.lng], map.getZoom());
     },
 
     zoomend: () => {
@@ -278,6 +282,7 @@ export default function MapComponent({
   addAction,
   heightClassName = "h-[440px]",
   fitPoints,
+  onViewChange,
 }: {
   places?: MapPlace[];
   center?: [number, number];
@@ -291,6 +296,8 @@ export default function MapComponent({
   heightClassName?: string;
   /** A new list makes the map show all these points at once. */
   fitPoints?: [number, number][] | null;
+  /** The centre and the zoom after each move, so a page can open the map there again. */
+  onViewChange?: (center: [number, number], zoom: number) => void;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -347,6 +354,7 @@ export default function MapComponent({
         {/* Viewport Bounds & Zoom Tracker */}
         <MapEventHandler
           onMapMove={onMapMove}
+          onViewChange={onViewChange}
           onBoundsChange={setCurrentBounds}
           onZoomChange={setCurrentZoom}
         />

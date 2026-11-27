@@ -78,8 +78,14 @@ function review(id: string, iso: string, extra: Record<string, unknown> = {}) {
   };
 }
 
-async function renderPage(id = "p1"): Promise<string> {
-  const jsx = await PlacePage({ params: Promise.resolve({ id }) });
+async function renderPage(
+  id = "p1",
+  query: { [key: string]: string | string[] | undefined } = {}
+): Promise<string> {
+  const jsx = await PlacePage({
+    params: Promise.resolve({ id }),
+    searchParams: Promise.resolve(query),
+  });
 
   return renderToStaticMarkup(jsx);
 }
@@ -358,5 +364,193 @@ describe("One review per person: no write button for who already wrote one (#187
     );
 
     expect(await renderPage()).toContain("Write a review");
+  });
+});
+
+describe("Where the place is (#187)", () => {
+  it("says the city once, then the country, when the address already ends with it", async () => {
+    findUnique.mockResolvedValue(mockPlace());
+
+    const html = await renderPage();
+
+    expect(html).toContain("Rua das Carmelitas 144, Porto, Portugal");
+    expect(html).not.toContain("Porto, Porto");
+  });
+});
+
+describe("Reviews of a place, 10 per page (#187)", () => {
+  /** 25 reviews, "Review 01" the newest. */
+  const many = (extra: (i: number) => Record<string, unknown> = () => ({})) =>
+    Array.from({ length: 25 }, (_, i) =>
+      review(`r${i}`, `2026-01-${String(28 - i).padStart(2, "0")}`, {
+        text: `Review ${String(i + 1).padStart(2, "0")}`,
+        userId: `user-${i}`,
+        ...extra(i),
+      })
+    );
+  const shown = (html: string) => html.match(/Review \d\d/g);
+
+  it("shows the first 10 and links to the next page, at the reviews", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: many() }));
+
+    const html = await renderPage();
+
+    expect(shown(html)).toHaveLength(10);
+    expect(shown(html)![0]).toBe("Review 01");
+    expect(html).toContain("Showing 1 to 10 of 25 reviews");
+    expect(html).toContain("Page 1 of 3");
+    expect(html).toMatch(/href="\/places\/p1\?page=2#reviews"[^>]*>Next/);
+    expect(html).toContain('id="reviews"');
+  });
+
+  it("shows the reviews of the page of the address", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: many() }));
+
+    const html = await renderPage("p1", { page: "3" });
+
+    expect(shown(html)).toEqual([
+      "Review 21",
+      "Review 22",
+      "Review 23",
+      "Review 24",
+      "Review 25",
+    ]);
+    expect(html).toContain("Showing 21 to 25 of 25 reviews");
+    expect(html).toMatch(/href="\/places\/p1\?page=2#reviews"[^>]*>.*Previous/);
+  });
+
+  it("links page 1 without a page number", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: many() }));
+
+    const html = await renderPage("p1", { page: "2" });
+
+    expect(html).toMatch(/href="\/places\/p1#reviews"[^>]*>.*Previous/);
+  });
+
+  it("keeps the person's own review first, on page 1", async () => {
+    getSession.mockResolvedValue({ user: { id: "user-20", name: "Ana" } });
+    findUnique.mockResolvedValue(mockPlace({ reviews: many() }));
+
+    const html = await renderPage();
+
+    expect(shown(html)![0]).toBe("Review 21");
+  });
+
+  it("goes to the last page for a page that does not exist, like after deleting the last review", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: many() }));
+
+    const html = await renderPage("p1", { page: "9" });
+
+    expect(html).toContain("Page 3 of 3");
+  });
+
+  it("shows no page controls with 10 reviews or fewer", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: many().slice(0, 10) }));
+
+    const html = await renderPage();
+
+    expect(shown(html)).toHaveLength(10);
+    expect(html).not.toContain("Showing");
+  });
+});
+
+describe("Reviews of a place, filtered by stars (#187)", () => {
+  /** 6 reviews: three of 5 stars, two of 4 and one of 1, "Stars N" in their text. */
+  const mixed = () =>
+    [5, 4, 5, 1, 5, 4].map((rating, i) =>
+      review(`r${i}`, `2026-01-${String(20 - i).padStart(2, "0")}`, {
+        rating,
+        text: `Stars ${rating} number ${i}`,
+        userId: `user-${i}`,
+      })
+    );
+  const texts = (html: string) => html.match(/Stars \d number \d/g) ?? [];
+
+  it("shows all reviews by default, with a button for each rating that has reviews and its count", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: mixed() }));
+
+    const html = await renderPage();
+
+    expect(texts(html)).toHaveLength(6);
+    expect(html).toContain('aria-label="Filter by stars"');
+    expect(html).toMatch(
+      /href="\/places\/p1#reviews"[^>]*>All reviews<span[^>]*>6</
+    );
+    expect(html).toMatch(
+      /href="\/places\/p1\?stars=5#reviews"[^>]*>5 ★<span[^>]*>3</
+    );
+    expect(html).toMatch(
+      /href="\/places\/p1\?stars=1#reviews"[^>]*>1 ★<span[^>]*>1</
+    );
+    expect(html).not.toContain("?stars=2");
+  });
+
+  it("shows only the reviews of the chosen rating", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: mixed() }));
+
+    const html = await renderPage("p1", { stars: "4" });
+
+    expect(texts(html)).toEqual(["Stars 4 number 1", "Stars 4 number 5"]);
+    expect(html).toMatch(
+      /<a aria-current="page"[^>]*href="\/places\/p1\?stars=4#reviews"/
+    );
+  });
+
+  it("keeps the rating in the links of the pages, and counts only its reviews", async () => {
+    const fives = Array.from({ length: 14 }, (_, i) =>
+      review(`f${i}`, `2026-01-${String(28 - i).padStart(2, "0")}`, {
+        rating: 5,
+        userId: `u${i}`,
+      })
+    );
+    findUnique.mockResolvedValue(
+      mockPlace({ reviews: [...fives, ...mixed()] })
+    );
+
+    const html = await renderPage("p1", { stars: "5" });
+
+    expect(html).toContain("Showing 1 to 10 of 17 reviews");
+    expect(html).toMatch(
+      /href="\/places\/p1\?stars=5&amp;page=2#reviews"[^>]*>Next/
+    );
+  });
+
+  it("shows all reviews for a rating of the address that has none", async () => {
+    findUnique.mockResolvedValue(mockPlace({ reviews: mixed() }));
+
+    const html = await renderPage("p1", { stars: "2" });
+
+    expect(texts(html)).toHaveLength(6);
+  });
+
+  it("shows no filter when every review has the same rating", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({
+        reviews: [review("a", "2026-01-02"), review("b", "2026-01-01")],
+      })
+    );
+
+    expect(await renderPage()).not.toContain("Filter by stars");
+  });
+
+  it("keeps the person's own review first when it has the chosen rating", async () => {
+    getSession.mockResolvedValue({ user: { id: "user-4", name: "Ana" } });
+    findUnique.mockResolvedValue(mockPlace({ reviews: mixed() }));
+
+    const html = await renderPage("p1", { stars: "5" });
+
+    expect(texts(html)[0]).toBe("Stars 5 number 4");
+  });
+});
+
+describe("Review text on a wide screen (#187)", () => {
+  it("wraps the text of a review at a reading width, while the page fills the screen", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({ reviews: [review("r1", "2026-01-01", { text: "Lovely." })] })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toMatch(/<p class="[^"]*max-w-prose[^"]*">Lovely\.<\/p>/);
   });
 });

@@ -27,6 +27,8 @@ export interface MapWrapperProps {
   heightClassName?: string;
   /** A new list makes the map show all these points at once ("All cities" on the home page, #187). */
   fitPoints?: [number, number][] | null;
+  /** The centre and the zoom after each move (the home page remembers them, #187). */
+  onViewChange?: (center: [number, number], zoom: number) => void;
 }
 
 const DynamicMap = dynamic(() => import("./MapComponent"), {

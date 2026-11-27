@@ -8,7 +8,7 @@ import { getCategoryConfig } from "@/domain/catalog/categories";
 import { formatAverageRating } from "@/domain/catalog/place-details";
 import { chosenCityId, defaultCityId } from "@/domain/catalog/city-filter";
 import { placeLocation } from "@/domain/catalog/place-location";
-import CityFilter from "./CityFilter";
+import FilterLinks from "./FilterLinks";
 import {
   SAVED_PLACE_LABELS,
   SAVED_PLACE_TYPES,
@@ -83,10 +83,12 @@ export default function MyPlacesView() {
 
   return (
     <>
-      <CityFilter
-        cities={cities}
+      <FilterLinks
+        options={cities}
         selectedId={cityId}
         hrefFor={savedHref}
+        label="Filter by city"
+        allLabel="All cities"
         withAll={false}
       />
       {/* Full width (#187): the two lists side by side on a wide screen, one under the other on a small one */}
