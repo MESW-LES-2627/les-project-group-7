@@ -95,6 +95,10 @@ export default async function PlacePage({ params }: PlacePageProps) {
     newestFirst(place.reviews),
     (rev) => session !== null && rev.userId === session.user.id
   );
+  // One review per person and place: who wrote one changes it with Edit, there is nothing to write (#187)
+  const hasOwnReview =
+    session !== null &&
+    place.reviews.some((rev) => rev.userId === session.user.id);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -203,11 +207,13 @@ export default async function PlacePage({ params }: PlacePageProps) {
               <p className="text-xs text-slate-500">{formattedCount}</p>
             </div>
 
-            <WriteReviewButton
-              place={placeItem}
-              currentUsername={currentUsername}
-              isFirst={orderedReviews.length === 0}
-            />
+            {!hasOwnReview && (
+              <WriteReviewButton
+                place={placeItem}
+                currentUsername={currentUsername}
+                isFirst={orderedReviews.length === 0}
+              />
+            )}
           </div>
 
           {orderedReviews.length === 0 ? (

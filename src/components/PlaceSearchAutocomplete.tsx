@@ -127,7 +127,7 @@ export default function PlaceSearchAutocomplete({
               void submitOsmSearch();
             }
           }}
-          placeholder="Search places by name or address (Enter searches OSM)..."
+          placeholder="Search places by name or address…"
           className="pl-9 pr-8 text-xs"
         />
         {isLoadingOsm && (

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ReviewActions from "./ReviewActions";
+import { NETWORK_ERROR, TEXT_MISSING } from "@/domain/reviews/review-form";
 
 const { refresh } = vi.hoisted(() => ({
   refresh: vi.fn(),
@@ -206,5 +207,95 @@ describe("ReviewActions (Task #41)", () => {
     );
 
     expect(refresh).not.toHaveBeenCalled();
+  });
+});
+
+describe("ReviewActions: clear feedback (#187)", () => {
+  it("keeps Save ready on an empty text and says under the text what is missing, without sending (AC3)", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ReviewActions review={mockReview} />);
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    const textbox = screen.getByRole("textbox");
+    await user.clear(textbox);
+    await user.type(textbox, "   ");
+    const save = screen.getByRole("button", { name: "Save changes" });
+    expect((save as HTMLButtonElement).disabled).toBe(false);
+    await user.click(save);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText(TEXT_MISSING).id).toBe(
+      "review-text-review-123-error"
+    );
+    expect(textbox.getAttribute("aria-invalid")).toBe("true");
+    expect(document.activeElement).toBe(textbox);
+  });
+
+  it("takes the message away when the text is given again and saved", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+    render(<ReviewActions review={mockReview} />);
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.clear(screen.getByRole("textbox"));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    await user.type(screen.getByRole("textbox"), "Better now.");
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(screen.queryByText(TEXT_MISSING)).toBeNull();
+    await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+  });
+
+  it("says the server could not be reached, not the words of the browser, when saving does not get through", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("Failed to fetch"))
+    );
+    render(<ReviewActions review={mockReview} />);
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(NETWORK_ERROR);
+  });
+
+  it("gives a plain message when the server answers an error without one", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, json: async () => ({}) })
+    );
+    render(<ReviewActions review={mockReview} />);
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await user.click(screen.getByRole("button", { name: "Delete review" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Could not delete the review, try again"
+    );
+  });
+
+  it("says it is saving and deleting with the same … as the rest of the app (AC1, AC4)", async () => {
+    const user = userEvent.setup();
+    let answer: (value: { ok: boolean }) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise((resolve) => (answer = resolve)))
+    );
+    render(<ReviewActions review={mockReview} />);
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    expect(screen.getByRole("button", { name: "Saving…" })).toBeTruthy();
+    answer({ ok: true });
+    await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await user.click(screen.getByRole("button", { name: "Delete review" }));
+    expect(screen.getByRole("button", { name: "Deleting…" })).toBeTruthy();
+    answer({ ok: true });
   });
 });

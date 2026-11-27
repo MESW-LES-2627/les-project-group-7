@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({
   redirect: (path: string) => {
     throw new Error(`NEXT_REDIRECT:${path}`);
   },
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession } } }));
@@ -29,7 +30,8 @@ describe("MyPlacesPage", () => {
 
     const html = renderToStaticMarkup(await MyPlacesPage());
 
-    expect(html).toContain("My places");
+    // Named "Saved" in #187, the word of the save buttons and of the planner's Saved tab
+    expect(html).toMatch(/<h1[^>]*>Saved<\/h1>/);
     expect(html).toContain("Loading your saved places");
   });
 });

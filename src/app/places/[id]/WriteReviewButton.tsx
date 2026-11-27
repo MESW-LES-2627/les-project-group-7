@@ -26,6 +26,8 @@ export default function WriteReviewButton({
     activeReviewPlace,
     reviewsList,
     isLoadingReviews,
+    reviewsFailed,
+    retryReviews,
     isSubmitting,
     submitSuccess,
     errorMsg,
@@ -55,6 +57,8 @@ export default function WriteReviewButton({
         currentUsername={currentUsername}
         reviews={reviewsList}
         isLoadingReviews={isLoadingReviews}
+        reviewsFailed={reviewsFailed}
+        onRetryReviews={retryReviews}
         isSubmitting={isSubmitting}
         submitSuccess={submitSuccess}
         errorMessage={errorMsg}

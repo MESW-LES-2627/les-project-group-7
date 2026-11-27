@@ -7,7 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 /**
  * Top bar on every page. Logged out: links to the login and registration pages.
- * Logged in: links to "My trips", "My places" and "My visited places", the username as typed, and the logout button.
+ * Logged in: links to "My trips", "Saved" (the saved places) and "History" (the places visited), the username as typed, and the logout button.
  */
 export default async function SiteHeader() {
   // A database failure must not take down every page (404s, /register): show the logged-out bar.
@@ -20,7 +20,8 @@ export default async function SiteHeader() {
 
   return (
     <nav className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      {/* Full width, with the same side space as the pages that fill the screen (#187) */}
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600"
@@ -43,13 +44,13 @@ export default async function SiteHeader() {
                 href="/my-places"
                 className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 dark:hover:text-indigo-400"
               >
-                My places
+                Saved
               </Link>
               <Link
                 href="/visited"
                 className="rounded text-sm font-medium text-slate-700 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 dark:hover:text-indigo-400"
               >
-                My visited places
+                History
               </Link>
               {/* Only for screen readers below sm: with the username the header is wider than a 390 px phone. */}
               <span className="sr-only text-sm font-medium text-slate-700 sm:not-sr-only">

@@ -38,7 +38,7 @@ export default function LogoutButton() {
       onClick={handleLogout}
       disabled={pending}
     >
-      {failed ? "Log out failed, retry" : "Log out"}
+      {pending ? "Logging out…" : failed ? "Log out failed, retry" : "Log out"}
     </Button>
   );
 }

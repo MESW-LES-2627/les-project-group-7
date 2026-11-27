@@ -70,7 +70,11 @@ export function parseSavedPlaces(body: unknown): SavedPlace[] | null {
           city &&
           typeof city.name === "string" &&
           typeof city.country === "string"
-            ? { name: city.name, country: city.country }
+            ? {
+                ...(typeof city.id === "string" ? { id: city.id } : {}),
+                name: city.name,
+                country: city.country,
+              }
             : null,
       },
     });

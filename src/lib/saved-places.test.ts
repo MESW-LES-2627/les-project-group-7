@@ -36,7 +36,7 @@ const LELLO = {
     averageRating: 4.4,
     reviewCount: 12,
     priceLevel: "€",
-    city: { name: "Porto", country: "Portugal" },
+    city: { id: "city-porto", name: "Porto", country: "Portugal" },
   },
 };
 
@@ -119,6 +119,21 @@ describe("parseSavedPlaces", () => {
         LELLO,
       ])
     ).toEqual([LELLO]);
+  });
+
+  it("keeps the id of the city, which the filter by city uses (#187), and reads a city without one", () => {
+    const [withoutId] = parseSavedPlaces([
+      {
+        ...LELLO,
+        place: { ...LELLO.place, city: { name: "Porto", country: "Portugal" } },
+      },
+    ])!;
+
+    expect(parseSavedPlaces([LELLO])![0].place.city?.id).toBe("city-porto");
+    expect(withoutId.place.city).toEqual({
+      name: "Porto",
+      country: "Portugal",
+    });
   });
 
   it("leaves out a city without both a name and a country", () => {

@@ -47,6 +47,7 @@ import {
   hasReviewedPlace,
 } from "@/domain/reviews/one-review-rule";
 import { type PriceLevel, formatPriceLevel } from "@/domain/reviews/rating";
+import { reviewFormErrors } from "@/domain/reviews/review-form";
 
 export interface ReviewItem {
   id: string;
@@ -69,6 +70,9 @@ interface ReviewModalProps {
   showPlaceLink?: boolean;
   reviews: ReviewItem[];
   isLoadingReviews: boolean;
+  /** The reviews could not be loaded: the list says so, with a button to try again. */
+  reviewsFailed?: boolean;
+  onRetryReviews?: () => void;
   isSubmitting: boolean;
   submitSuccess: string | null;
   errorMessage: string | null;
@@ -82,6 +86,8 @@ export default function ReviewModal({
   showPlaceLink = true,
   reviews,
   isLoadingReviews,
+  reviewsFailed = false,
+  onRetryReviews,
   isSubmitting,
   submitSuccess,
   errorMessage,
@@ -92,12 +98,15 @@ export default function ReviewModal({
   const [rating, setRating] = useState<number | null>(null);
   const [priceLevel, setPriceLevel] = useState<PriceLevel | null>(null);
   const [comment, setComment] = useState("");
+  // The messages of the missing fields appear after the first try to post, not while typing (#187)
+  const [showErrors, setShowErrors] = useState(false);
 
   useEffect(() => {
     if (place) {
       setRating(null);
       setPriceLevel(null);
       setComment("");
+      setShowErrors(false);
     }
   }, [place]);
 
@@ -105,13 +114,27 @@ export default function ReviewModal({
     return null;
   }
 
+  const errors = showErrors
+    ? reviewFormErrors({ rating, priceLevel, text: comment })
+    : {};
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = comment.trim();
-    if (!rating || !trimmed || !priceLevel) {
+    if (isSubmitting) return;
+
+    const missing = reviewFormErrors({ rating, priceLevel, text: comment });
+    if (!rating || !priceLevel || Object.keys(missing).length > 0) {
+      setShowErrors(true);
+      // The focus goes to the first field that is missing, where its message is read
+      const first = missing.rating
+        ? "#review-rating button"
+        : missing.priceLevel
+          ? "#review-price-level button"
+          : "#review-comment";
+      document.querySelector<HTMLElement>(first)?.focus();
       return;
     }
-    onSubmit(rating, trimmed, priceLevel);
+    onSubmit(rating, comment.trim(), priceLevel);
   };
 
   const categoryConfig = getCategoryConfig(place.category);
@@ -183,31 +206,39 @@ export default function ReviewModal({
 
         {/* Feedback Alerts */}
         {submitSuccess && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+          <div
+            role="status"
+            className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800"
+          >
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
             <span>{submitSuccess}</span>
           </div>
         )}
 
-        {errorMessage && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-500" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* Review Form: one review per user and place, so a user who reviewed it sees a notice */}
-        {currentUsername && hasReviewedPlace(reviews, currentUsername) ? (
+        {/* Review Form: one review per user and place, so a user who reviewed it sees a notice. While the
+            reviews load it is not known yet, so neither shows (the list below says it is loading). */}
+        {currentUsername && isLoadingReviews ? null : currentUsername &&
+          hasReviewedPlace(reviews, currentUsername) ? (
           <p className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
             {ALREADY_REVIEWED_MESSAGE}
           </p>
         ) : currentUsername ? (
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            <RatingField value={rating} onChange={setRating} required />
+          <form onSubmit={handleSubmit} noValidate className="mt-5 space-y-4">
+            <RatingField
+              id="review-rating"
+              value={rating}
+              onChange={setRating}
+              disabled={isSubmitting}
+              error={errors.rating}
+              required
+            />
 
             <PriceLevelField
+              id="review-price-level"
               value={priceLevel}
               onChange={setPriceLevel}
+              disabled={isSubmitting}
+              error={errors.priceLevel}
               required
             />
 
@@ -220,33 +251,51 @@ export default function ReviewModal({
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
-                placeholder="Share tips, favorite highlights, or best visiting hours..."
+                placeholder="Share tips, favorite highlights, or best visiting hours…"
                 required
+                disabled={isSubmitting}
+                aria-invalid={errors.text ? true : undefined}
+                aria-describedby={
+                  errors.text ? "review-comment-error" : undefined
+                }
               />
+              {errors.text && (
+                <p
+                  id="review-comment-error"
+                  className="mt-1.5 text-xs text-red-600"
+                >
+                  {errors.text}
+                </p>
+              )}
             </div>
+
+            {/* Next to the buttons, where the person is looking when the post fails (AC3) */}
+            {errorMessage && (
+              <div
+                role="alert"
+                className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-500" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
             <DialogFooter>
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 onClick={onClose}
-                className="text-xs"
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={
-                  isSubmitting || !rating || !comment.trim() || !priceLevel
-                }
-                className="gap-1.5 text-xs"
-              >
+              <Button type="submit" disabled={isSubmitting} className="gap-1.5">
                 {isSubmitting ? (
-                  "Saving..."
+                  "Posting…"
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5" />
-                    Submit Review
+                    Post review
                   </>
                 )}
               </Button>
@@ -268,14 +317,34 @@ export default function ReviewModal({
         <div className="mt-5">
           <h4 className="mb-3 flex items-center gap-1.5 text-xs font-bold text-slate-800">
             <MessageSquare className="h-3.5 w-3.5 text-slate-500" />
-            Recent Reviews ({reviews.length})
+            Recent reviews
+            {/* No count while loading or after a failure: "(0)" would say there are none */}
+            {!isLoadingReviews && !reviewsFailed && ` (${reviews.length})`}
           </h4>
 
           {isLoadingReviews ? (
-            <p className="text-xs text-slate-400">Loading reviews...</p>
+            <p role="status" className="text-xs text-slate-400">
+              Loading reviews…
+            </p>
+          ) : reviewsFailed ? (
+            <div role="alert" className="text-xs">
+              <p className="text-rose-700">The reviews could not be loaded.</p>
+              {onRetryReviews && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={onRetryReviews}
+                >
+                  Try again
+                </Button>
+              )}
+            </div>
           ) : reviews.length === 0 ? (
-            <p className="text-xs italic text-slate-400">
-              No reviews yet. Be the first!
+            <p className="text-xs text-slate-500">
+              No reviews yet. Be the first to share your experience with this
+              place.
             </p>
           ) : (
             <div className="max-h-48 space-y-2.5 overflow-y-auto pr-1">

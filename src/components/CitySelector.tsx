@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The row of city buttons: "All Cities" plus one per city with its number of places. Choosing one tells the explorer which city to show (null means all).
+ * The row of city buttons: "All cities" plus one per city with its number of places. Choosing one tells the explorer which city to show (null means all).
  */
 
 import { MapPin } from "lucide-react";
@@ -36,7 +36,7 @@ export default function CitySelector({
         className="h-7 shrink-0 rounded-full px-3 text-xs"
       >
         <MapPin className="mr-1 h-3 w-3 text-slate-400" />
-        All Cities
+        All cities
       </Button>
 
       {cities.map((city) => {

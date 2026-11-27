@@ -19,7 +19,8 @@ export interface SavedPlaceSummary {
   averageRating?: number | null;
   reviewCount?: number;
   priceLevel?: string | null;
-  city?: { name: string; country: string } | null;
+  /** The id is there for the places loaded from the API, which the filter by city uses (#187). */
+  city?: { id?: string; name: string; country: string } | null;
 }
 
 export interface SavedPlace {
@@ -28,10 +29,18 @@ export interface SavedPlace {
   place: SavedPlaceSummary;
 }
 
-/** The words of each type, on the buttons and on the "My places" page. */
+/** The words of each type, on the buttons and on the "Saved" page (named "My places" until #187). */
 export const SAVED_PLACE_LABELS: Record<
   SavedPlaceType,
-  { section: string; add: string; remove: string; saved: string; empty: string }
+  {
+    section: string;
+    add: string;
+    remove: string;
+    saved: string;
+    empty: string;
+    /** The list is empty in the chosen city of the filter (#187). */
+    emptyIn: (city: string) => string;
+  }
 > = {
   WISHLIST: {
     section: "Wishlist",
@@ -39,6 +48,7 @@ export const SAVED_PLACE_LABELS: Record<
     remove: "Remove from wishlist",
     saved: "On your wishlist",
     empty: "Your wishlist is empty. Use the heart on a place to add it.",
+    emptyIn: (city) => `Nothing on your wishlist in ${city}.`,
   },
   BOOKMARK: {
     section: "Bookmarks",
@@ -46,6 +56,7 @@ export const SAVED_PLACE_LABELS: Record<
     remove: "Remove bookmark",
     saved: "Bookmarked",
     empty: "You have no bookmarks. Use the bookmark on a place to add it.",
+    emptyIn: (city) => `No bookmarks in ${city}.`,
   },
 };
 
@@ -99,6 +110,39 @@ export function savedSections(
       .filter((entry) => entry.type === "BOOKMARK")
       .sort(newestFirst),
   };
+}
+
+/**
+ * How many saved places are in each city, for the filter by city of the Saved page (#187). A place in
+ * both lists counts once; a place whose city is not known is not counted.
+ */
+export function savedCityCounts(
+  saved: readonly SavedPlace[]
+): { id: string; name: string; count: number }[] {
+  const places = new Map<string, { name: string; ids: Set<string> }>();
+
+  for (const { place } of saved) {
+    const id = place.city?.id;
+    if (!id || !place.city) continue;
+
+    const city = places.get(id) ?? { name: place.city.name, ids: new Set() };
+    city.ids.add(place.id);
+    places.set(id, city);
+  }
+
+  return [...places.entries()]
+    .map(([id, city]) => ({ id, name: city.name, count: city.ids.size }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** The saved places of a city, or all of them for null. */
+export function savedInCity(
+  saved: readonly SavedPlace[],
+  cityId: string | null
+): SavedPlace[] {
+  return cityId === null
+    ? [...saved]
+    : saved.filter((entry) => entry.place.city?.id === cityId);
 }
 
 // ── State of the saved places in the browser ─────────────────────────────────

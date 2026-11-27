@@ -165,6 +165,19 @@ function MapFlyController({
   return null;
 }
 
+// Shows all the points at once, like the three cities for "All cities" on the home page (#187).
+function MapFitController({ points }: { points?: [number, number][] | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (points && points.length > 0) {
+      map.flyToBounds(points, { padding: [40, 40], duration: 0.8 });
+    }
+  }, [points, map]);
+
+  return null;
+}
+
 // memo: when a Popup re-renders, it runs its auto-pan again.
 // The pan fires moveend, moveend re-renders the map,
 // and opening a pin near the edge can otherwise loop forever.
@@ -263,6 +276,8 @@ export default function MapComponent({
   onSelectPlace,
   onMapMove,
   addAction,
+  heightClassName = "h-[440px]",
+  fitPoints,
 }: {
   places?: MapPlace[];
   center?: [number, number];
@@ -272,6 +287,10 @@ export default function MapComponent({
   onSelectPlace?: (placeId: string) => void;
   onMapMove?: (bounds: BoundingBox) => void;
   addAction?: MapAddAction;
+  /** Tailwind height classes of the map; MapWrapper gives `h-full` inside a box of the right height. */
+  heightClassName?: string;
+  /** A new list makes the map show all these points at once. */
+  fitPoints?: [number, number][] | null;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -301,14 +320,18 @@ export default function MapComponent({
 
   if (!mounted) {
     return (
-      <div className="flex h-[440px] w-full items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+      <div
+        className={`flex ${heightClassName} w-full items-center justify-center rounded-2xl bg-slate-100 text-slate-400`}
+      >
         Loading map...
       </div>
     );
   }
 
   return (
-    <div className="relative z-0 h-[440px] w-full overflow-hidden rounded-2xl shadow-sm ring-1 ring-slate-200">
+    <div
+      className={`relative z-0 ${heightClassName} w-full overflow-hidden rounded-2xl shadow-sm ring-1 ring-slate-200`}
+    >
       <MapContainer
         center={center}
         zoom={zoom}
@@ -330,6 +353,7 @@ export default function MapComponent({
 
         {/* Smooth Fly-To Controllers */}
         <MapFlyController targetCenter={selectedCenter} zoom={PLACE_ZOOM} />
+        <MapFitController points={fitPoints} />
 
         <MapFlyController targetCenter={selectedCityCenter} zoom={CITY_ZOOM} />
 

@@ -3,6 +3,8 @@ import {
   initialSavedPlacesState,
   isSavedAs,
   isSavedPlaceType,
+  savedCityCounts,
+  savedInCity,
   savedPlacesReducer,
   savedSections,
   withSaved,
@@ -274,5 +276,48 @@ describe("savedPlacesReducer: a refused change goes back", () => {
     expect(savedPlacesReducer(withMessage, { type: "dismiss" }).message).toBe(
       null
     );
+  });
+});
+
+describe("savedCityCounts and savedInCity: the filter by city of the Saved page (#187)", () => {
+  const inCity = (
+    placeId: string,
+    type: SavedPlace["type"],
+    city: { id: string; name: string } | null
+  ): SavedPlace => ({
+    ...entry(placeId, type),
+    place: {
+      ...entry(placeId, type).place,
+      city: city && { ...city, country: "X" },
+    },
+  });
+  const PORTO = { id: "city-porto", name: "Porto" };
+  const PARIS = { id: "city-paris", name: "Paris" };
+  const SAVED = [
+    inCity("lello", "WISHLIST", PORTO),
+    inCity("lello", "BOOKMARK", PORTO),
+    inCity("serralves", "BOOKMARK", PORTO),
+    inCity("louvre", "WISHLIST", PARIS),
+    inCity("unknown", "WISHLIST", null),
+  ];
+
+  it("counts each place once per city, even when it is in both lists", () => {
+    expect(savedCityCounts(SAVED)).toEqual([
+      { id: "city-paris", name: "Paris", count: 1 },
+      { id: "city-porto", name: "Porto", count: 2 },
+    ]);
+  });
+
+  it("leaves out a place whose city is not known from the counts", () => {
+    expect(savedCityCounts([inCity("unknown", "WISHLIST", null)])).toEqual([]);
+  });
+
+  it("keeps every place for all cities, and only the places of a city when one is chosen", () => {
+    expect(savedInCity(SAVED, null)).toHaveLength(5);
+    expect(savedInCity(SAVED, "city-porto").map((e) => e.place.id)).toEqual([
+      "lello",
+      "lello",
+      "serralves",
+    ]);
   });
 });

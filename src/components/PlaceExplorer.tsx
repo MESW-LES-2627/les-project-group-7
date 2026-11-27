@@ -24,6 +24,7 @@ import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
 import { discoveredPlaceId } from "@/domain/osm/osm";
 import type { PlaceItem } from "@/types/place";
 import type { OsmSearchResult } from "@/types/search";
+import { cityInView } from "@/domain/catalog/city-in-view";
 export type { PlaceItem };
 
 const PAGE_SIZE = 18;
@@ -52,6 +53,10 @@ export default function PlaceExplorer({
   >(null);
   const [focusedPlace, setFocusedPlace] = useState<PlaceItem | null>(null);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [fitPoints, setFitPoints] = useState<[number, number][] | null>(null);
+  // The ranking follows the city of the map (#187), but only after a move of the person: a move the
+  // page makes itself (a Map button, a search result) leaves the city as it is.
+  const ignoreMapMovesUntil = useRef(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<PlaceFilters>(NO_PLACE_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,14 +95,26 @@ export default function PlaceExplorer({
   }, [currentPage, totalPages]);
 
   // Smoothly pan map to selected city
-  const handleSelectCity = useCallback((city: CityOption | null) => {
-    setFocusedPlace(null);
-    if (!city) {
-      setSelectedCityId(null);
-      return;
-    }
-    setSelectedCityId(city.id);
-    setSelectedCityCenter([city.latitude, city.longitude]);
+  const handleSelectCity = useCallback(
+    (city: CityOption | null) => {
+      setFocusedPlace(null);
+      if (!city) {
+        // The map zooms out to every city, so it shows what the ranking shows
+        setSelectedCityId(null);
+        setFitPoints(initialCities.map((c) => [c.latitude, c.longitude]));
+        return;
+      }
+      setSelectedCityId(city.id);
+      setSelectedCityCenter([city.latitude, city.longitude]);
+    },
+    [initialCities]
+  );
+
+  /** Centres the map on a place without changing the city of the ranking. */
+  const centerOnPlace = useCallback((center: [number, number]) => {
+    // The fly takes 0.8 s and ends with one move of the map
+    ignoreMapMovesUntil.current = Date.now() + 1500;
+    setSelectedMapCenter(center);
   }, []);
 
   // Callback to sync catalog updates when a review is submitted
@@ -143,6 +160,8 @@ export default function PlaceExplorer({
     activeReviewPlace,
     reviewsList,
     isLoadingReviews,
+    reviewsFailed,
+    retryReviews,
     isSubmitting,
     submitSuccess,
     errorMsg,
@@ -167,11 +186,28 @@ export default function PlaceExplorer({
     [allPlaces, openReviewModal]
   );
 
-  const handleFocusPlace = useCallback((place: PlaceItem) => {
-    setFocusedPlace(place);
-    setSearchQuery(place.name);
-    setSelectedMapCenter([place.latitude, place.longitude]);
-  }, []);
+  const handleFocusPlace = useCallback(
+    (place: PlaceItem) => {
+      setFocusedPlace(place);
+      setSearchQuery(place.name);
+      // The ranking goes to the city of the place, where the map is going (a place found only on
+      // OpenStreetMap has no city yet: the nearest one, or all cities)
+      setSelectedCityId(
+        place.cityId ??
+          cityInView(
+            {
+              south: place.latitude,
+              north: place.latitude,
+              west: place.longitude,
+              east: place.longitude,
+            },
+            initialCities
+          )
+      );
+      centerOnPlace([place.latitude, place.longitude]);
+    },
+    [centerOnPlace, initialCities]
+  );
 
   const handleSelectDiscoveredPlace = useCallback(
     (osm: OsmSearchResult) => {
@@ -212,29 +248,36 @@ export default function PlaceExplorer({
   }, [mapPlaces, focusedPlace]);
 
   // Debounced OpenStreetMap fetch for the visible map area
-  const handleMapMove = useCallback((bounds: BoundingBox) => {
-    if (osmDebounceRef.current) clearTimeout(osmDebounceRef.current);
-
-    osmDebounceRef.current = setTimeout(async () => {
-      setIsFetchingOsm(true);
-      try {
-        const params = new URLSearchParams({
-          south: bounds.south.toString(),
-          west: bounds.west.toString(),
-          north: bounds.north.toString(),
-          east: bounds.east.toString(),
-        });
-        const res = await fetch(`/api/osm?${params}`);
-        if (!res.ok) return;
-        const data: unknown = await res.json();
-        if (Array.isArray(data)) setOsmPlaces(data);
-      } catch {
-        // Silently ignore — OSM data is supplementary
-      } finally {
-        setIsFetchingOsm(false);
+  const handleMapMove = useCallback(
+    (bounds: BoundingBox) => {
+      if (Date.now() >= ignoreMapMovesUntil.current) {
+        setSelectedCityId(cityInView(bounds, initialCities));
       }
-    }, 350);
-  }, []);
+
+      if (osmDebounceRef.current) clearTimeout(osmDebounceRef.current);
+
+      osmDebounceRef.current = setTimeout(async () => {
+        setIsFetchingOsm(true);
+        try {
+          const params = new URLSearchParams({
+            south: bounds.south.toString(),
+            west: bounds.west.toString(),
+            north: bounds.north.toString(),
+            east: bounds.east.toString(),
+          });
+          const res = await fetch(`/api/osm?${params}`);
+          if (!res.ok) return;
+          const data: unknown = await res.json();
+          if (Array.isArray(data)) setOsmPlaces(data);
+        } catch {
+          // Silently ignore — OSM data is supplementary
+        } finally {
+          setIsFetchingOsm(false);
+        }
+      }, 350);
+    },
+    [initialCities]
+  );
 
   const listProps = {
     paginatedPlaces,
@@ -243,7 +286,7 @@ export default function PlaceExplorer({
     totalPages,
     pageSize: PAGE_SIZE,
     onPageChange: setCurrentPage,
-    onSelectMapCenter: setSelectedMapCenter,
+    onSelectMapCenter: centerOnPlace,
     onOpenReview: openReviewModal,
   };
 
@@ -256,6 +299,7 @@ export default function PlaceExplorer({
           allPlaces={allPlaces}
           selectedCenter={selectedMapCenter}
           selectedCityCenter={selectedCityCenter}
+          fitPoints={fitPoints}
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           filters={filters}
@@ -277,7 +321,7 @@ export default function PlaceExplorer({
             <div>
               <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
                 <Trophy className="h-5 w-5 text-amber-500" />
-                Place Ranking{activeCityName ? ` in ${activeCityName}` : ""}
+                Place ranking{activeCityName ? ` in ${activeCityName}` : ""}
               </h2>
               <p className="text-xs text-slate-500">
                 {filteredPlaces.length} of {allPlaces.length} places, best
@@ -328,6 +372,8 @@ export default function PlaceExplorer({
           currentUsername={currentUsername}
           reviews={reviewsList}
           isLoadingReviews={isLoadingReviews}
+          reviewsFailed={reviewsFailed}
+          onRetryReviews={retryReviews}
           isSubmitting={isSubmitting}
           submitSuccess={submitSuccess}
           errorMessage={errorMsg}

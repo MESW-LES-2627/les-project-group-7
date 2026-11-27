@@ -137,9 +137,11 @@ export default function RegisterPage() {
               {submitting ? "Creating account…" : "Create account"}
             </Button>
           </form>
+          {/* The same line as the login page, the other way round (#187, AC4) */}
           <p className="mt-4 text-center text-sm text-slate-500">
-            <Link href="/" className="text-indigo-600 hover:underline">
-              Back to places
+            Already have an account?{" "}
+            <Link href="/login" className="text-indigo-600 hover:underline">
+              Log in
             </Link>
           </p>
         </CardContent>

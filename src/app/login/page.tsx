@@ -67,6 +67,8 @@ export default function LoginPage() {
                 id="identifier"
                 name="identifier"
                 autoComplete="username"
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? "login-error" : undefined}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
               />
@@ -78,12 +80,14 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? "login-error" : undefined}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             {error && (
-              <p role="alert" className="text-sm text-red-600">
+              <p id="login-error" role="alert" className="text-sm text-red-600">
                 {error}
               </p>
             )}

@@ -19,6 +19,20 @@ interface FieldProps<T> {
   disabled?: boolean;
   /** Shows the red mark of a required field. */
   required?: boolean;
+  /** What is missing, shown under the buttons and read with the group (#187). */
+  error?: string;
+  /** The id of the group, so a form can move the focus to it when it is missing. */
+  id?: string;
+}
+
+function FieldError({ id, error }: { id: string; error?: string }) {
+  if (!error) return null;
+
+  return (
+    <p id={id} className="mt-1.5 text-xs text-red-600">
+      {error}
+    </p>
+  );
 }
 
 function Legend({
@@ -41,9 +55,11 @@ export function RatingField({
   onChange,
   disabled = false,
   required = false,
+  error,
+  id = "rating-field",
 }: FieldProps<number>) {
   return (
-    <fieldset>
+    <fieldset id={id} aria-describedby={error ? `${id}-error` : undefined}>
       <Legend required={required}>Rating</Legend>
 
       <div className="flex flex-wrap gap-2">
@@ -61,6 +77,7 @@ export function RatingField({
           </Button>
         ))}
       </div>
+      <FieldError id={`${id}-error`} error={error} />
     </fieldset>
   );
 }
@@ -70,9 +87,11 @@ export function PriceLevelField({
   onChange,
   disabled = false,
   required = false,
+  error,
+  id = "price-level-field",
 }: FieldProps<PriceLevel>) {
   return (
-    <fieldset>
+    <fieldset id={id} aria-describedby={error ? `${id}-error` : undefined}>
       <Legend required={required}>Price level</Legend>
 
       <div className="flex flex-wrap gap-2">
@@ -90,6 +109,7 @@ export function PriceLevelField({
           </Button>
         ))}
       </div>
+      <FieldError id={`${id}-error`} error={error} />
     </fieldset>
   );
 }

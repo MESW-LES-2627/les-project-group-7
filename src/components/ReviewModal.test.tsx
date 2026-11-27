@@ -3,11 +3,16 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PlaceCategory } from "@prisma/client";
 import ReviewModal, { type ReviewItem } from "./ReviewModal";
 import type { PlaceItem } from "./PlaceExplorer";
+import {
+  PRICE_LEVEL_MISSING,
+  RATING_MISSING,
+  TEXT_MISSING,
+} from "@/domain/reviews/review-form";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
@@ -42,6 +47,12 @@ function renderModal(
     username?: string | null;
     reviews?: ReviewItem[];
     showPlaceLink?: boolean;
+    isLoadingReviews?: boolean;
+    reviewsFailed?: boolean;
+    onRetryReviews?: () => void;
+    isSubmitting?: boolean;
+    errorMessage?: string | null;
+    onSubmit?: () => void;
   } = {}
 ) {
   return render(
@@ -50,15 +61,20 @@ function renderModal(
       currentUsername={props.username === undefined ? "ana" : props.username}
       showPlaceLink={props.showPlaceLink}
       reviews={props.reviews ?? []}
-      isLoadingReviews={false}
-      isSubmitting={false}
+      isLoadingReviews={props.isLoadingReviews ?? false}
+      reviewsFailed={props.reviewsFailed}
+      onRetryReviews={props.onRetryReviews}
+      isSubmitting={props.isSubmitting ?? false}
       submitSuccess={null}
-      errorMessage={null}
+      errorMessage={props.errorMessage ?? null}
       onClose={() => {}}
-      onSubmit={() => {}}
+      onSubmit={props.onSubmit ?? (() => {})}
     />
   );
 }
+
+const postButton = () =>
+  screen.getByRole("button", { name: /post review/i }) as HTMLButtonElement;
 
 const reviewTexts = () =>
   screen
@@ -123,7 +139,7 @@ describe("ReviewModal: the review of the logged-in user comes first", () => {
   it("still counts every review in the title", () => {
     renderModal({ reviews });
 
-    expect(screen.getByText(/Recent Reviews \(3\)/)).toBeTruthy();
+    expect(screen.getByText(/Recent reviews \(3\)/)).toBeTruthy();
   });
 });
 
@@ -137,19 +153,13 @@ describe("ReviewModal: the form that writes a review", () => {
     expect(screen.queryAllByRole("radio")).toHaveLength(0);
   });
 
-  it("starts with nothing chosen and the submit button disabled", () => {
+  it("starts with nothing chosen and the post button ready to press (#187)", () => {
     renderModal();
 
     expect(
       screen.getByRole("button", { name: "4 ★" }).getAttribute("aria-pressed")
     ).toBe("false");
-    expect(
-      (
-        screen.getByRole("button", {
-          name: /submit review/i,
-        }) as HTMLButtonElement
-      ).disabled
-    ).toBe(true);
+    expect(postButton().disabled).toBe(false);
   });
 
   it("sends the rating, the comment and the price level that were chosen", async () => {
@@ -172,27 +182,138 @@ describe("ReviewModal: the form that writes a review", () => {
     await user.click(screen.getByRole("button", { name: "4 ★" }));
     await user.click(screen.getByRole("button", { name: /^€\s?€$/ }));
     await user.type(screen.getByRole("textbox"), "  Great place  ");
-    await user.click(screen.getByRole("button", { name: /submit review/i }));
+    await user.click(postButton());
 
     expect(onSubmit).toHaveBeenCalledWith(4, "Great place", "€€");
   });
+});
 
-  it("keeps submit disabled until the rating, the price level and the text are all given", async () => {
+describe("ReviewModal: what is missing is said next to the field (#187, AC3)", () => {
+  it("shows no message before the first try to post", () => {
     renderModal();
-    const user = userEvent.setup();
-    const submit = () =>
-      screen.getByRole("button", {
-        name: /submit review/i,
-      }) as HTMLButtonElement;
 
-    await user.click(screen.getByRole("button", { name: "5 ★" }));
-    await user.type(screen.getByRole("textbox"), "Nice");
-    expect(submit().disabled).toBe(true);
-
-    await user.click(screen.getByRole("button", { name: /free/i }));
-    expect(submit().disabled).toBe(false);
+    expect(screen.queryByText(RATING_MISSING)).toBeNull();
+    expect(screen.queryByText(TEXT_MISSING)).toBeNull();
   });
 
+  it("names every missing field under it, sends nothing, and moves the focus to the first one", async () => {
+    const onSubmit = vi.fn();
+    renderModal({ onSubmit });
+    const user = userEvent.setup();
+
+    await user.click(postButton());
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    const rating = screen.getByRole("group", { name: /^Rating/ });
+    expect(within(rating).getByText(RATING_MISSING)).toBeTruthy();
+    expect(rating.getAttribute("aria-describedby")).toBe("review-rating-error");
+    expect(
+      within(screen.getByRole("group", { name: /^Price level/ })).getByText(
+        PRICE_LEVEL_MISSING
+      )
+    ).toBeTruthy();
+    expect(screen.getByText(TEXT_MISSING)).toBeTruthy();
+    expect(screen.getByRole("textbox").getAttribute("aria-describedby")).toBe(
+      "review-comment-error"
+    );
+    expect(document.activeElement?.textContent).toBe("1 ★");
+  });
+
+  it("takes a message away as soon as its field is given, and focuses the next missing one", async () => {
+    renderModal();
+    const user = userEvent.setup();
+
+    await user.click(postButton());
+    await user.click(screen.getByRole("button", { name: "5 ★" }));
+    await user.click(screen.getByRole("button", { name: /free/i }));
+
+    expect(screen.queryByText(RATING_MISSING)).toBeNull();
+    expect(screen.queryByText(PRICE_LEVEL_MISSING)).toBeNull();
+    expect(screen.getByText(TEXT_MISSING)).toBeTruthy();
+
+    await user.click(postButton());
+    expect(document.activeElement).toBe(screen.getByRole("textbox"));
+  });
+
+  it("reads a text of only spaces as missing", async () => {
+    const onSubmit = vi.fn();
+    renderModal({ onSubmit });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "3 ★" }));
+    await user.click(screen.getByRole("button", { name: /free/i }));
+    await user.type(screen.getByRole("textbox"), "    ");
+    await user.click(postButton());
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText(TEXT_MISSING)).toBeTruthy();
+  });
+});
+
+describe("ReviewModal: while the review is posted (#187, AC1)", () => {
+  it("says it is posting and locks the fields and both buttons", () => {
+    renderModal({ isSubmitting: true });
+
+    const posting = screen.getByRole("button", { name: /posting…/i });
+    expect((posting as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "4 ★" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).disabled).toBe(
+      true
+    );
+  });
+
+  it("shows a failure next to the buttons, announced to screen readers", () => {
+    renderModal({ errorMessage: "Could not reach the server, try again" });
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Could not reach the server");
+    expect(alert.closest("form")).not.toBeNull();
+  });
+});
+
+describe("ReviewModal: the list of reviews (#187, AC1, AC2, AC3)", () => {
+  it("gives no count and no form while the reviews load, so it never says 0 or shows a form it may take away", () => {
+    renderModal({ isLoadingReviews: true });
+
+    expect(screen.getByText("Recent reviews").textContent).toBe(
+      "Recent reviews"
+    );
+    expect(screen.getByRole("status").textContent).toBe("Loading reviews…");
+    expect(screen.queryByRole("button", { name: /post review/i })).toBeNull();
+  });
+
+  it("says the reviews could not be loaded instead of saying there are none, and can try again", async () => {
+    const onRetryReviews = vi.fn();
+    renderModal({ reviewsFailed: true, onRetryReviews });
+    const user = userEvent.setup();
+
+    expect(screen.queryByText(/No reviews yet/)).toBeNull();
+    expect(screen.getByRole("alert").textContent).toContain(
+      "The reviews could not be loaded."
+    );
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(onRetryReviews).toHaveBeenCalledOnce();
+  });
+
+  it("uses the words of the page of the place when there are no reviews", () => {
+    renderModal();
+
+    expect(
+      screen.getByText(
+        "No reviews yet. Be the first to share your experience with this place."
+      )
+    ).toBeTruthy();
+  });
+});
+
+describe("ReviewModal: the notice of a review already written", () => {
   it("shows the notice and no form to a user who already reviewed the place", () => {
     renderModal({ reviews: [review("1", "ana", "mine")] });
 

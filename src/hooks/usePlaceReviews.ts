@@ -4,6 +4,9 @@ import { useCallback, useState } from "react";
 import type { PlaceItem } from "@/components/PlaceExplorer";
 import type { ReviewItem } from "@/components/ReviewModal";
 import type { PriceLevel } from "@/domain/reviews/rating";
+import { failureMessage } from "@/domain/reviews/review-form";
+
+const POST_FAILED = "Could not post the review, try again";
 
 interface UsePlaceReviewsOptions {
   currentUsername: string | null;
@@ -22,10 +25,14 @@ export function usePlaceReviews({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewsFailed, setReviewsFailed] = useState(false);
 
   // Both stay the same between renders (useCallback): openReviewModal reaches the
   // memoized map pins, and a new function on every render would re-render them.
   const fetchReviewsForPlace = useCallback(async (placeId: string) => {
+    // The reviews of the place opened before must not show while these load (#187)
+    setReviewsList([]);
+    setReviewsFailed(false);
     setIsLoadingReviews(true);
 
     try {
@@ -33,12 +40,13 @@ export function usePlaceReviews({
         `/api/reviews?placeId=${encodeURIComponent(placeId)}`
       );
 
-      if (res.ok) {
-        const data: unknown = await res.json();
-        setReviewsList(Array.isArray(data) ? (data as ReviewItem[]) : []);
-      }
+      if (!res.ok) throw new Error(`reviews answered ${res.status}`);
+
+      const data: unknown = await res.json();
+      setReviewsList(Array.isArray(data) ? (data as ReviewItem[]) : []);
     } catch {
-      setReviewsList([]);
+      // Not "No reviews yet": the list says it could not be loaded
+      setReviewsFailed(true);
     } finally {
       setIsLoadingReviews(false);
     }
@@ -94,12 +102,9 @@ export function usePlaceReviews({
       });
 
       if (!res.ok) {
-        const errData: unknown = await res.json();
-        const msg =
-          typeof errData === "object" && errData !== null && "error" in errData
-            ? String((errData as { error: unknown }).error)
-            : "Failed to submit review";
-        throw new Error(msg);
+        const errData: unknown = await res.json().catch(() => null);
+        setErrorMsg(failureMessage(errData, POST_FAILED));
+        return;
       }
 
       const data: unknown = await res.json();
@@ -123,7 +128,7 @@ export function usePlaceReviews({
 
       setSubmitSuccess("Review submitted! Place marked as visited.");
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Unexpected error");
+      setErrorMsg(failureMessage(err, POST_FAILED));
     } finally {
       setIsSubmitting(false);
     }
@@ -133,6 +138,10 @@ export function usePlaceReviews({
     activeReviewPlace,
     reviewsList,
     isLoadingReviews,
+    reviewsFailed,
+    retryReviews: () => {
+      if (activeReviewPlace) void fetchReviewsForPlace(activeReviewPlace.id);
+    },
     isSubmitting,
     submitSuccess,
     errorMsg,

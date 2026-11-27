@@ -31,14 +31,14 @@ describe("SiteHeader", () => {
     expect(html).not.toContain('href="/my-places"');
   });
 
-  it("renders the My places link when logged in", async () => {
+  it("renders the Saved link, to the saved places, when logged in", async () => {
     getSession.mockResolvedValue({
       user: { username: "maria", displayUsername: "Maria" },
     });
 
     const html = await render();
-    expect(html).toContain('href="/my-places"');
-    expect(html).toContain("My places");
+    expect(html).toMatch(/href="\/my-places"[^>]*>Saved<\/a>/);
+    expect(html).not.toContain("My places");
   });
 
   it("renders My trips link and username when logged in", async () => {
@@ -74,8 +74,8 @@ describe("SiteHeader", () => {
   });
 });
 
-describe("Visited places navigation (Task #43)", () => {
-  it("shows the three links together, My trips, My places and My visited places", async () => {
+describe("History navigation (Task #43, renamed in #187)", () => {
+  it("shows the three links together, My trips, Saved and History", async () => {
     getSession.mockResolvedValue({ user: { username: "maria" } });
 
     const html = await render();
@@ -83,7 +83,7 @@ describe("Visited places navigation (Task #43)", () => {
     expect(links).toEqual(["/trips", "/my-places", "/visited"]);
   });
 
-  it("shows My visited places when the user is logged in", async () => {
+  it("shows History, the record of the places visited, when the user is logged in", async () => {
     getSession.mockResolvedValue({
       user: {
         id: "user-1",
@@ -94,17 +94,17 @@ describe("Visited places navigation (Task #43)", () => {
 
     const html = await render();
 
-    expect(html).toContain("My visited places");
-    expect(html).toContain('href="/visited"');
+    expect(html).toMatch(/href="\/visited"[^>]*>History<\/a>/);
+    expect(html).not.toContain("My visited places");
     expect(html).toContain("My trips");
   });
 
-  it("hides My visited places when the user is logged out", async () => {
+  it("hides History when the user is logged out", async () => {
     getSession.mockResolvedValue(null);
 
     const html = await render();
 
-    expect(html).not.toContain("My visited places");
+    expect(html).not.toContain(">History<");
     expect(html).not.toContain('href="/visited"');
     expect(html).toContain('href="/login"');
     expect(html).toContain('href="/register"');

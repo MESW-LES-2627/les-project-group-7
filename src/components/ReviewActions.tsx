@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { PriceLevelField, RatingField } from "@/components/ReviewFields";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  failureMessage,
+  reviewFormErrors,
+  type ReviewFormErrors,
+} from "@/domain/reviews/review-form";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -15,6 +20,9 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+
+const SAVE_FAILED = "Could not save the review, try again";
+const DELETE_FAILED = "Could not delete the review, try again";
 
 interface ReviewActionsProps {
   review: {
@@ -37,20 +45,30 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
   const [text, setText] = useState(review.text);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ReviewFormErrors>({});
 
   function openEditor() {
     setRating(review.rating);
     setPriceLevel(isPriceLevel(review.priceLevel) ? review.priceLevel : null);
     setText(review.text);
     setError(null);
+    setFieldErrors({});
     setEditing(true);
   }
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (rating < 1 || rating > 5 || !text.trim()) {
-      setError("Please provide a valid rating and review text.");
+    if (isSubmitting) return;
+
+    // A review written before the price level existed can keep no price level
+    const missing = reviewFormErrors(
+      { rating, priceLevel, text },
+      { priceLevelRequired: false }
+    );
+    setFieldErrors(missing);
+    if (Object.keys(missing).length > 0) {
+      document.getElementById(`review-text-${review.id}`)?.focus();
       return;
     }
 
@@ -72,16 +90,15 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
       );
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? "Could not update the review.");
+        const data: unknown = await response.json().catch(() => null);
+        setError(failureMessage(data, SAVE_FAILED));
+        return;
       }
 
       setEditing(false);
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not update the review."
-      );
+      setError(failureMessage(err, SAVE_FAILED));
     } finally {
       setIsSubmitting(false);
     }
@@ -98,16 +115,15 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
       );
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? "Could not delete the review.");
+        const data: unknown = await response.json().catch(() => null);
+        setError(failureMessage(data, DELETE_FAILED));
+        return;
       }
 
       setConfirmingDelete(false);
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not delete the review."
-      );
+      setError(failureMessage(err, DELETE_FAILED));
     } finally {
       setIsSubmitting(false);
     }
@@ -156,7 +172,7 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} noValidate className="space-y-4">
             <RatingField
               value={rating}
               onChange={setRating}
@@ -184,7 +200,21 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
                 rows={4}
                 required
                 disabled={isSubmitting}
+                aria-invalid={fieldErrors.text ? true : undefined}
+                aria-describedby={
+                  fieldErrors.text
+                    ? `review-text-${review.id}-error`
+                    : undefined
+                }
               />
+              {fieldErrors.text && (
+                <p
+                  id={`review-text-${review.id}-error`}
+                  className="text-xs text-red-600"
+                >
+                  {fieldErrors.text}
+                </p>
+              )}
             </div>
 
             {error && (
@@ -203,8 +233,8 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
                 Cancel
               </Button>
 
-              <Button type="submit" disabled={isSubmitting || !text.trim()}>
-                {isSubmitting ? "Saving..." : "Save changes"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving…" : "Save changes"}
               </Button>
             </DialogFooter>
           </form>
@@ -248,7 +278,7 @@ export default function ReviewActions({ review }: ReviewActionsProps) {
               disabled={isSubmitting}
               onClick={handleDelete}
             >
-              {isSubmitting ? "Deleting..." : "Delete review"}
+              {isSubmitting ? "Deleting…" : "Delete review"}
             </Button>
           </DialogFooter>
         </DialogContent>

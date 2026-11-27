@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Bookmark, Heart, Loader2, MapPin, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { formatAverageRating } from "@/domain/catalog/place-details";
+import { chosenCityId, defaultCityId } from "@/domain/catalog/city-filter";
+import { placeLocation } from "@/domain/catalog/place-location";
+import CityFilter from "./CityFilter";
 import {
   SAVED_PLACE_LABELS,
   SAVED_PLACE_TYPES,
+  savedCityCounts,
+  savedInCity,
   savedSections,
   type SavedPlace,
   type SavedPlaceType,
@@ -19,8 +25,19 @@ const SECTION_ICONS: Record<SavedPlaceType, typeof Heart> = {
   BOOKMARK: Bookmark,
 };
 
+/** The city Saved opens on, when the person has saved places there; Tripbook starts from Porto. */
+const DEFAULT_CITY_ID = "city-porto";
+
+/** The address of the Saved page with a city chosen, or all cities for null. */
+function savedHref(cityId: string | null): string {
+  return cityId
+    ? `/my-places?${new URLSearchParams({ city: cityId })}`
+    : "/my-places";
+}
+
 export default function MyPlacesView() {
   const savedPlaces = useSavedPlaces();
+  const searchParams = useSearchParams();
 
   if (!savedPlaces || savedPlaces.status === "logged-out") {
     return null;
@@ -55,59 +72,75 @@ export default function MyPlacesView() {
     );
   }
 
-  const sections = savedSections(savedPlaces.saved);
+  // The filter by city (#187): the places are all loaded, so it filters here, with no request
+  const cities = savedCityCounts(savedPlaces.saved);
+  // Always one city, no "All cities": the one of the address, or Porto, or the first city by name
+  const cityId =
+    chosenCityId(searchParams.get("city"), cities) ??
+    defaultCityId(cities, DEFAULT_CITY_ID);
+  const cityName = cities.find((city) => city.id === cityId)?.name;
+  const sections = savedSections(savedInCity(savedPlaces.saved, cityId));
 
   return (
-    <div className="space-y-10">
-      {SAVED_PLACE_TYPES.map((type) => {
-        const Icon = SECTION_ICONS[type];
-        const labels = SAVED_PLACE_LABELS[type];
-        const entries = sections[type];
-        const headingId = `saved-${type.toLowerCase()}-heading`;
+    <>
+      <CityFilter
+        cities={cities}
+        selectedId={cityId}
+        hrefFor={savedHref}
+        withAll={false}
+      />
+      {/* Full width (#187): the two lists side by side on a wide screen, one under the other on a small one */}
+      <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+        {SAVED_PLACE_TYPES.map((type) => {
+          const Icon = SECTION_ICONS[type];
+          const labels = SAVED_PLACE_LABELS[type];
+          const entries = sections[type];
+          const headingId = `saved-${type.toLowerCase()}-heading`;
 
-        return (
-          <section key={type} aria-labelledby={headingId}>
-            <h2
-              id={headingId}
-              tabIndex={-1}
-              className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-900 focus:outline-none"
-            >
-              <Icon className="h-5 w-5 text-slate-500" aria-hidden="true" />
-              {labels.section}
-              <span className="text-sm font-normal text-slate-500">
-                ({entries.length})
-              </span>
-            </h2>
-
-            {entries.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-                {labels.empty}
-              </p>
-            ) : (
-              <ul
-                role="list"
-                className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white"
+          return (
+            <section key={type} aria-labelledby={headingId} className="min-w-0">
+              <h2
+                id={headingId}
+                tabIndex={-1}
+                className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-900 focus:outline-none"
               >
-                {entries.map((entry) => (
-                  <SavedPlaceRow
-                    key={entry.place.id}
-                    entry={entry}
-                    removeLabel={labels.remove}
-                    pending={savedPlaces.isPending(entry.place.id, type)}
-                    onRemove={() => {
-                      // The row goes away at once, so the focus would be lost: move it to the heading of the
-                      // section, which also says the new count.
-                      document.getElementById(headingId)?.focus();
-                      void savedPlaces.toggle(entry.place, entry.type);
-                    }}
-                  />
-                ))}
-              </ul>
-            )}
-          </section>
-        );
-      })}
-    </div>
+                <Icon className="h-5 w-5 text-slate-500" aria-hidden="true" />
+                {labels.section}
+                <span className="text-sm font-normal text-slate-500">
+                  ({entries.length})
+                </span>
+              </h2>
+
+              {entries.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                  {cityName ? labels.emptyIn(cityName) : labels.empty}
+                </p>
+              ) : (
+                <ul
+                  role="list"
+                  className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white"
+                >
+                  {entries.map((entry) => (
+                    <SavedPlaceRow
+                      key={entry.place.id}
+                      entry={entry}
+                      removeLabel={labels.remove}
+                      pending={savedPlaces.isPending(entry.place.id, type)}
+                      onRemove={() => {
+                        // The row goes away at once, so the focus would be lost: move it to the heading of the
+                        // section, which also says the new count.
+                        document.getElementById(headingId)?.focus();
+                        void savedPlaces.toggle(entry.place, entry.type);
+                      }}
+                    />
+                  ))}
+                </ul>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -124,7 +157,7 @@ function SavedPlaceRow({
 }) {
   const { place } = entry;
   const category = getCategoryConfig(place.category);
-  const location = [place.address, place.city?.name].filter(Boolean).join(", ");
+  const location = placeLocation(place.address, place.city?.name);
 
   return (
     <li className="flex items-center justify-between gap-3 px-4 py-3">

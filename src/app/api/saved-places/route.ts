@@ -219,6 +219,8 @@ export async function GET(request: Request) {
             priceLevel: true,
             averageRating: true,
             reviewCount: true,
+            // The Saved page shows the city and filters by it (#187)
+            city: { select: { id: true, name: true, country: true } },
           },
         },
       },

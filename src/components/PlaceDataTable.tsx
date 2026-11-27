@@ -16,6 +16,7 @@ import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 import SavePlaceButtons from "./SavePlaceButtons";
+import { showMap } from "@/lib/show-map";
 
 export interface PlaceDataTableProps {
   paginatedPlaces: PlaceItem[];
@@ -179,7 +180,7 @@ export default function PlaceDataTable({
                                 place.latitude,
                                 place.longitude,
                               ]);
-                              window.scrollTo({ top: 180, behavior: "smooth" });
+                              showMap();
                             }}
                             className="h-7 gap-1 px-2.5 text-xs text-slate-700 hover:text-slate-900"
                             title="Center on map"

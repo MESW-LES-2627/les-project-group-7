@@ -22,6 +22,7 @@ import { formatAverageRating } from "@/domain/catalog/place-details";
 import { getCategoryConfig } from "@/domain/catalog/categories";
 import { CategorySymbol } from "./CategorySymbol";
 import SavePlaceButtons from "./SavePlaceButtons";
+import { showMap } from "@/lib/show-map";
 
 export interface PlaceGridProps {
   paginatedPlaces: PlaceItem[];
@@ -147,7 +148,7 @@ export default function PlaceGrid({
                     variant="outline"
                     onClick={() => {
                       onSelectMapCenter([place.latitude, place.longitude]);
-                      window.scrollTo({ top: 180, behavior: "smooth" });
+                      showMap();
                     }}
                     className="h-8 gap-1 text-xs text-slate-700 hover:text-slate-900"
                     title="Center on map"

@@ -1,20 +1,40 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { CalendarDays, MapPin, Star } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Star,
+} from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCategoryConfig } from "@/domain/catalog/categories";
+import CityFilter from "@/components/CityFilter";
+import { placeLocation } from "@/domain/catalog/place-location";
+import {
+  citiesWithVisits,
+  historyHref,
+  historyView,
+  type CityCount,
+} from "@/domain/visits/history";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 /**
- * My visited places page (Task #43).
+ * History, the record of the places visited (Task #43; named "My visited places" until #187).
  *
- * Shows the authenticated user's visited places, newest first.
- * Visits remain visible even if their reviews are deleted.
+ * Shows the authenticated user's visited places, newest first, 24 per page, with a filter by city
+ * (#187). Visits remain visible even if their reviews are deleted.
  */
-export default async function VisitedPage() {
+export default async function VisitedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -25,8 +45,30 @@ export default async function VisitedPage() {
 
   const userId = session.user.id;
 
+  // How many of the person's places are in each city: the buttons of the filter and the number of pages
+  const cityRows = await prisma.city.findMany({
+    select: {
+      id: true,
+      name: true,
+      _count: {
+        select: { places: { where: { visits: { some: { userId } } } } },
+      },
+    },
+  });
+  const cities: CityCount[] = cityRows.map((city) => ({
+    id: city.id,
+    name: city.name,
+    count: city._count.places,
+  }));
+  const filterCities = citiesWithVisits(cities);
+  const view = historyView(await searchParams, cities);
+
   const visits = await prisma.visit.findMany({
-    where: { userId },
+    where: view.cityId
+      ? { userId, place: { cityId: view.cityId } }
+      : { userId },
+    skip: view.skip,
+    take: view.take,
     select: {
       placeId: true,
       visitedAt: true,
@@ -56,24 +98,30 @@ export default async function VisitedPage() {
   });
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <main className="px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          My visited places
+          History
         </h1>
         <p className="mt-1 text-sm text-slate-600">
           Places you have visited, starting with the most recent.
         </p>
       </div>
 
+      <CityFilter
+        cities={filterCities}
+        selectedId={view.cityId}
+        hrefFor={(cityId) => historyHref(cityId)}
+      />
+
       {visits.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
           <h2 className="text-lg font-medium text-slate-900">
-            No visited places yet
+            Nothing in your history yet
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            You have not visited any places yet. Explore places and share your
-            experiences.
+            A place appears here when you post a review of it. Find one on the
+            map or in the ranking and rate it.
           </p>
           <Link
             href="/"
@@ -83,7 +131,10 @@ export default async function VisitedPage() {
           </Link>
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2" role="list">
+        <ul
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          role="list"
+        >
           {visits.map((visit) => {
             const place = visit.place;
             const rating = place.reviews[0]?.rating ?? null;
@@ -122,7 +173,11 @@ export default async function VisitedPage() {
                       aria-hidden="true"
                     />
                     <span>
-                      {place.address} — {place.city.name}, {place.city.country}
+                      {placeLocation(
+                        place.address,
+                        place.city.name,
+                        place.city.country
+                      )}
                     </span>
                   </div>
 
@@ -149,6 +204,76 @@ export default async function VisitedPage() {
           })}
         </ul>
       )}
+
+      {/* The same controls as the ranking of the home page (#187, AC4) */}
+      {view.totalPages > 1 && (
+        <nav
+          aria-label="Pages of your history"
+          className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-4 sm:flex-row"
+        >
+          <span className="text-xs text-slate-500">
+            Showing {view.firstShown} to {view.lastShown} of {view.total} places
+          </span>
+
+          <div className="flex items-center gap-2">
+            <PageLink
+              href={historyHref(view.cityId, view.page - 1)}
+              disabled={view.page <= 1}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              Previous
+            </PageLink>
+
+            <span
+              aria-current="page"
+              className="px-2 text-xs font-medium text-slate-700"
+            >
+              Page {view.page} of {view.totalPages}
+            </span>
+
+            <PageLink
+              href={historyHref(view.cityId, view.page + 1)}
+              disabled={view.page >= view.totalPages}
+            >
+              Next
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </PageLink>
+          </div>
+        </nav>
+      )}
     </main>
+  );
+}
+
+/** Previous or Next: a link, or the same look greyed out on the first or the last page. */
+function PageLink({
+  href,
+  disabled,
+  children,
+}: {
+  href: string;
+  disabled: boolean;
+  children: React.ReactNode;
+}) {
+  const className = cn(
+    buttonVariants({ size: "sm", variant: "outline" }),
+    "h-8 gap-1 text-xs"
+  );
+
+  if (disabled) {
+    return (
+      <span
+        aria-disabled="true"
+        className={cn(className, "pointer-events-none opacity-50")}
+      >
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
   );
 }

@@ -23,6 +23,7 @@ import {
 } from "@/domain/reviews/rating";
 import { NO_PLACE_FILTERS, type PlaceFilters } from "@/domain/catalog/filters";
 import type { PlaceCategory } from "@prisma/client";
+import { EXPLORE_MAP_ID } from "@/lib/show-map";
 
 export interface CategoryOption {
   label: string;
@@ -30,7 +31,7 @@ export interface CategoryOption {
 }
 
 export const CATEGORIES: CategoryOption[] = [
-  { label: "All Spots", value: "ALL" },
+  { label: "All places", value: "ALL" },
   { label: "Monuments", value: "MONUMENT" },
   { label: "Restaurants", value: "RESTAURANT" },
   { label: "Parks", value: "PARK" },
@@ -45,6 +46,8 @@ interface MapExplorerCardProps {
   allPlaces?: PlaceItem[];
   selectedCenter: [number, number] | null;
   selectedCityCenter: [number, number] | null;
+  /** A new list zooms the map out to show these points (All cities, #187). */
+  fitPoints?: [number, number][] | null;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   filters: PlaceFilters;
@@ -66,6 +69,7 @@ export default function MapExplorerCard({
   allPlaces = [],
   selectedCenter,
   selectedCityCenter,
+  fitPoints,
   searchQuery,
   onSearchChange,
   filters,
@@ -83,13 +87,13 @@ export default function MapExplorerCard({
 }: MapExplorerCardProps) {
   const activeCategory = filters.category ?? "ALL";
   return (
-    <Card>
+    <Card id={EXPLORE_MAP_ID}>
       <CardHeader className="pb-4">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
             <CardTitle className="flex items-center gap-2 text-lg">
               <MapPin className="h-5 w-5 text-rose-500" />
-              Explore on Map
+              Explore on the map
             </CardTitle>
             <p className="mt-1 text-xs text-slate-500 sm:text-sm">
               Click any pin to review. Pan and zoom to discover new places from
@@ -104,7 +108,7 @@ export default function MapExplorerCard({
                 className="animate-pulse gap-1.5 border-indigo-200 bg-indigo-50 text-xs font-normal text-indigo-700"
               >
                 <Loader2 className="h-3 w-3 animate-spin text-indigo-600" />
-                Loading OSM...
+                Loading OpenStreetMap…
               </Badge>
             </div>
           )}
@@ -236,8 +240,12 @@ export default function MapExplorerCard({
           zoom={14}
           selectedCenter={selectedCenter}
           selectedCityCenter={selectedCityCenter}
+          fitPoints={fitPoints}
           onSelectPlace={onSelectPlace}
           onMapMove={onMapMove}
+          // 440 px up to a laptop; on a big screen the map keeps the shape it has on a laptop (about 2.8 to 1)
+          // instead of becoming a thin strip, up to three quarters of the window (#187)
+          heightClassName="h-[440px] 2xl:aspect-[17/6] 2xl:h-auto 2xl:max-h-[75vh]"
         />
       </CardContent>
     </Card>

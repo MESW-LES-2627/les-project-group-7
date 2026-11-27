@@ -84,9 +84,12 @@ export default async function Home() {
     count: city._count.places,
   }));
 
+  // Full width, like the header and the other pages (#187)
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="px-4 py-10 sm:px-6 lg:px-8">
       <main>
+        {/* The heading of the page for screen readers; the page shows the map and the ranking (#187, AC5) */}
+        <h1 className="sr-only">Explore places</h1>
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-prose text-slate-600">
             Pick a city and your dates, then build your itinerary day by day.

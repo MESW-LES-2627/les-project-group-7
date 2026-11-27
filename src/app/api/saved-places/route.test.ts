@@ -439,6 +439,15 @@ describe("GET /api/saved-places", () => {
     );
   });
 
+  it("sends the city of each place, for the filter by city of the Saved page (#187)", async () => {
+    await GET(getRequest());
+
+    const [query] = mocks.findSavedPlaces.mock.calls[0];
+    expect(query.select.place.select.city).toEqual({
+      select: { id: true, name: true, country: true },
+    });
+  });
+
   it("filters saved places by WISHLIST", async () => {
     const response = await GET(getRequest("WISHLIST"));
 

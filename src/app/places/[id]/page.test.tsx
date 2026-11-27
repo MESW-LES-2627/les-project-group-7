@@ -330,3 +330,33 @@ describe("The review of the logged-in user comes first", () => {
     );
   });
 });
+
+describe("One review per person: no write button for who already wrote one (#187)", () => {
+  it("hides Write a review when the logged-in user has a review here; Edit is the way to change it", async () => {
+    getSession.mockResolvedValue({ user: { id: "user-1", name: "Ana" } });
+    findUnique.mockResolvedValue(
+      mockPlace({
+        reviews: [
+          review("r1", "2026-05-01", { userId: "user-1" }),
+          review("r2", "2026-04-01", { userId: "user-2" }),
+        ],
+      })
+    );
+
+    const html = await renderPage();
+
+    expect(html).not.toContain("Write a review");
+    expect(html).toContain("Edit");
+  });
+
+  it("keeps Write a review for a logged-in user whose review is not here", async () => {
+    getSession.mockResolvedValue({ user: { id: "user-1", name: "Ana" } });
+    findUnique.mockResolvedValue(
+      mockPlace({
+        reviews: [review("r2", "2026-04-01", { userId: "user-2" })],
+      })
+    );
+
+    expect(await renderPage()).toContain("Write a review");
+  });
+});
