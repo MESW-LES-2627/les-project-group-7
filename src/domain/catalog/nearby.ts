@@ -86,3 +86,12 @@ export function nearbyPlaces<T extends NearbyCandidate>(
 
   return { radiusKm, suggestions };
 }
+
+/** A distance for the eye: meters under 1 km ("334 m"), one decimal of a kilometer from there ("1.2 km"). */
+export function formatDistance(distanceKm: number): string {
+  const meters = Math.round(distanceKm * 1000);
+
+  if (meters < 1000) return `${meters} m`;
+
+  return `${(Math.round(meters / 100) / 10).toFixed(1)} km`;
+}

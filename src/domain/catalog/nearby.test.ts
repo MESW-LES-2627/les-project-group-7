@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nearbyPlaces, type NearbyCandidate } from "./nearby";
+import { formatDistance, nearbyPlaces, type NearbyCandidate } from "./nearby";
 
 // One degree of latitude is about 111.2 km, so 0.003 degrees north is about 334 m.
 const ORIGIN = { latitude: 38.7139, longitude: -9.1394 };
@@ -407,5 +407,23 @@ describe("nearbyPlaces: the score of each suggestion", () => {
       ["one-review", 4.14],
       ["unrated", null],
     ]);
+  });
+});
+
+describe("formatDistance: how a distance is shown next to a suggestion", () => {
+  it.each([
+    [0, "0 m"],
+    [0.0004, "0 m"],
+    [0.0006, "1 m"],
+    [0.334, "334 m"],
+    [0.999, "999 m"],
+    [0.9996, "1.0 km"],
+    [1, "1.0 km"],
+    [1.24, "1.2 km"],
+    [1.25, "1.3 km"],
+    [1.99, "2.0 km"],
+    [2, "2.0 km"],
+  ])("%s km is shown as %s", (km, text) => {
+    expect(formatDistance(km)).toBe(text);
   });
 });
