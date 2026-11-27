@@ -486,3 +486,217 @@ describe("the saved places panel", () => {
     expect(screen.queryByText(/Your saved places in/)).toBeNull();
   });
 });
+
+describe("the nearby places of a stop (US-E5-01, #64)", () => {
+  // The stops are at 41.1, -8.6. 0.003 degrees north is about 334 m.
+  const nearby: PlaceItem[] = [
+    {
+      id: "cafe",
+      name: "Cafe Near",
+      category: PlaceCategory.CAFE,
+      address: "Rua 2",
+      latitude: 41.103,
+      longitude: -8.6,
+      averageRating: 4.6,
+      reviewCount: 12,
+    },
+    {
+      // The place of the stop B: it is on the trip, so it is not suggested.
+      id: "p-B",
+      name: "Place B",
+      category: PlaceCategory.MUSEUM,
+      address: "Rua 1",
+      latitude: 41.102,
+      longitude: -8.6,
+      averageRating: 5,
+      reviewCount: 30,
+    },
+  ];
+  const props = { ...base, cityPlaces: [...cityPlaces, ...nearby] };
+
+  const openNearby = (name: string) =>
+    userEvent.click(
+      screen.getByRole("button", { name: `Nearby places for ${name}` })
+    );
+
+  it("has a Nearby button on each stop, and no Nearby tab before it is used", () => {
+    render(<ItineraryEditor {...props} />);
+
+    expect(
+      screen.getAllByRole("button", { name: /^Nearby places for / })
+    ).toHaveLength(3);
+    expect(screen.queryByRole("tab", { name: "Nearby" })).toBeNull();
+  });
+
+  it("opens the Nearby tab for that stop, with the focus on its first control", async () => {
+    render(<ItineraryEditor {...props} />);
+
+    await openNearby("Place A");
+
+    expect(tab("Nearby").getAttribute("aria-selected")).toBe("true");
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Near Place A" })
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("Type"))
+    );
+  });
+
+  it("suggests places of the city near the stop, and not the ones already on the trip", async () => {
+    render(<ItineraryEditor {...props} />);
+
+    await openNearby("Place A");
+
+    const list = screen
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.textContent);
+    expect(list).toContain("Cafe Near");
+    expect(list).not.toContain("Place B");
+    expect(screen.queryByText("Louvre")).toBeNull();
+  });
+
+  it("adds a suggestion to the day of that stop, without a visit time", async () => {
+    render(<ItineraryEditor {...props} />);
+    await chooseDay(2);
+    await openNearby("Place D");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 2 (Cafe Near)" })
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body).toEqual({ dayId: "d2", placeId: "cafe" });
+  });
+
+  it("does not use the visit time typed in the Search tab", async () => {
+    render(<ItineraryEditor {...props} />);
+    await openSearch();
+    await userEvent.type(
+      screen.getByLabelText("Visit time (optional)"),
+      "10:00"
+    );
+    await openNearby("Place A");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 1 (Cafe Near)" })
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body).not.toHaveProperty("visitTime");
+  });
+
+  it("still adds to the day of the stop after another day is chosen", async () => {
+    render(<ItineraryEditor {...props} />);
+    await chooseDay(2);
+    await openNearby("Place D");
+    await chooseDay(1);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 2 (Cafe Near)" })
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body.dayId).toBe("d2");
+    await waitFor(() =>
+      expect(screen.getByText("Cafe Near was added to Day 2.")).toBeTruthy()
+    );
+  });
+
+  it("searches around the stop it was opened for, and leaves out places planned on other days", async () => {
+    // D is about 11 km north of the stops of Day 1. Cafe D and the place of B are near D.
+    const farStops = stops.map((item) =>
+      item.id === "D"
+        ? { ...item, place: { ...item.place, latitude: 41.2 } }
+        : item
+    );
+    const nearD: PlaceItem[] = [
+      { ...nearby[0], id: "cafe-d", name: "Cafe D", latitude: 41.203 },
+      { ...nearby[1], latitude: 41.201 },
+    ];
+    render(
+      <ItineraryEditor
+        {...base}
+        initialStops={farStops}
+        cityPlaces={[...cityPlaces, nearby[0], ...nearD]}
+      />
+    );
+    await chooseDay(2);
+    await openNearby("Place D");
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Near Place D" })
+    ).toBeTruthy();
+    const list = screen
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.textContent);
+    expect(list).toEqual(["Cafe D"]);
+  });
+
+  it("starts with All types when Nearby is opened for another stop", async () => {
+    render(<ItineraryEditor {...props} />);
+    await openNearby("Place A");
+    await userEvent.selectOptions(screen.getByLabelText("Type"), "CAFE");
+
+    await openNearby("Place B");
+
+    expect((screen.getByLabelText("Type") as HTMLSelectElement).value).toBe("");
+  });
+
+  it("cannot add a second time while the first add is saving", async () => {
+    let release: (response: Response) => void = () => {};
+    fetchMock.mockImplementationOnce(
+      () => new Promise<Response>((resolve) => (release = resolve))
+    );
+    render(<ItineraryEditor {...props} />);
+    await openNearby("Place A");
+    const add = screen.getByRole("button", {
+      name: "Add to Day 1 (Cafe Near)",
+    }) as HTMLButtonElement;
+
+    await userEvent.click(add);
+
+    expect(add.disabled).toBe(true);
+    release(json({ stops }));
+    await waitFor(() => expect(add.disabled).toBe(false));
+  });
+
+  it("says the place was added, and puts the focus back on the type filter", async () => {
+    render(<ItineraryEditor {...props} />);
+    await openNearby("Place A");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Add to Day 1 (Cafe Near)" })
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Cafe Near was added to Day 1.")).toBeTruthy()
+    );
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("Type"))
+    );
+  });
+
+  it("goes back to the map when the stop is gone", async () => {
+    const { rerender } = render(<ItineraryEditor {...props} />);
+    await openNearby("Place A");
+
+    rerender(
+      <ItineraryEditor
+        {...props}
+        initialStops={stops.filter((item) => item.id !== "A")}
+      />
+    );
+
+    expect(screen.queryByRole("tab", { name: "Nearby" })).toBeNull();
+    expect(tab("Map").getAttribute("aria-selected")).toBe("true");
+  });
+});

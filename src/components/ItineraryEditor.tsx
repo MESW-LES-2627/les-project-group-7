@@ -10,6 +10,7 @@ import {
   CircleCheck,
   ExternalLink,
   Loader2,
+  MapPin,
   Plus,
   Star,
   Trash2,
@@ -19,6 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import MapWrapper from "@/components/MapWrapper";
+import NearbySuggestions, {
+  NEARBY_TYPE_FILTER_ID,
+} from "@/components/NearbySuggestions";
 import PlannerSavedPlaces from "@/components/PlannerSavedPlaces";
 import { useSavedPlaces } from "@/components/SavedPlacesProvider";
 import PlaceSearchAutocomplete from "@/components/PlaceSearchAutocomplete";
@@ -61,9 +65,21 @@ interface ItineraryEditorProps {
 
 const SEARCH_INPUT_ID = "itinerary-place-search";
 
-type FinderTab = "search" | "saved" | "map";
+type FinderTab = "search" | "saved" | "map" | "nearby";
 
 const addButtonId = (dayId: string) => `add-to-day-${dayId}`;
+
+function toAddable(place: PlaceItem): AddablePlace {
+  return {
+    id: place.id,
+    name: place.name,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    address: place.address,
+    category: place.category,
+    priceLevel: place.priceLevel,
+  };
+}
 
 const MOVES: {
   move: StopMove;
@@ -106,6 +122,7 @@ export default function ItineraryEditor({
   const [addTime, setAddTime] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [finder, setFinder] = useState<FinderTab>("map");
+  const [nearbyStopId, setNearbyStopId] = useState<string | null>(null);
   const hasSavedPlaces = useSavedPlaces() !== null;
 
   // The day to add to has to be a day the trip has now: the dates can change under this page (the Edit trip
@@ -201,15 +218,27 @@ export default function ItineraryEditor({
   }
 
   function addLocalPlace(place: PlaceItem) {
-    add({
-      id: place.id,
-      name: place.name,
-      latitude: place.latitude,
-      longitude: place.longitude,
-      address: place.address,
-      category: place.category,
-      priceLevel: place.priceLevel,
-    });
+    add(toAddable(place));
+  }
+
+  // A suggestion goes to the day of the stop it was suggested for, whatever day is open now, and it has no
+  // time: the person sets it in the day.
+  function addNearby(placeId: string) {
+    const place = cityPlaces.find((item) => item.id === placeId);
+    if (!place || !nearbyStop) return;
+
+    void run(
+      () =>
+        addStop(tripId, addStopBody(nearbyStop.dayId, toAddable(place), null)),
+      `${place.name} was added to ${dayLabel(nearbyStop.dayId)}.`,
+      () => setFocusTarget(NEARBY_TYPE_FILTER_ID)
+    );
+  }
+
+  function openNearby(stop: EditorStop) {
+    setNearbyStopId(stop.id);
+    setFinder("nearby");
+    setFocusTarget(NEARBY_TYPE_FILTER_ID);
   }
 
   function addFromMap(placeId: string) {
@@ -306,10 +335,14 @@ export default function ItineraryEditor({
   const longDate = selectedDay
     ? formatDayLabel(selectedDay.dayNumber, selectedDay.date).split(" — ")[1]
     : "";
+  // The Nearby tab exists while the stop it is for is on the trip.
+  const nearbyStop = stops.find((stop) => stop.id === nearbyStopId);
+  const shownFinder = finder === "nearby" && !nearbyStop ? "map" : finder;
   const finderTabs: { id: FinderTab; label: string }[] = [
     { id: "search", label: "Search" },
     ...(hasSavedPlaces ? [{ id: "saved" as const, label: "Saved" }] : []),
     { id: "map", label: "Map" },
+    ...(nearbyStop ? [{ id: "nearby" as const, label: "Nearby" }] : []),
   ];
 
   return (
@@ -452,6 +485,7 @@ export default function ItineraryEditor({
                         void saveTime(stop, timeDrafts[stop.id] ?? "")
                       }
                       onRemove={() => remove(stop)}
+                      onNearby={() => openNearby(stop)}
                     />
                   ))}
                 </ol>
@@ -467,7 +501,7 @@ export default function ItineraryEditor({
           <TabStrip
             label="Where to find places"
             idPrefix="finder"
-            value={finder}
+            value={shownFinder}
             onChange={(id) => setFinder(id as FinderTab)}
             className="flex gap-1.5"
             tabs={finderTabs}
@@ -476,9 +510,9 @@ export default function ItineraryEditor({
           <div
             role="tabpanel"
             id="finder-panel"
-            aria-labelledby={`finder-tab-${finder}`}
+            aria-labelledby={`finder-tab-${shownFinder}`}
           >
-            {finder === "search" && (
+            {shownFinder === "search" && (
               <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
                 <p className="text-sm text-slate-600">
                   Adding to{" "}
@@ -517,7 +551,7 @@ export default function ItineraryEditor({
               </div>
             )}
 
-            {finder === "saved" && (
+            {shownFinder === "saved" && (
               <PlannerSavedPlaces
                 cityName={cityName}
                 cityPlaceIds={new Set(cityPlaces.map((place) => place.id))}
@@ -528,7 +562,21 @@ export default function ItineraryEditor({
               />
             )}
 
-            {finder === "map" && (
+            {shownFinder === "nearby" && nearbyStop && (
+              // One type filter per stop: the panel of another stop starts with All types.
+              <NearbySuggestions
+                key={nearbyStop.id}
+                originName={nearbyStop.place.name}
+                origin={nearbyStop.place}
+                places={cityPlaces}
+                plannedIds={new Set(stops.map((stop) => stop.placeId))}
+                dayLabel={dayLabel(nearbyStop.dayId)}
+                disabled={busy}
+                onAdd={addNearby}
+              />
+            )}
+
+            {shownFinder === "map" && (
               <div className="space-y-2">
                 <MapWrapper
                   places={pins}
@@ -643,6 +691,7 @@ interface StopCardProps {
   onTimeChange: (value: string) => void;
   onTimeSave: () => void;
   onRemove: () => void;
+  onNearby: () => void;
   // The catalog place of the stop; a place found on OpenStreetMap is not there, so it has no rating or page.
   catalogPlace?: PlaceItem;
 }
@@ -656,6 +705,7 @@ function StopCard({
   onTimeChange,
   onTimeSave,
   onRemove,
+  onNearby,
   catalogPlace,
 }: StopCardProps) {
   const config = getCategoryConfig(stop.place.category);
@@ -716,7 +766,7 @@ function StopCard({
           </div>
         </div>
 
-        <div className="mt-1.5 flex items-center justify-between gap-1">
+        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1">
           <div className="flex gap-0.5">
             {moves.map(({ move, label, Icon, option }) => {
               const unavailable = busy || !option.available;
@@ -751,17 +801,29 @@ function StopCard({
             })}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 px-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-            aria-label={`Remove ${stop.place.name}`}
-            title="Remove"
-            disabled={busy}
-            onClick={onRemove}
-          >
-            <Trash2 />
-          </Button>
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 px-2 text-xs"
+              aria-label={`Nearby places for ${stop.place.name}`}
+              onClick={onNearby}
+            >
+              <MapPin />
+              Nearby
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 px-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+              aria-label={`Remove ${stop.place.name}`}
+              title="Remove"
+              disabled={busy}
+              onClick={onRemove}
+            >
+              <Trash2 />
+            </Button>
+          </div>
         </div>
       </div>
     </li>
