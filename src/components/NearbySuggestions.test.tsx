@@ -241,3 +241,123 @@ describe("NearbySuggestions: AC6, 1 km or 2 km", () => {
     expect(screen.getByText("1.5 km · 26 min walk")).toBeTruthy();
   });
 });
+
+describe("NearbySuggestions: 10 places at a time", () => {
+  /** 25 places within 1 km, p00 the best rated, p24 the last. */
+  const many = (category: PlaceItem["category"] = "RESTAURANT") =>
+    Array.from({ length: 25 }, (_, i) => ({
+      ...place(
+        `p${String(i).padStart(2, "0")}`,
+        0.0001 * (i + 1),
+        5 - i * 0.1,
+        category
+      ),
+    }));
+
+  it("shows the first 10, says how many there are, and offers the next page", () => {
+    setup(many());
+
+    expect(names()).toHaveLength(10);
+    expect(names()[0]).toBe("Place p00");
+    expect(screen.getByText("Showing 1 to 10 of 25 places")).toBeTruthy();
+    expect(screen.getByText("Page 1 of 3")).toBeTruthy();
+  });
+
+  it("goes to the next and the previous page", async () => {
+    setup(many());
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+    expect(names()[0]).toBe("Place p10");
+    expect(screen.getByText("Showing 11 to 20 of 25 places")).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+    expect(names()).toHaveLength(5);
+
+    await user.click(screen.getByRole("button", { name: "Previous page" }));
+    expect(names()[0]).toBe("Place p10");
+  });
+
+  it("keeps the focus on Next on the last page, where it does nothing", async () => {
+    setup(many());
+    const user = userEvent.setup();
+    const next = screen.getByRole("button", { name: "Next page" });
+
+    await user.click(next);
+    await user.click(next);
+    await user.click(next);
+
+    expect(screen.getByText("Page 3 of 3")).toBeTruthy();
+    expect(next.getAttribute("aria-disabled")).toBe("true");
+    expect(document.activeElement).toBe(next);
+  });
+
+  it("goes back to the first page when the type changes", async () => {
+    setup([
+      ...many(),
+      ...many("MUSEUM").map((p) => ({
+        ...p,
+        id: `m${p.id}`,
+        name: `Museum ${p.id}`,
+      })),
+    ]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+    await user.selectOptions(
+      screen.getByLabelText("Type"),
+      screen.getByRole("option", { name: "Museum" })
+    );
+
+    expect(screen.getByText("Page 1 of 3")).toBeTruthy();
+    expect(names()[0]).toBe("Museum p00");
+  });
+
+  it("moves back a page when adding places empties the last one", async () => {
+    const places = many();
+    const view = (planned: string[]) => (
+      <NearbySuggestions
+        originName="Livraria Lello"
+        origin={ORIGIN}
+        places={places}
+        plannedIds={new Set(planned)}
+        dayLabel="Day 2"
+        disabled={false}
+        onAdd={() => {}}
+      />
+    );
+    const result = render(view([]));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+
+    result.rerender(view(["p20", "p21", "p22", "p23", "p24"]));
+
+    expect(screen.getByText("Page 2 of 2")).toBeTruthy();
+    expect(names()[0]).toBe("Place p10");
+  });
+
+  it("shows no page controls with 10 places or fewer", () => {
+    setup(many().slice(0, 10));
+
+    expect(names()).toHaveLength(10);
+    expect(screen.queryByRole("button", { name: "Next page" })).toBeNull();
+  });
+
+  it("shows how many places there are, not only to screen readers", () => {
+    setup(many());
+
+    const status = screen.getByRole("status");
+    expect(status.textContent).toBe("25 places near Livraria Lello");
+    expect(status.className).not.toContain("sr-only");
+  });
+
+  it("does not say it twice when there is no place near", () => {
+    setup([place("far", 0.05, 4.0)]);
+
+    expect(screen.getByRole("status").className).toContain("sr-only");
+    expect(
+      screen.getByText("No places within 2 km of Livraria Lello.")
+    ).toBeTruthy();
+  });
+});
