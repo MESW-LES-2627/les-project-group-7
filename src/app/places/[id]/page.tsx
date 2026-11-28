@@ -17,7 +17,10 @@ import type { PlaceItem } from "@/components/PlaceExplorer";
 import WriteReviewButton from "./WriteReviewButton";
 import SavedPlacesProvider from "@/components/SavedPlacesProvider";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
-import { formatOpeningHours } from "@/domain/osm/opening-hours";
+import {
+  openingHoursGroups,
+  openingHoursRows,
+} from "@/domain/osm/opening-hours-rows";
 import ReviewActions from "@/components/ReviewActions";
 import { placeLocation } from "@/domain/catalog/place-location";
 import PageLinks from "@/components/PageLinks";
@@ -117,6 +120,11 @@ export default async function PlacePage({
     chosen === null
       ? orderedReviews
       : orderedReviews.filter((rev) => rev.rating === chosen);
+  // The hours read, a season of several rows under its own heading; the rules not read, apart
+  const hoursGroups = openingHoursGroups(place.openingHours);
+  const listedHours = openingHoursRows(place.openingHours).filter(
+    (row) => !row.when
+  );
   const reviewPage = pageView(
     listedReviews.length,
     query.page,
@@ -154,86 +162,153 @@ export default async function PlacePage({
           </Link>
         </div>
 
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-              {place.name}
-            </h1>
+        {/* The place on the left, its opening hours in a box on the right on a wide screen (#187) */}
+        <section className="grid gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="min-w-0 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                {place.name}
+              </h1>
 
-            <div className="flex items-center gap-2">
-              {isVisited && (
-                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Visited
+              <div className="flex items-center gap-2">
+                {isVisited && (
+                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    Visited
+                  </span>
+                )}
+
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${categoryConfig.bgColor} ${categoryConfig.textColor} ${categoryConfig.borderColor} border`}
+                >
+                  <CategorySymbol
+                    type={categoryConfig.iconType}
+                    className="h-3.5 w-3.5"
+                  />
+                  {categoryConfig.label}
                 </span>
-              )}
+              </div>
+            </div>
 
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${categoryConfig.bgColor} ${categoryConfig.textColor} ${categoryConfig.borderColor} border`}
-              >
-                <CategorySymbol
-                  type={categoryConfig.iconType}
-                  className="h-3.5 w-3.5"
-                />
-                {categoryConfig.label}
+            <div className="flex items-center gap-1.5 text-sm text-slate-600">
+              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+              <span>
+                {placeLocation(
+                  place.address,
+                  place.city.name,
+                  place.city.country
+                )}
               </span>
             </div>
-          </div>
 
-          <div className="flex items-center gap-1.5 text-sm text-slate-600">
-            <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
-            <span>
-              {placeLocation(
-                place.address,
-                place.city.name,
-                place.city.country
-              )}
-            </span>
-          </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex items-center gap-1.5 font-medium text-slate-900">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
 
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 font-medium text-slate-900">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span>{formattedRating}</span>
+                <span className="text-slate-400">•</span>
+                <span className="text-slate-600">{formattedCount}</span>
+              </div>
 
-              <span>{formattedRating}</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-slate-600">{formattedCount}</span>
+              <span className="text-slate-300">|</span>
+
+              <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                {formattedPrice}
+              </span>
             </div>
 
-            <span className="text-slate-300">|</span>
+            <SavedPlacesProvider loggedIn={session !== null}>
+              <SavePlaceButtons
+                variant="full"
+                place={{
+                  id: place.id,
+                  name: place.name,
+                  category: place.category,
+                  address: place.address,
+                  averageRating: place.averageRating,
+                  reviewCount: place.reviewCount,
+                  priceLevel: place.priceLevel,
+                  city: { name: place.city.name, country: place.city.country },
+                }}
+              />
+            </SavedPlacesProvider>
 
-            <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-              {formattedPrice}
-            </span>
+            <p className="text-base text-slate-700">
+              {place.description ?? "No description yet."}
+            </p>
           </div>
 
-          <SavedPlacesProvider loggedIn={session !== null}>
-            <SavePlaceButtons
-              variant="full"
-              place={{
-                id: place.id,
-                name: place.name,
-                category: place.category,
-                address: place.address,
-                averageRating: place.averageRating,
-                reviewCount: place.reviewCount,
-                priceLevel: place.priceLevel,
-                city: { name: place.city.name, country: place.city.country },
-              }}
-            />
-          </SavedPlacesProvider>
+          <aside
+            aria-labelledby="hours-heading"
+            className="h-fit rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm"
+          >
+            <h2
+              id="hours-heading"
+              className="flex items-center gap-2 font-semibold text-slate-900"
+            >
+              <Clock className="h-4 w-4 shrink-0 text-slate-400" />
+              Opening hours
+            </h2>
 
-          <p className="text-base text-slate-700">
-            {place.description ?? "No description yet."}
-          </p>
-          <div className="flex items-start gap-2 text-sm text-slate-700">
-            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-            <div>
-              <p className="font-semibold">Opening hours</p>
-              <p className="mt-1 whitespace-pre-line">
-                {formatOpeningHours(place.openingHours)}
-              </p>
-            </div>
-          </div>
+            {/* Nothing read: the hours are unknown, even when OpenStreetMap has a note */}
+            {hoursGroups.length === 0 && (
+              <p className="mt-2 text-slate-500">Hours unknown</p>
+            )}
+
+            {hoursGroups.map((group, groupIndex) => (
+              <div key={groupIndex} className="mt-3">
+                {group.heading && (
+                  <h3 className="mb-1.5 text-xs font-semibold text-slate-900">
+                    {group.heading}
+                  </h3>
+                )}
+                <dl className="space-y-2">
+                  {group.rows.map((row, index) => (
+                    <div
+                      key={index}
+                      className="flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2 last:border-0 last:pb-0"
+                    >
+                      <dt className="text-slate-600">{row.when}</dt>
+                      <dd className="text-right font-medium tabular-nums text-slate-900">
+                        {/* Each opening time on its own line, never broken in the middle */}
+                        {row.hours.map((time) => (
+                          <span key={time} className="block whitespace-nowrap">
+                            {time}
+                          </span>
+                        ))}
+                        {row.note && (
+                          <span className="mt-0.5 block text-xs font-normal text-slate-500">
+                            {row.note}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))}
+
+            {/* The rules not read yet, as they are, so nothing is lost */}
+            {listedHours.length > 0 && (
+              <div
+                className={
+                  hoursGroups.length > 0
+                    ? "mt-3 border-t border-slate-200 pt-3"
+                    : "mt-3"
+                }
+              >
+                <p className="text-xs text-slate-500">
+                  As listed on OpenStreetMap:
+                </p>
+                <ul className="mt-1 space-y-1 text-xs text-slate-700">
+                  {listedHours.map((row, index) => (
+                    <li key={index} className="break-words">
+                      {row.hours[0]}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </aside>
         </section>
 
         <section

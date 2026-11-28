@@ -47,6 +47,7 @@ interface MockPlaceOverrides {
   reviewCount?: number;
   city?: { name: string; country: string };
   reviews?: Array<Record<string, unknown>>;
+  openingHours?: string | null;
 }
 
 function mockPlace(overrides: MockPlaceOverrides = {}) {
@@ -552,5 +553,109 @@ describe("Review text on a wide screen (#187)", () => {
     const html = await renderPage();
 
     expect(html).toMatch(/<p class="[^"]*max-w-prose[^"]*">Lovely\.<\/p>/);
+  });
+});
+
+describe("Opening hours beside the place (#187)", () => {
+  it("lists one row per rule in a box of its own", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({ openingHours: "Mo-Fr 09:00-18:00; Su off" })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toMatch(/<aside[^>]*aria-labelledby="hours-heading"/);
+    expect(html).toContain("<dt");
+    expect(html).toMatch(
+      /Monday–Friday<\/dt><dd[^>]*><span[^>]*>09:00–18:00<\/span><\/dd>/
+    );
+    expect(html).toMatch(
+      /Sunday<\/dt><dd[^>]*><span[^>]*>Closed<\/span><\/dd>/
+    );
+  });
+
+  it("puts two opening times of a day one above the other, with no comma", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({ openingHours: "Mo-Fr 09:00-12:30,14:00-17:30" })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toMatch(
+      /<dd[^>]*><span class="block[^"]*">09:00–12:30<\/span><span class="block[^"]*">14:00–17:30<\/span><\/dd>/
+    );
+    expect(html).not.toContain("12:30,");
+  });
+
+  it("says the hours are unknown when OpenStreetMap has none", async () => {
+    findUnique.mockResolvedValue(mockPlace());
+
+    const html = await renderPage();
+
+    expect(html).toMatch(/<aside[^>]*aria-labelledby="hours-heading"/);
+    expect(html).toContain("Hours unknown");
+  });
+
+  it("shows the rules it cannot read under their own heading, as listed on OpenStreetMap", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({
+        openingHours: "Mo-Fr 09:00-18:00; sunrise-sunset",
+      })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toMatch(/Monday–Friday<\/dt>/);
+    expect(html).toContain("As listed on OpenStreetMap:");
+    expect(html).toMatch(/<li[^>]*>sunrise-sunset<\/li>/);
+    expect(html.indexOf("Monday–Friday")).toBeLessThan(
+      html.indexOf("As listed on OpenStreetMap:")
+    );
+  });
+
+  it("has no such heading when every rule is read", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({ openingHours: "Mo-Fr 09:00-18:00" })
+    );
+
+    expect(await renderPage()).not.toContain("As listed on OpenStreetMap");
+  });
+
+  it("shows the comment of a rule under its hours, like the Carnavalet Museum", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({ openingHours: 'Tu-Su 10:00-18:00 "Final admission 17:15"' })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toMatch(
+      /<dd[^>]*><span[^>]*>10:00–18:00<\/span><span class="[^"]*text-xs[^"]*">Final admission 17:15<\/span><\/dd>/
+    );
+    expect(html).not.toContain("As listed on OpenStreetMap");
+  });
+
+  it("puts a season with several rows under its own heading", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({
+        openingHours: "May-Aug: Mo-Fr 08:00-20:30; May-Aug: Sa,Su 09:00-20:30",
+      })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toMatch(/<h3[^>]*>May to August<\/h3>/);
+    expect(html).toMatch(/Monday–Friday<\/dt>/);
+  });
+
+  it("says the hours are unknown when there are only notes, and still lists them, like the Federal Chancellery", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({ openingHours: '"Nur mit Termin"' })
+    );
+
+    const html = await renderPage();
+
+    expect(html).toContain("Hours unknown");
+    expect(html).toContain("As listed on OpenStreetMap:");
+    expect(html).toMatch(/<li[^>]*>Nur mit Termin<\/li>/);
   });
 });
