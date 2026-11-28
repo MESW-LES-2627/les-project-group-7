@@ -232,20 +232,23 @@ describe("openingHoursGroups: a season with several rows under its own heading (
     ]);
   });
 
-  it("leaves a season with a single row as a row, like Palácio da Bolsa", () => {
+  it("puts a season with a single row under its heading too, like Palácio da Bolsa", () => {
     expect(
       openingHoursGroups(
         "Nov-Mar: Mo-Su 09:00-12:30,14:00-17:30; Apr-Oct: Mo-Su 09:00-18:30; Dec 25 off; Jan 1 off"
       )
     ).toEqual([
       {
-        heading: null,
+        heading: "November to March",
+        rows: [{ when: "Every day", hours: ["09:00–12:30", "14:00–17:30"] }],
+      },
+      {
+        heading: "April to October",
+        rows: [{ when: "Every day", hours: ["09:00–18:30"] }],
+      },
+      {
+        heading: "Holidays and exceptions",
         rows: [
-          {
-            when: "Every day, November to March",
-            hours: ["09:00–12:30", "14:00–17:30"],
-          },
-          { when: "Every day, April to October", hours: ["09:00–18:30"] },
           { when: "25 December", hours: ["Closed"] },
           { when: "1 January", hours: ["Closed"] },
         ],
@@ -266,11 +269,53 @@ describe("openingHoursGroups: a season with several rows under its own heading (
           { when: "Saturday, Sunday", hours: ["10:00–18:00"] },
         ],
       },
-      { heading: null, rows: [{ when: "25 December", hours: ["Closed"] }] },
+      {
+        heading: "Holidays and exceptions",
+        rows: [{ when: "25 December", hours: ["Closed"] }],
+      },
     ]);
   });
 
   it("leaves out the rules that are not read, which the page lists apart", () => {
     expect(openingHoursGroups('"Nur mit Termin"')).toEqual([]);
+  });
+
+  it("calls Easter and public holidays exceptions too, like the Tesouro-Museu da Sé", () => {
+    expect(
+      openingHoursGroups("Apr-Oct 09:00-18:30; easter off; PH off").at(-1)
+    ).toEqual({
+      heading: "Holidays and exceptions",
+      rows: [
+        { when: "Easter Sunday", hours: ["Closed"] },
+        { when: "Public holidays", hours: ["Closed"] },
+      ],
+    });
+  });
+
+  it("calls weekly rows next to seasons All year", () => {
+    expect(
+      openingHoursGroups("Mo-Fr 09:00-18:00; Jul-Aug Sa 10:00-14:00")
+    ).toEqual([
+      {
+        heading: "All year",
+        rows: [{ when: "Monday–Friday", hours: ["09:00–18:00"] }],
+      },
+      {
+        heading: "July to August",
+        rows: [{ when: "Saturday", hours: ["10:00–14:00"] }],
+      },
+    ]);
+  });
+
+  it("has no heading at all for a place without seasons", () => {
+    expect(openingHoursGroups("Mo-Fr 09:00-18:00; Dec 25 off")).toEqual([
+      {
+        heading: null,
+        rows: [
+          { when: "Monday–Friday", hours: ["09:00–18:00"] },
+          { when: "25 December", hours: ["Closed"] },
+        ],
+      },
+    ]);
   });
 });

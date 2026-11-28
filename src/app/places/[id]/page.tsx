@@ -255,9 +255,17 @@ export default async function PlacePage({
             )}
 
             {hoursGroups.map((group, groupIndex) => (
-              <div key={groupIndex} className="mt-3">
+              // Each period is a block of its own: a line above it, and its name as a small label
+              <div
+                key={groupIndex}
+                className={
+                  groupIndex === 0
+                    ? "hours-group mt-3"
+                    : "hours-group mt-3 border-t border-slate-200 pt-3"
+                }
+              >
                 {group.heading && (
-                  <h3 className="mb-1.5 text-xs font-semibold text-slate-900">
+                  <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                     {group.heading}
                   </h3>
                 )}
@@ -265,7 +273,7 @@ export default async function PlacePage({
                   {group.rows.map((row, index) => (
                     <div
                       key={index}
-                      className="flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2 last:border-0 last:pb-0"
+                      className="flex items-baseline justify-between gap-4"
                     >
                       <dt className="text-slate-600">{row.when}</dt>
                       <dd className="text-right font-medium tabular-nums text-slate-900">

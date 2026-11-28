@@ -17,6 +17,8 @@ export interface OpeningHoursRow {
 interface ReadRow extends OpeningHoursRow {
   period?: string;
   days?: string;
+  /** A day apart from the week: a date, Easter Sunday or the public holidays. */
+  exception?: boolean;
 }
 
 /** The rows of one season under its heading, or rows with no heading (heading null). */
@@ -167,7 +169,7 @@ function formatDates(selector: string): { label: string; singleDays: boolean } {
 }
 
 /** The days and the hours of a rule, without a season or dates; null when not understood. */
-function formatWeek(text: string): OpeningHoursRow | null {
+function formatWeek(text: string): ReadRow | null {
   // "Fr, Sa 10:00-02:00" is written like "Fr,Sa 10:00-02:00"
   const rest = text.replace(/,\s+(?=(?:Mo|Tu|We|Th|Fr|Sa|Su|PH)\b)/g, ",");
 
@@ -177,7 +179,8 @@ function formatWeek(text: string): OpeningHoursRow | null {
   const split = /^(\S+)\s+(.+)$/.exec(rest);
   const when = split && formatDays(split[1]);
   const hours = split && formatSchedule(split[2]);
-  return when && hours ? { when, hours } : null;
+  if (!when || !hours) return null;
+  return split[1] === "PH" ? { when, hours, exception: true } : { when, hours };
 }
 
 /** One rule, or null when a part of it is not understood. */
@@ -194,7 +197,7 @@ function formatRule(rule: string): ReadRow | null {
   const easter = /^easter\s+(.+)$/.exec(rule);
   if (easter) {
     const hours = formatSchedule(easter[1]);
-    return hours && { when: "Easter Sunday", hours };
+    return hours && { when: "Easter Sunday", hours, exception: true };
   }
 
   const dates = DATES.exec(rule);
@@ -204,7 +207,11 @@ function formatRule(rule: string): ReadRow | null {
 
     // "25 December: Closed"; a range of dates also says which days of the week
     if (datesWeek.when === "Every day" && singleDays) {
-      return { when: capitalized(label), hours: datesWeek.hours };
+      return {
+        when: capitalized(label),
+        hours: datesWeek.hours,
+        exception: true,
+      };
     }
     return withPeriod(datesWeek, label);
   }
@@ -217,7 +224,7 @@ function formatRule(rule: string): ReadRow | null {
 }
 
 /** The days of a rule in a season or a range of dates: "Monday–Friday, May to August". */
-function withPeriod(week: OpeningHoursRow, period: string): ReadRow {
+function withPeriod(week: ReadRow, period: string): ReadRow {
   return { ...week, when: `${week.when}, ${period}`, period, days: week.when };
 }
 
@@ -229,40 +236,44 @@ export function openingHoursRows(
 }
 
 /**
- * The rows read, with each season of several rows under its own heading ("May to August", then its
- * days); a season with a single row stays a row ("Every day, April to October"). The rules that are not
- * read are left out: the page lists them apart, as they are.
+ * The rows read, with each season or range of dates under its own heading ("May to August", then its
+ * days, "Every day" too). The rules that are not read are left out: the page lists them apart, as they are.
  */
 export function openingHoursGroups(
   openingHours: string | null | undefined
 ): OpeningHoursGroup[] {
   const rows = readRows(openingHours).filter((row) => row.when);
-  const perPeriod = new Map<string, number>();
+  const groups: { heading: string | null; rows: ReadRow[] }[] = [];
+  const ofPeriod = new Map<string, { heading: string; rows: ReadRow[] }>();
   for (const row of rows) {
-    if (row.period)
-      perPeriod.set(row.period, (perPeriod.get(row.period) ?? 0) + 1);
-  }
-
-  const groups: OpeningHoursGroup[] = [];
-  const ofPeriod = new Map<string, OpeningHoursGroup>();
-  for (const row of rows) {
-    if (row.period && row.days && (perPeriod.get(row.period) ?? 0) > 1) {
+    if (row.period && row.days) {
       let group = ofPeriod.get(row.period);
       if (!group) {
         group = { heading: capitalized(row.period), rows: [] };
         ofPeriod.set(row.period, group);
         groups.push(group);
       }
-      group.rows.push(asRow({ ...row, when: row.days }));
+      group.rows.push({ ...row, when: row.days });
       continue;
     }
 
     const last = groups[groups.length - 1];
-    if (last && last.heading === null) last.rows.push(asRow(row));
-    else groups.push({ heading: null, rows: [asRow(row)] });
+    if (last && last.heading === null) last.rows.push(row);
+    else groups.push({ heading: null, rows: [row] });
   }
 
-  return groups;
+  // Next to seasons, the other rows get a heading too: the holidays and dates, or the weeks of all year
+  const withSeasons = groups.some((group) => group.heading !== null);
+  return groups.map((group) => ({
+    heading:
+      group.heading ??
+      (!withSeasons
+        ? null
+        : group.rows.every((row) => row.exception)
+          ? "Holidays and exceptions"
+          : "All year"),
+    rows: group.rows.map(asRow),
+  }));
 }
 
 /** A row without the period and days kept apart for the groups. */

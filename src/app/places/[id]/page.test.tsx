@@ -658,4 +658,23 @@ describe("Opening hours beside the place (#187)", () => {
     expect(html).toContain("As listed on OpenStreetMap:");
     expect(html).toMatch(/<li[^>]*>Nur mit Termin<\/li>/);
   });
+
+  it("separates each period with a line, Easter and the dates under their own heading, like the Tesouro-Museu da Sé", async () => {
+    findUnique.mockResolvedValue(
+      mockPlace({
+        openingHours:
+          "Apr-Oct 09:00-18:30; Nov-Mar 09:00-17:30; easter off; Dec 25 off",
+      })
+    );
+
+    const html = await renderPage();
+    const groups = html.match(/<div class="[^"]*hours-group[^"]*">/g) ?? [];
+
+    expect(groups).toHaveLength(3);
+    expect(groups.slice(1).every((g) => g.includes("border-t"))).toBe(true);
+    expect(groups[0]).not.toContain("border-t");
+    expect(html).toMatch(
+      /<h3[^>]*uppercase[^>]*>Holidays and exceptions<\/h3>/
+    );
+  });
 });
